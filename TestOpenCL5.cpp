@@ -92,14 +92,84 @@ bool GetFileContent(const std::string Path, std::string& DataStorage)
 	return false;
 }
 
-struct KernelArgumentStruct
+struct cl_KernelMemoryStruct
 {
-	bool FirstTimeBufferCreation;//For Global
-	void* DataFromHost;//For Global
-	size_t INPUTorOUTPUTDataHostSizeToCopySize;//For Global
-	size_t CL_MemorySizeToCreate;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global
-	bool IntialReleaseBuffer;//For Global
-	bool OverWriteBuffer;//For Global Input
+	bool IsInitialized = false;// False When no Buffer in on Device, True is when Buffer is stored on Device
+	cl_mem MemoryInDevice;
+};
+
+struct cl_KernelSingleArgumentStruct
+{
+	const bool& IsLocalMemory;
+	const bool& TrueForReadOnlyFalseForWriteOnly;
+	bool TrueForCreateFalseForOverWrite;//When True Creates The Buffer
+	size_t CL_MemorySizeToCreate;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global	
+	void* DataFromHost;//For Global and Private Only , Pass NULL for Local...
+	size_t INPUTorOUTPUTDataHostSizeToCopySize;//For Global ONLY, Reads Data When TrueForReadOnlyFalseForWriteOnly is true, else writes to buffer on creation
+	cl_KernelMemoryStruct BufferOnDevice;//Example: Buffer on GPU device
+	//NOTE:IF TrueForCreateFalseForOverWrite is false And INPUTorOUTPUTDataHostSizeToCopySize > CL_MemorySizeToCreate
+	//     Memory is released and reallocaed
+
+	//Contructor
+	cl_KernelSingleArgumentStruct(bool InitializeIsLocalMemory,bool InitializeTrueForReadOnlyFalseForWriteOnly) : IsLocalMemory(InitializeIsLocalMemory) ,TrueForReadOnlyFalseForWriteOnly(InitializeTrueForReadOnlyFalseForWriteOnly) {}//const bool Are Initialized in Initialization list 
+	
+	//Destructor
+	~cl_KernelSingleArgumentStruct()
+	{
+		if (BufferOnDevice.IsInitialized)
+		{
+			try
+			{
+				int ClErrorResult;
+				ClErrorResult = clReleaseMemObject(BufferOnDevice.MemoryInDevice);
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					throw ClErrorResult;
+				}
+			}
+			catch (int CatchErrorNum)
+			{
+				std::cout << "\n Error " << CatchErrorNum << " : Releasing Device Memory!";
+			}			
+		}		
+	}
+};
+
+//NOTE: Always call with the below constructor otherwise, DO NOT call
+struct cl_KernelMultipleArgumentStruct
+{
+	const int NumberOfArugments;
+	cl_KernelSingleArgumentStruct* SingleKernelFunctionMultiArgumentsArray;
+
+	cl_KernelMultipleArgumentStruct(int NumberOfReads, int NumberOfWrites, int NumberOfLocal) : NumberOfArugments((NumberOfReads + NumberOfWrites + NumberOfLocal))
+	{
+
+	}
+
+	~cl_KernelMultipleArgumentStruct()
+	{
+
+	}
+}
+
+struct cl_KernelAndArguments
+{
+	cl_kernel* MultiDeviceKernelFunctionArray;
+	cl_kernel* MultiDeviceKernelArgumentsArray;
+	//NOTE: Kernel Arguments are Ordered from left to right, Read only memory in left, write only in right, Local in middle of them
+	//NOTE: any memory which is plain int, float etc etc those which are NOT cl_mem, Will NOT BE INCLUDED HERE instead they will be given as parameters in kernel Host function
+	cl_KernelAndArguments(int NumberOfDevices, int NumberOfReads, int NumberOfLocal, int NumberOfWrites)
+	{
+		try
+		{
+			throw(10);
+		}
+		catch (int Num)
+		{
+
+		}
+	}
+	
 };
 
 cl_uint NumOfPlatforms;	//the NO. of platforms
@@ -109,7 +179,6 @@ cl_device_id* ChosenGPUs = NULL;
 cl_context SingleClContext;
 cl_command_queue* ClCommandQueues = NULL;
 size_t* MaxComputeUnitPerGPU = NULL;
-//size_t* MaxNumberOfWorkGroup = NULL;
 size_t* MaxWorkItemPerGroup = NULL;
 size_t* MaxGlobalMemoryOfDevice = NULL;
 size_t* MaxPrivateMemoryBytesPerWorkGroup = NULL;
@@ -117,7 +186,7 @@ size_t* MaxLocalMemoryBytesPerWorkGroup = NULL;
 cl_program AllCustomClFunctionsProgram = NULL;
 
 bool InitializeOpenCLProgram()
-{
+{	
 	bool ReturnResult = true;
 	cl_int CLStatus = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
 	if (CLStatus != CL_SUCCESS)
@@ -240,12 +309,12 @@ bool InitializeOpenCLProgram()
 
 	CLStatus = clBuildProgram(AllCustomClFunctionsProgram, 0, NULL, NULL, NULL, NULL);
 
-	cl_mem*** TempGpuMemoryInitializationHelper = NULL;//NOTE: Free this BEFORE EVERY MALLOC
+	cl_KernelMemoryStruct*** TempGpuMemoryInitializationHelper = NULL;//NOTE: Free this BEFORE EVERY MALLOC
 
 	/**************************************************************************************************************/
 	/* GPU			Kernel			Functions			And			Parameter			Defination*/
 	/*_________FirstTestFunction Kernel Function_________*/
-	TempGpuMemoryInitializationHelper = (cl_mem***)malloc(2 * sizeof(cl_mem**));// Free this upon usage
+	TempGpuMemoryInitializationHelper = (cl_KernelMemoryStruct***)malloc(2 * sizeof(cl_KernelMemoryStruct**));// Free this upon usage
 	TempGpuMemoryInitializationHelper[0] = &FirstTestInputBuffer;
 	TempGpuMemoryInitializationHelper[1] = &FirstTestOutputBuffer;
 	ReturnResult = InitializeKernelWithFunctionAndInitializeBuffer(&FirstTestFunction_Kernel, "FirstTestFunction", TempGpuMemoryInitializationHelper, 2);
@@ -257,7 +326,7 @@ bool InitializeOpenCLProgram()
 	free(TempGpuMemoryInitializationHelper);
 
 	/*_________SphericalHeadCapsuleTrace Kernel Function_________*/
-	TempGpuMemoryInitializationHelper = (cl_mem***)malloc(5 * sizeof(cl_mem**));
+	TempGpuMemoryInitializationHelper = (cl_KernelMemoryStruct***)malloc(5 * sizeof(cl_KernelMemoryStruct**));
 	TempGpuMemoryInitializationHelper[0] = &SphericalHeadCapsuleTrace_INPUTCharacterLocationArray;				//Float3D Array			Global
 	TempGpuMemoryInitializationHelper[1] = &SphericalHeadCapsuleTrace_INPUTCharacterVelocityArray;				//Float3D Array			Global
 	TempGpuMemoryInitializationHelper[2] = &SphericalHeadCapsuleTrace_INPUTPlaneArray;							//Three Float3D Array	Global
