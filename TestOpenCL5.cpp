@@ -1,27 +1,15 @@
-/**********************************************************************
-// This Code is Written by Punal Manalan
-**********************************************************************/
+// TestOpenCL5.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
 
 #include <iostream>
-#include <fstream>// For file reading
 
-#define __CL_ENABLE_EXCEPTIONS
-//#define CL_API_SUFFIX__VERSION_1_2
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS
-#include <CL/cl.h>// OpenCl
-
-#include <chrono>// Mainly For FRAMERATE(FPS) LOCK
-uint64_t TimeSinceEpochInMilliSecond()
+int main()
 {
-	using namespace std::chrono;
-	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::cout << "Hello World!\n";
 }
 
-uint64_t TimeSinceEpochInNanoSecond()
-{
-	using namespace std::chrono;
-	return duration_cast<nanoseconds>(system_clock::now().time_since_epoch()).count();
-}
+// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
+// Debug program: F5 or Debug > Start Debugging menu
 
 uint64_t StartTime;
 void TimeCalculationInMilliseconds()
@@ -431,3 +419,10 @@ int main()
 {
 
 }
+// Tips for Getting Started: 
+//   1. Use the Solution Explorer window to add/manage files
+//   2. Use the Team Explorer window to connect to source control
+//   3. Use the Output window to see build output and other messages
+//   4. Use the Error List window to view errors
+//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
+//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
