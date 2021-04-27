@@ -55,6 +55,30 @@ int Clamp(double Number, double Min, double Max)
 	return Number;
 }
 
+
+=========
+{
+	std::cout << '\n';
+	std::cout << "      StartTime :" << StartTime << '\n';
+	std::cout << "        EndTime :" << TimeSinceEpochInNanoSecond() << '\n';
+	std::cout << "Time Difference :" << TimeSinceEpochInNanoSecond() - StartTime << '\n' << '\n';
+	StartTime = TimeSinceEpochInNanoSecond();
+}
+
+int Clamp(double Number, double Min, double Max)
+{
+	if (Number > Max)
+	{
+		return Max;
+	}
+	if (Number < Min)
+	{
+		return Min;
+	}
+	return Number;
+}
+
+>>>>>>>>> Temporary merge branch 2
 void PrintVector3Dfor(float Pointx, float Pointy, float Pointz, std::string Name, bool InvertXY)
 {
 	int SpaceBar = 50;
@@ -68,8 +92,7 @@ void PrintVector3Dfor(float Pointx, float Pointy, float Pointz, std::string Name
 	if (InvertXY)
 	{
 		printf("%f", Pointy);
-		printf(", %f", Pointx);
-	}
+struct cl_KernelMemoryStruct
 	else
 	{
 		printf("%f", Pointx);
@@ -92,7 +115,8 @@ bool GetFileContent(const std::string Path, std::string& DataStorage)
 	return false;
 }
 
-struct cl_KernelMemoryStruct
+>>>>>>>>> Temporary merge branch 2
+struct KernelArgumentStruct
 {
 	bool IsInitialized = false;// False When no Buffer in on Device, True is when Buffer is stored on Device
 	cl_mem MemoryInDevice;
