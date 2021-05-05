@@ -88,7 +88,7 @@ bool GetFileContent(const std::string Path, std::string& DataStorage)
 		DataStorage = content;
 		return true;
 	}
-	std::cout << "Error: Unable to Open File to Initialize OpenCL Program!" << std::endl;
+	std::cout << "Error: Unable to Open File to Initialize OpenCL Program!\n";
 	return false;
 }
 
@@ -262,11 +262,24 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 		else
 		{
 			IsConstructionSuccesful = true;
+
+
+
 			cl_int ClErrorResult;
 			int i = 0;
 			for (i = 0; i < NumberOfDevices; ++i)
 			{
-				*(MultiDeviceKernelFunctionArray[i]) = clCreateKernel(*BuiltClProgramContainingTheSpecifiedFunction, KernelFunctionName.c_str(), &ClErrorResult);
+				MultiDeviceKernelFunctionArray[i] = (cl_kernel*)malloc(sizeof(cl_kernel));				
+				if (MultiDeviceKernelFunctionArray[i] != nullptr)
+				{
+					*(MultiDeviceKernelFunctionArray[i]) = clCreateKernel(*BuiltClProgramContainingTheSpecifiedFunction, KernelFunctionName.c_str(), &ClErrorResult);
+				}	
+				else
+				{
+					ClErrorResult = -1;
+					std::cout << "\n Malloc Error Allocating Space for Kernel creation For the Device Number: " << i << "in cl_MultiDevice_KernelAndArgumentsStruct! ClError Is Manualy Set to -1, So it is not an actual Cl_Error";
+				}
+
 				if (ClErrorResult != CL_SUCCESS)
 				{
 					IsConstructionSuccesful = false;
@@ -278,7 +291,10 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 						{
 							std::cout << "\n clError " << ClErrorResult << " : Releasing Kernel For Device Number: " << j << "in cl_MultiDevice_KernelAndArgumentsStruct!";
 						}
+						free(MultiDeviceKernelFunctionArray[j]);
 					}
+					free(MultiDeviceKernelFunctionArray[i]);// free the memory of the last one
+					free(MultiDeviceKernelFunctionArray);
 					break;
 				}
 			}
@@ -300,6 +316,7 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 					{
 						std::cout << "\n clError " << ClErrorResult << " : Releasing Kernel For Device Number: " << k << "in cl_MultiDevice_KernelAndArgumentsStruct!";
 					}
+					free(MultiDeviceKernelFunctionArray[k]);
 				}
 				free(MultiDeviceKernelFunctionArray);
 				free(MultiDeviceKernelArgumentsArray);
@@ -328,6 +345,7 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 						{
 							std::cout << "\n clError " << ClErrorResult << " : Releasing Kernel For Device Number: " << k << "in cl_MultiDevice_KernelAndArgumentsStruct!";
 						}
+						free(MultiDeviceKernelFunctionArray[k]);
 					}
 					free(MultiDeviceKernelFunctionArray);
 
@@ -359,6 +377,7 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 					std::cout << "\n clError " << ClErrorResult << " : Releasing Kernel For Device Number: " << i << "in cl_MultiDevice_KernelAndArgumentsStruct!";
 				}
 				delete MultiDeviceKernelArgumentsArray[i];
+				free(MultiDeviceKernelFunctionArray[i]);
 			}
 			free(MultiDeviceKernelFunctionArray);
 			free(MultiDeviceKernelArgumentsArray);
@@ -465,74 +484,24 @@ struct cl_MultiKernelFunctionConstructionHelper
 	}
 };
 
-bool InitializeOpenCLProgram()
+struct cl_PerDeviceValuesStruct
 {
-	cl_uint NumOfPlatforms;	//the NO. of platforms
-	cl_platform_id ChosenPlatform = nullptr;	//the chosen platform
-	cl_uint	NumberOfGPUs = 0;//cl_uint	NumberOfGPUorCPU = 0;
-	cl_device_id* ChosenDevices = nullptr;
-	cl_context SingleClContext;
-	cl_command_queue* ClCommandQueues = nullptr;
-	size_t* MaxComputeUnitPerGPU = nullptr;
-	size_t* MaxWorkItemPerGroup = nullptr;
-	size_t* MaxGlobalMemoryOfDevice = nullptr;
-	size_t* MaxPrivateMemoryBytesPerWorkGroup = nullptr;
-	size_t* MaxLocalMemoryBytesPerWorkGroup = nullptr;
-	cl_program AllCustomClFunctionsProgram = nullptr;
+	const cl_device_id SelectedDevice;
+	cl_command_queue DeviceClCommandQueue;
+	size_t MaxComputeUnitPerGPU;
+	size_t MaxWorkItemPerGroup;
+	size_t MaxGlobalMemoryOfDevice;
+	size_t MaxPrivateMemoryBytesPerWorkGroup;
+	size_t MaxLocalMemoryBytesPerWorkGroup;
 
-
-	bool ReturnResult = true;
-	cl_int CLStatus = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
-	if (CLStatus != CL_SUCCESS)
+	cl_PerDeviceValuesStruct(cl_device_id ArgSelectedDevice, cl_context* TheClContext) : SelectedDevice(ArgSelectedDevice)
 	{
-		std::cout << "Error Code " << CLStatus << " : Getting platforms!" << std::endl;
-		return false;
-	}
+		std::cout << "\n Constructing cl_PerDeviceValuesStruct!";
 
-	CLStatus = clGetPlatformIDs(1, &ChosenPlatform, NULL);// for the first platform //Single Line code
-	if (CLStatus != CL_SUCCESS)
-	{
-		std::cout << "Error Code " << CLStatus << " : Platform Not set!" << std::endl;
-		return false;
-	}
-
-	CLStatus = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &NumberOfGPUs);
-	if (CLStatus != CL_SUCCESS)
-	{
-		std::cout << "Error Code " << CLStatus << " : Getting GPUs!" << std::endl;
-		return false;
-	}
-	std::cout << "\nNumber Of GPUs: " << NumberOfGPUs << std::endl;
-
-	ChosenDevices = (cl_device_id*)malloc(NumberOfGPUs * sizeof(cl_device_id));
-	CLStatus = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, NumberOfGPUs, ChosenDevices, NULL);// Same line for code for Multi-GPU
-	if (CLStatus != CL_SUCCESS)
-	{
-		std::cout << "Error Code " << CLStatus << " : GPUs Not set!" << std::endl;
-		return false;
-	}
-
-	SingleClContext = clCreateContext(NULL, NumberOfGPUs, ChosenDevices, NULL, NULL, &CLStatus);
-	if (CLStatus != CL_SUCCESS)
-	{
-		std::cout << "Error Code " << CLStatus << " : Context Not Created!" << std::endl;
-		return false;
-	}
-
-	ClCommandQueues = (cl_command_queue*)malloc(NumberOfGPUs * sizeof(cl_command_queue));
-	MaxComputeUnitPerGPU = (size_t*)calloc(NumberOfGPUs, sizeof(size_t));
-	MaxWorkItemPerGroup = (size_t*)calloc(NumberOfGPUs, sizeof(size_t));
-	MaxGlobalMemoryOfDevice = (size_t*)calloc(NumberOfGPUs, sizeof(size_t));
-	MaxPrivateMemoryBytesPerWorkGroup = (size_t*)calloc(NumberOfGPUs, sizeof(size_t));
-	MaxLocalMemoryBytesPerWorkGroup = (size_t*)calloc(NumberOfGPUs, sizeof(size_t));
-
-	for (int i = 0; i < NumberOfGPUs; i++)
-	{
-		//Create a command queue for every device
-		ClCommandQueues[i] = clCreateCommandQueue(SingleClContext, ChosenDevices[i], 0, &CLStatus);
+		DeviceClCommandQueue = clCreateCommandQueue(TheClContext, SelectedDevice, 0, &CLStatus);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error: Cl Command Queue Creation Failed!" << std::endl;
+			std::cout << "Error: Cl Command Queue Creation Failed!\n";
 			return false;
 		}
 
@@ -543,52 +512,175 @@ bool InitializeOpenCLProgram()
 		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &Temp1, NULL);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed!" << std::endl;
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed!\n";
 			return false;
 		}
 		MaxComputeUnitPerGPU[i] = (int)Temp1;
-		std::cout << "\nMaxComputeUnitPerGPU[i]:" << std::endl;
-		std::cout << MaxComputeUnitPerGPU[i] << std::endl;
+		std::cout << "\nMaxComputeUnitPerGPU[i]:\n";
+		std::cout << MaxComputeUnitPerGPU[i] << "\n";
 
 		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &Temp2, NULL);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed!" << std::endl;
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed!\n";
 			return false;
 		}
 		MaxWorkItemPerGroup[i] = (int)Temp2;
-		std::cout << "\nMaxWorkItemPerGroup[i]:" << std::endl;
-		std::cout << MaxWorkItemPerGroup[i] << std::endl;
+		std::cout << "\nMaxWorkItemPerGroup[i]:\n";
+		std::cout << MaxWorkItemPerGroup[i] << "\n";
 
 		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed!" << std::endl;
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed!\n";
 			return false;
 		}
 		MaxGlobalMemoryOfDevice[i] = Temp3;
-		std::cout << "\nMaxGlobalMemoryOfDevice[i]:" << std::endl;// Total GPU VRAM 
-		std::cout << MaxGlobalMemoryOfDevice[i] << std::endl;
+		std::cout << "\nMaxGlobalMemoryOfDevice[i]:\n";// Total GPU VRAM 
+		std::cout << MaxGlobalMemoryOfDevice[i] << "\n";
 
 		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed!" << std::endl;
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed!\n";
 			return false;
 		}
 		MaxPrivateMemoryBytesPerWorkGroup[i] = (int)Temp3;
-		std::cout << "\nMaxPrivateMemoryBytesPerWorkGroup[i]:" << std::endl;// Per Work Item
-		std::cout << MaxPrivateMemoryBytesPerWorkGroup[i] << std::endl;
+		std::cout << "\nMaxPrivateMemoryBytesPerWorkGroup[i]:\n";// Per Work Item
+		std::cout << MaxPrivateMemoryBytesPerWorkGroup[i] << "\n";
 
 		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed!" << std::endl;
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed!\n";
 			return false;
 		}
 		MaxLocalMemoryBytesPerWorkGroup[i] = (int)Temp3;
-		std::cout << "\nMaxLocalMemoryBytesPerWorkGroup[i]:" << std::endl;// Per Work Group
-		std::cout << MaxLocalMemoryBytesPerWorkGroup[i] << std::endl << std::endl;
+		std::cout << "\nMaxLocalMemoryBytesPerWorkGroup[i]:\n";// Per Work Group
+		std::cout << MaxLocalMemoryBytesPerWorkGroup[i] << "\n" << "\n";
+	}
+
+	~cl_PerDeviceValuesStruct()
+	{
+		std::cout << "\n Destructing cl_PerDeviceValuesStruct!";
+		clReleaseCommandQueue(DeviceClCommandQueue);
+	}
+
+};
+
+bool InitializeOpenCLProgram()
+{
+	cl_program SingleProgram;
+	cl_PerDeviceValuesStruct* PerDeviceValueStruct;
+	cl_uint NumOfPlatforms;						//the NO. of platforms
+	cl_platform_id ChosenPlatform = nullptr;	//the chosen platform Will only be choosing one platform which will be the first one
+	cl_uint	NumberOfGPUs = 0;					//cl_uint	NumberOfGPUorCPU = 0;// We will Only be using GPU here
+	cl_device_id* ChosenDevices = nullptr;		// Temporary Variable
+	cl_context SingleContext;	
+
+	bool ReturnResult = true;
+	cl_int CLStatus = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
+	if (CLStatus != CL_SUCCESS)
+	{
+		std::cout << "ClError Code " << CLStatus << " : Getting platforms!\n";
+		return false;
+	}
+
+	CLStatus = clGetPlatformIDs(1, &ChosenPlatform, NULL);// for the first platform //Single Line code
+	if (CLStatus != CL_SUCCESS)
+	{
+		std::cout << "ClError Code " << CLStatus << " : Platform Not set!\n";
+		return false;
+	}
+
+	CLStatus = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &NumberOfGPUs);
+	if (CLStatus != CL_SUCCESS)
+	{
+		std::cout << "ClError Code " << CLStatus << " : Getting GPUs!\n";
+		return false;
+	}
+	std::cout << "\nNumber Of GPUs: " << NumberOfGPUs << "\n";
+
+	ChosenDevices = (cl_device_id*)malloc(NumberOfGPUs * sizeof(cl_device_id));
+	CLStatus = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, NumberOfGPUs, ChosenDevices, NULL);// Same line for code for Multi-GPU
+	if (CLStatus != CL_SUCCESS)
+	{
+		std::cout << "Error Code " << CLStatus << " : GPUs Not set!\n";
+		return false;
+	}
+
+	SingleContext = clCreateContext(NULL, NumberOfGPUs, ChosenDevices, NULL, NULL, &CLStatus);
+	if (CLStatus != CL_SUCCESS)
+	{
+		std::cout << "Error Code " << CLStatus << " : Context Not Created!\n";
+		return false;
+	}
+
+	PerDeviceValueStruct = (cl_PerDeviceValuesStruct*)malloc(NumberOfGPUs * sizeof(PerDeviceValueStruct));
+
+	for (int i = 0; i < NumberOfGPUs; i++)
+	{
+		//Create a command queue for every device
+		PerDeviceValueStruct->DeviceClCommandQueue = clCreateCommandQueue(SingleContext, ChosenDevices[i], 0, &CLStatus);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error: Cl Command Queue Creation Failed!\n";
+			return false;
+		}
+
+		cl_uint Temp1 = 0;
+		size_t Temp2 = 0;
+		cl_ulong Temp3 = 0;// Calloc Called Below
+
+		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &Temp1, NULL);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed!\n";
+			return false;
+		}
+		MaxComputeUnitPerGPU[i] = (int)Temp1;
+		std::cout << "\nMaxComputeUnitPerGPU[i]:\n";
+		std::cout << MaxComputeUnitPerGPU[i] << "\n";
+
+		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &Temp2, NULL);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed!\n";
+			return false;
+		}
+		MaxWorkItemPerGroup[i] = (int)Temp2;
+		std::cout << "\nMaxWorkItemPerGroup[i]:\n";
+		std::cout << MaxWorkItemPerGroup[i] << "\n";
+
+		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed!\n";
+			return false;
+		}
+		MaxGlobalMemoryOfDevice[i] = Temp3;
+		std::cout << "\nMaxGlobalMemoryOfDevice[i]:\n";// Total GPU VRAM 
+		std::cout << MaxGlobalMemoryOfDevice[i] << "\n";
+
+		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &Temp3, NULL);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed!\n";
+			return false;
+		}
+		MaxPrivateMemoryBytesPerWorkGroup[i] = (int)Temp3;
+		std::cout << "\nMaxPrivateMemoryBytesPerWorkGroup[i]:\n";// Per Work Item
+		std::cout << MaxPrivateMemoryBytesPerWorkGroup[i] << "\n";
+
+		CLStatus = clGetDeviceInfo(ChosenDevices[i], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
+		if (CLStatus != CL_SUCCESS)
+		{
+			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed!\n";
+			return false;
+		}
+		MaxLocalMemoryBytesPerWorkGroup[i] = (int)Temp3;
+		std::cout << "\nMaxLocalMemoryBytesPerWorkGroup[i]:\n";// Per Work Group
+		std::cout << MaxLocalMemoryBytesPerWorkGroup[i] << "\n" << "\n";
 	}
 
 	if (NumberOfGPUs > 0)// Totaly unnecessary but using this just for the scope so that these variable can be cleared from memory with ease
@@ -598,10 +690,10 @@ bool InitializeOpenCLProgram()
 		GetFileContent(ClSourceFileName, ClSourceFileInString);
 		const char* ClSourceFileInChar = ClSourceFileInString.c_str();
 		size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
-		AllCustomClFunctionsProgram = clCreateProgramWithSource(SingleClContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, NULL);
+		SingleProgram = clCreateProgramWithSource(SingleContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, NULL);
 	}
 
-	CLStatus = clBuildProgram(AllCustomClFunctionsProgram, 0, NULL, NULL, NULL, NULL);
+	CLStatus = clBuildProgram(SingleProgram, 0, NULL, NULL, NULL, NULL);
 
 	cl_KernelMemoryStruct*** TempGpuMemoryInitializationHelper = NULL;//NOTE: Free this BEFORE EVERY MALLOC
 }
@@ -609,9 +701,12 @@ bool InitializeOpenCLProgram()
 struct cl_ProgramWith_MultiDevice_Kernel
 {
 	cl_program SingleProgram;
-	int NumberOfKernelFunctions = 0;// Don't try to manually change this unless you know how to do it properly
-	cl_MultiDevice_KernelAndArgumentsStruct** MultiDeviceKernelAndArgumentStruct;// Otherfunctions will take care of it
+	cl_context SingleContext;
 	int NumberOfDevices;
+	int NumberOfKernelFunctions = 0;												// Don't try to manually change this unless you know how to do it properly
+	cl_MultiDevice_KernelAndArgumentsStruct** MultiDeviceKernelAndArgumentStruct;	// Otherfunctions will take care of it	
+	cl_PerDeviceValuesStruct* PerDeviceValueStruct;
+
 	bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
 	cl_ProgramWith_MultiDevice_Kernel(cl_MultiKernelFunctionConstructionHelper ArrayOfKernelsAndTheirArugmentsNeededToAdd)
@@ -619,7 +714,11 @@ struct cl_ProgramWith_MultiDevice_Kernel
 		std::cout << "\n Constructing cl_ProgramWith_MultiDevice_Kernel!";
 		cl_int ClErrorResult;
 		// Construct SingleProgram
-		if ()
+
+
+
+
+		if (IsConstructionSuccesful)
 		{
 			MultiDeviceKernelAndArgumentStruct = (cl_MultiDevice_KernelAndArgumentsStruct**)malloc(ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored * sizeof(cl_MultiDevice_KernelAndArgumentsStruct*));
 			if (MultiDeviceKernelAndArgumentStruct == nullptr)
@@ -677,10 +776,10 @@ struct cl_ProgramWith_MultiDevice_Kernel
 void OpenCLReleaseResources(bool ReleaseMemory)
 {
 	free(ChosenPlatform);
-	clReleaseContext(SingleClContext);// Only one context to release
+	clReleaseContext(SingleContext);// Only one context to release
 	/**************************************************************************************************************/
 	/* GPU			Program			Resource			Release */
-	clReleaseProgram(AllCustomClFunctionsProgram);//Only One Program
+	clReleaseProgram(SingleProgram);//Only One Program
 	/**************************************************************************************************************/
 
 	/**************************************************************************************************************/
@@ -720,7 +819,7 @@ void OpenCLReleaseResources(bool ReleaseMemory)
 	size_t* MaxGlobalMemoryOfDevice = NULL;
 	size_t* MaxPrivateMemoryBytesPerWorkGroup = NULL;
 	size_t* MaxLocalMemoryBytesPerWorkGroup = NULL;
-	cl_program AllCustomClFunctionsProgram = NULL;
+	cl_program SingleProgram = NULL;
 }
 
 int main()
