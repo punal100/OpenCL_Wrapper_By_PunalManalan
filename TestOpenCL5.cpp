@@ -1,6 +1,14 @@
-/**********************************************************************
+/********************************************************************************************************************************
 // This Code is Written by Punal Manalan
-**********************************************************************/
+// Use this code wherever and whenever you want to!
+
+// Information About the Code:
+// This is a LightWeight, Easy to use Simple Wrapper for OpenCL
+// From the Constrction to Destruction everything is Done automaticaly!
+// No need for manual destruction and releasing cl resources!
+// No need to write tedious amount of code to care memory leaks!
+// Upoing going out of scope or exiting the program Every resource used is safely released and deleted
+*********************************************************************************************************************************/
 
 #include <iostream>
 #include <fstream>// For file reading
@@ -122,16 +130,25 @@ struct cl_KernelSingleArgumentStruct
 {
 	const bool IsLocalMemory;
 	const bool TrueForReadOnlyFalseForWriteOnly;
-	bool TrueForCreateFalseForOverWrite;//When True Creates The Buffer
-	size_t CL_MemorySizeToCreate;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global	
-	void* DataFromHost;//For Global and Private Only , Pass NULL for Local...
-	size_t INPUTorOUTPUTDataHostSizeToCopySize;//For Global ONLY, Reads Data When TrueForReadOnlyFalseForWriteOnly is true, else writes to buffer on creation
+	bool TrueForCreateFalseForOverWrite = true;//When True Creates The Buffer
+	size_t CL_MemorySizeToCreate = 0;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global	
+	void* DataFromHost = nullptr;//For Global and Private Only , Pass NULL for Local...
+	size_t INPUTorOUTPUTDataHostSizeToCopySize = 0;//For Global ONLY, Reads Data When TrueForReadOnlyFalseForWriteOnly is true, else writes to buffer on creation
 	cl_KernelMemoryStruct BufferOnDevice;//Example: Buffer on GPU device
 	//NOTE:IF TrueForCreateFalseForOverWrite is false And INPUTorOUTPUTDataHostSizeToCopySize > CL_MemorySizeToCreate
 	//     Memory is released and reallocaed
 
 	//Contructor
-	cl_KernelSingleArgumentStruct(bool InitializeIsLocalMemory, bool InitializeTrueForReadOnlyFalseForWriteOnly) : IsLocalMemory(InitializeIsLocalMemory), TrueForReadOnlyFalseForWriteOnly(InitializeTrueForReadOnlyFalseForWriteOnly) { std::cout << "\n cl_KernelSingleArgumentStruct!"; }//const bool Are Initialized in Initialization list 
+	cl_KernelSingleArgumentStruct(bool InitializeIsLocalMemory, bool InitializeTrueForReadOnlyFalseForWriteOnly) : IsLocalMemory(InitializeIsLocalMemory), TrueForReadOnlyFalseForWriteOnly(InitializeTrueForReadOnlyFalseForWriteOnly)
+	{
+		std::cout << "\n Constructing cl_KernelSingleArgumentStruct!";
+
+		//TrueForCreateFalseForOverWrite = true;
+		//CL_MemorySizeToCreate = 0;
+		//DataFromHost = nullptr;
+		//INPUTorOUTPUTDataHostSizeToCopySize = 0;
+
+	}//const bool Are Initialized in Initialization list 
 
 	//Destructor
 	~cl_KernelSingleArgumentStruct()
@@ -144,20 +161,24 @@ struct cl_KernelSingleArgumentStruct
 //NOTE: DO NOT USE WITHOUT CALLING THE CONSTRUCTOR FIRST
 struct cl_KernelMultipleArgumentStruct
 {
-	const int NumberOfArugments;//Example:	SingleKernelFunctionMultiArgumentsArray[Min: 0,				Max: NumberOfArugments					 - 1]// Is the Maximum Arguments access limit
-	const int NumberOfReads;//				SingleKernelFunctionMultiArgumentsArray[Min: 0,				Max: NumberOfReads					     - 1]// Is the Where the
-	const int NumberOfWrites;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfReads, Max: NumberOfReads + NumberOfWrites		 - 1]// Is the Where the
-	const int NumberOfLocals;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfWrites,Max: NumberOfWrites + NumberOfLocals	 - 1]// Is the Where the
+	const unsigned int NumberOfArugments;//Example:	SingleKernelFunctionMultiArgumentsArray[Min: 0,				Max: NumberOfArugments					 - 1]// Is the Maximum Arguments access limit
+	const unsigned int NumberOfReads;//				SingleKernelFunctionMultiArgumentsArray[Min: 0,				Max: NumberOfReads					     - 1]// Is the Where the
+	const unsigned int NumberOfWrites;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfReads, Max: NumberOfReads + NumberOfWrites		 - 1]// Is the Where the
+	const unsigned int NumberOfLocals;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfWrites,Max: NumberOfWrites + NumberOfLocals	 - 1]// Is the Where the
 	//NOTE: For (NumberOfArugments - 1),(NumberOfReads - 1),(NumberOfWrites - 1),(NumberOfLocals - 1) If they are less than Zero than  Force the output of Zero
 
-	bool IsConstructionSuccesful = false;// If you kate Memory leaks, then Don't Even try to manualy change it... If you love memory leaks Please do so!
+	bool IsConstructionSuccesful = false;// If you hate Memory leaks, then Don't Even try to manualy change it... If you love memory leaks Please do so!
 
-	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray;// Arguments stored here
+	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
 
-	cl_KernelMultipleArgumentStruct(int ArgNumberOfReads, int ArgNumberOfWrites, int ArgNumberOfLocals) : NumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfLocals(ArgNumberOfLocals)
+	cl_KernelMultipleArgumentStruct(unsigned int ArgNumberOfReads, unsigned int ArgNumberOfWrites, unsigned int ArgNumberOfLocals) : NumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfLocals(ArgNumberOfLocals)
 	{
 		std::cout << "\n cl_KernelMultipleArgumentStruct!";
-		SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(NumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
+		if (NumberOfArugments > 0)
+		{
+			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(NumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
+		}
+		
 		if (SingleKernelFunctionMultiArgumentsArray == nullptr)
 		{
 			std::cout << "\n Error Allocating " << (NumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
@@ -167,7 +188,7 @@ struct cl_KernelMultipleArgumentStruct
 		{
 			IsConstructionSuccesful = true;
 			int i = 0;
-			int j = ArgNumberOfReads;
+			int j = NumberOfReads;
 			for (i = 0; i < j; ++i)
 			{
 				SingleKernelFunctionMultiArgumentsArray[i] = new cl_KernelSingleArgumentStruct({ false, true });
@@ -186,7 +207,7 @@ struct cl_KernelMultipleArgumentStruct
 
 			if (IsConstructionSuccesful)
 			{
-				j = ArgNumberOfReads + ArgNumberOfWrites;
+				j = NumberOfReads + NumberOfWrites;
 				for (i = i; i < j; ++i)
 				{
 					SingleKernelFunctionMultiArgumentsArray[i] = new cl_KernelSingleArgumentStruct({ false, false });
@@ -205,7 +226,7 @@ struct cl_KernelMultipleArgumentStruct
 
 				if (IsConstructionSuccesful)
 				{
-					j = ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfLocals;
+					j = NumberOfReads + NumberOfWrites + NumberOfLocals;
 					for (i = i; i < j; ++i)
 					{
 						SingleKernelFunctionMultiArgumentsArray[i] = new cl_KernelSingleArgumentStruct({ true, false });// Second arge can either be true of false... because it is a local memory so it does not matter wether second arg is true or false
@@ -236,6 +257,7 @@ struct cl_KernelMultipleArgumentStruct
 				delete SingleKernelFunctionMultiArgumentsArray[i];
 			}
 			free(SingleKernelFunctionMultiArgumentsArray);
+			IsConstructionSuccesful = false;
 		}		
 	}
 };
@@ -243,17 +265,22 @@ struct cl_KernelMultipleArgumentStruct
 //NOTE: DO NOT USE WITHOUT CALLING THE CONSTRUCTOR FIRST
 struct cl_MultiDevice_KernelAndArgumentsStruct
 {
-	const int NumberOfDevices;
-	cl_kernel** MultiDeviceKernelFunctionArray;
-	cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray;
+	const unsigned int NumberOfDevices;
+	const std::string KernelFunctionName;
+	cl_kernel** MultiDeviceKernelFunctionArray = nullptr;
+	cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray = nullptr;
 	bool IsConstructionSuccesful = false;// Once again i tell you this If you hate memory leaks, Don't change value. If you Love memory leaks change them!
 
 	//NOTE: Kernel Arguments are Ordered from left to right, Read only memory in left, write only in right, Local in middle of them
 	//NOTE: any memory which is plain int, float etc etc those which are NOT cl_mem, Will NOT BE INCLUDED HERE instead they will be given as parameters in kernel Host function
-	cl_MultiDevice_KernelAndArgumentsStruct(int ArgNumberOfDevices, int NumberOfReads, int NumberOfWrites, int NumberOfLocal, std::string KernelFunctionName, cl_program* BuiltClProgramContainingTheSpecifiedFunction) : NumberOfDevices(ArgNumberOfDevices)
+	cl_MultiDevice_KernelAndArgumentsStruct(unsigned int ArgNumberOfDevices, unsigned int NumberOfReads, unsigned int NumberOfWrites, unsigned int NumberOfLocal, std::string ArgKernelFunctionName, cl_program* BuiltClProgramContainingTheSpecifiedFunction) : NumberOfDevices(ArgNumberOfDevices),  KernelFunctionName(ArgKernelFunctionName)
 	{		
 		std::cout << "\n Constructing cl_MultiDevice_KernelAndArgumentsStruct!";
-		MultiDeviceKernelFunctionArray = (cl_kernel**)malloc(NumberOfDevices * sizeof(cl_kernel*));
+		if (NumberOfDevices > 0)
+		{
+			MultiDeviceKernelFunctionArray = (cl_kernel**)malloc(NumberOfDevices * sizeof(cl_kernel*));
+		}
+		
 		if (MultiDeviceKernelFunctionArray == nullptr)
 		{
 			IsConstructionSuccesful = false;
@@ -331,6 +358,10 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 						{
 							continue;
 						}
+						else
+						{
+							delete MultiDeviceKernelArgumentsArray[i];
+						}
 					}
 					//If the return value is a null pointer Or The construction is not Succesful the below code will execute
 					IsConstructionSuccesful = false;
@@ -347,10 +378,9 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 					}
 					free(MultiDeviceKernelFunctionArray);
 
-					int j = i;
-					for (i = 0; i < j; ++i)
+					for (int j = 0; j < i; ++j)
 					{
-						delete MultiDeviceKernelArgumentsArray[i];
+						delete MultiDeviceKernelArgumentsArray[j];
 					}
 					free(MultiDeviceKernelArgumentsArray);
 					std::cout << "\n Error Allocating " << sizeof(cl_KernelSingleArgumentStruct) << " Byes Of Memory for MultiDeviceKernelArgumentsArray[i] In cl_MultiDevice_KernelAndArgumentsStruct!";
@@ -379,6 +409,7 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 			}
 			free(MultiDeviceKernelFunctionArray);
 			free(MultiDeviceKernelArgumentsArray);
+			IsConstructionSuccesful = false;
 		}		
 	}
 };
@@ -386,43 +417,43 @@ struct cl_MultiDevice_KernelAndArgumentsStruct
 //A Helper Struct for kernel Creation
 struct cl_SingleKernelFunctionConstructionHelper
 {
-	std::string KernelFunctionName;
-	int NumberOfReads;
-	int NumberOfWrites;
-	int NumberOfLocals;
+	const std::string KernelFunctionName;
+	const unsigned int NumberOfReads;
+	const unsigned int NumberOfWrites;
+	const unsigned int NumberOfLocals;
 	bool IsConstructionSuccesful = false;// This time no memory leaks because this has no pointer
 
-	cl_SingleKernelFunctionConstructionHelper(std::string ArgKernelFunctionName, int ArgNumberOfReads, int ArgNumberOfWrites, int ArgNumberOfLocals)
+	cl_SingleKernelFunctionConstructionHelper(std::string ArgKernelFunctionName, unsigned int ArgNumberOfReads, unsigned int ArgNumberOfWrites, unsigned int ArgNumberOfLocals) : KernelFunctionName(ArgKernelFunctionName), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfLocals(ArgNumberOfLocals)
 	{
 		std::cout << "\n Constructing cl_SingleKernelFunctionConstructionHelper!";
 		IsConstructionSuccesful = true;
-		KernelFunctionName = ArgKernelFunctionName;
-		NumberOfReads = ArgNumberOfReads;
-		NumberOfWrites = ArgNumberOfWrites;
-		NumberOfLocals = ArgNumberOfLocals;
+		//KernelFunctionName = ArgKernelFunctionName;
+		//NumberOfReads = ArgNumberOfReads;
+		//NumberOfWrites = ArgNumberOfWrites;
+		//NumberOfLocals = ArgNumberOfLocals;
 	}
 
 	~cl_SingleKernelFunctionConstructionHelper()
 	{
 		std::cout << "\n Destroying cl_SingleKernelFunctionConstructionHelper!";
 	}
-
 };
 
 //NOTE: DO NOT STORE POINTER TO ArrayOfKernelFunction because It is reallocated everytime AddKernelFunction() is called!
 struct cl_MultiKernelFunctionConstructionHelper
 {
 	cl_SingleKernelFunctionConstructionHelper** ArrayOfKernelFunction = nullptr;
-	int NumbersOfKernelStored = 0;
+	unsigned int NumbersOfKernelStored = 0;
 
 	cl_MultiKernelFunctionConstructionHelper()
 	{
 		std::cout << "\n Constructing cl_MultiKernelFunctionConstructionHelper!";
 	}
 
-	void AddKernelFunction(std::string ArgKernelFunctionName, int NumberOfReads, int NumberOfWrites, int NumberOfLocal)
+	//NOTE: Provide Correct Number and type of Arguments, If provided with incorrect number or type of argument the kernel may or may not run depending on the Code you wrote int he Kernel
+	void AddKernelFunction(std::string ArgKernelFunctionName, unsigned int NumberOfReads, unsigned int NumberOfWrites, unsigned int NumberOfLocal)
 	{
-		if (ArrayOfKernelFunction != nullptr)
+		if (NumbersOfKernelStored > 0)
 		{
 			cl_SingleKernelFunctionConstructionHelper** TempReallocationHolder = ArrayOfKernelFunction;
 			ArrayOfKernelFunction = (cl_SingleKernelFunctionConstructionHelper**)malloc((NumbersOfKernelStored + 1) * sizeof(cl_SingleKernelFunctionConstructionHelper*));
@@ -439,15 +470,20 @@ struct cl_MultiKernelFunctionConstructionHelper
 			free(TempReallocationHolder);//Delete Temporary Pointer to Pointer array
 			
 			ArrayOfKernelFunction[NumbersOfKernelStored] = new cl_SingleKernelFunctionConstructionHelper({ ArgKernelFunctionName , NumberOfReads, NumberOfWrites, NumberOfLocal });
-			if (ArrayOfKernelFunction[NumbersOfKernelStored] == nullptr)
+			if (ArrayOfKernelFunction[NumbersOfKernelStored] != nullptr)
 			{
-				std::cout << "\n Error Allocating " << (sizeof(cl_SingleKernelFunctionConstructionHelper)) << " Byes Of Memory for ArrayOfKernelFunction[NumbersOfKernelStored] In cl_MultiKernelFunctionConstructionHelper!";
-				//Don't Worry ArrayOfKernelFunction[NumbersOfKernelStored] will be freed on the next call of AddKernelFunction()
-			}
-			else
-			{
-				NumbersOfKernelStored = NumbersOfKernelStored + 1;
-			}
+				if (ArrayOfKernelFunction[NumbersOfKernelStored]->IsConstructionSuccesful)
+				{
+					NumbersOfKernelStored = NumbersOfKernelStored + 1;
+					return;
+				}
+				else
+				{
+					delete ArrayOfKernelFunction[NumbersOfKernelStored];
+				}
+			}	
+			std::cout << "\n Error Allocating " << (sizeof(cl_SingleKernelFunctionConstructionHelper)) << " Byes Of Memory for ArrayOfKernelFunction[NumbersOfKernelStored] In cl_MultiKernelFunctionConstructionHelper!";
+			//NOTE: Don't Worry ArrayOfKernelFunction[NumbersOfKernelStored] will be freed on the next call of AddKernelFunction()			
 		}
 		else
 		{
@@ -458,20 +494,26 @@ struct cl_MultiKernelFunctionConstructionHelper
 				return;
 			}
 			ArrayOfKernelFunction[0] = new cl_SingleKernelFunctionConstructionHelper({ ArgKernelFunctionName , NumberOfReads, NumberOfWrites, NumberOfLocal });
-			if (ArrayOfKernelFunction[NumbersOfKernelStored] == nullptr)
+			if (ArrayOfKernelFunction[0] != nullptr)
 			{
-				std::cout << "\n Error Allocating " << (sizeof(cl_SingleKernelFunctionConstructionHelper)) << " Byes Of Memory for ArrayOfKernelFunction[0] In cl_MultiKernelFunctionConstructionHelper!";
+				if (ArrayOfKernelFunction[0]->IsConstructionSuccesful)
+				{
+					NumbersOfKernelStored = 1;
+					return;
+				}
+				else
+				{
+					delete ArrayOfKernelFunction[0];
+				}
 			}
-			else
-			{
-				NumbersOfKernelStored = 1;
-			}			
+			NumbersOfKernelStored = 0;
+			std::cout << "\n Error Allocating " << (sizeof(cl_SingleKernelFunctionConstructionHelper)) << " Byes Of Memory for ArrayOfKernelFunction[0] In cl_MultiKernelFunctionConstructionHelper!";
 		}
 	}
 
 	~cl_MultiKernelFunctionConstructionHelper()
 	{
-		std::cout << "\n Destroying cl_SingleKernelFunctionConstructionHelper!";
+		std::cout << "\n Destroying cl_MultiKernelFunctionConstructionHelper!";
 		for (int i = 0; i < NumbersOfKernelStored; ++i)//No Need for IsInitialized because NumbersOfKernelStored = 0 would always be zero when not Initialized, unless we are calling the destructor From a malloc of this... please don't do it because it will cause a memory leak that can't be fixed... 
 		{
 			delete ArrayOfKernelFunction[i];
@@ -480,18 +522,21 @@ struct cl_MultiKernelFunctionConstructionHelper
 		{
 			free(ArrayOfKernelFunction);
 		}
+		NumbersOfKernelStored = 0;
 	}
 };
 
+//NOTE: Do not Use without constructing first
 struct cl_PerDeviceValuesStruct
 {
 	const cl_device_id SelectedDevice;
 	cl_command_queue DeviceClCommandQueue;
-	size_t MaxComputeUnitPerGPU;
-	size_t MaxWorkItemPerGroup;
-	size_t MaxGlobalMemoryOfDevice;
-	size_t MaxPrivateMemoryBytesPerWorkGroup;
-	size_t MaxLocalMemoryBytesPerWorkGroup;
+	size_t MaxComputeUnitPerGPU = 0;
+	size_t MaxWorkItemPerGroup = 0;
+	size_t MaxGlobalMemoryOfDevice = 0;
+	size_t MaxPrivateMemoryBytesPerWorkGroup = 0;
+	size_t MaxLocalMemoryBytesPerWorkGroup = 0;
+	bool IsConstructionSuccesful = false;// Constructor argument cl_int& CLStatus returns our succes value so 'IsConstructionSuccesful' Is only needed when exiting program
 
 	cl_PerDeviceValuesStruct(cl_device_id ArgSelectedDevice, cl_context* TheClContext, cl_int& CLStatus) : SelectedDevice(ArgSelectedDevice)
 	{
@@ -512,6 +557,7 @@ struct cl_PerDeviceValuesStruct
 		if (CLStatus != CL_SUCCESS)
 		{
 			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed!\n";
+			clReleaseCommandQueue(DeviceClCommandQueue);
 			return;
 		}
 		MaxComputeUnitPerGPU = (int)Temp1;
@@ -522,6 +568,7 @@ struct cl_PerDeviceValuesStruct
 		if (CLStatus != CL_SUCCESS)
 		{
 			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed!\n";
+			clReleaseCommandQueue(DeviceClCommandQueue);
 			return;
 		}
 		MaxWorkItemPerGroup = (int)Temp2;
@@ -532,6 +579,7 @@ struct cl_PerDeviceValuesStruct
 		if (CLStatus != CL_SUCCESS)
 		{
 			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed!\n";
+			clReleaseCommandQueue(DeviceClCommandQueue);
 			return;
 		}
 		MaxGlobalMemoryOfDevice = Temp3;
@@ -542,6 +590,7 @@ struct cl_PerDeviceValuesStruct
 		if (CLStatus != CL_SUCCESS)
 		{
 			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed!\n";
+			clReleaseCommandQueue(DeviceClCommandQueue);
 			return;
 		}
 		MaxPrivateMemoryBytesPerWorkGroup = (int)Temp3;
@@ -552,17 +601,22 @@ struct cl_PerDeviceValuesStruct
 		if (CLStatus != CL_SUCCESS)
 		{
 			std::cout << "Error Code " << CLStatus << " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed!\n";
+			clReleaseCommandQueue(DeviceClCommandQueue);
 			return;
 		}
 		MaxLocalMemoryBytesPerWorkGroup = (int)Temp3;
 		std::cout << "\nMaxLocalMemoryBytesPerWorkGroup:\n";// Per Work Group
 		std::cout << MaxLocalMemoryBytesPerWorkGroup << "\n" << "\n";
+		IsConstructionSuccesful = true;
 	}
 
 	~cl_PerDeviceValuesStruct()
 	{
 		std::cout << "\n Destructing cl_PerDeviceValuesStruct!";
-		clReleaseCommandQueue(DeviceClCommandQueue);// Always be sure to Clrelease cl variables!
+		if (IsConstructionSuccesful)
+		{
+			clReleaseCommandQueue(DeviceClCommandQueue);// Always be sure to Clrelease cl variables!
+		}		
 	}
 
 };
@@ -572,13 +626,14 @@ struct cl_ProgramWith_MultiDevice_Kernel
 	const char* ClSourceFilePath;
 	cl_program SingleProgram;
 	cl_context SingleContext;
-	int NumberOfDevices;
-	int NumberOfKernelFunctions = 0;												// Don't try to manually change this unless you know how to do it properly
-	cl_MultiDevice_KernelAndArgumentsStruct** MultiDeviceKernelAndArgumentStruct;	// Otherfunctions will take care of it	
-	cl_PerDeviceValuesStruct** PerDeviceValueStruct;
+	unsigned int NumberOfDevices;
+	unsigned int NumberOfKernelFunctions = 0;												// Don't try to manually change this unless you know how to do it properly
+	cl_MultiDevice_KernelAndArgumentsStruct** MultiDeviceKernelAndArgumentStruct;	// Initialization And Construction functions will take care of it	
+	cl_PerDeviceValuesStruct** PerDeviceValueStruct;// Initalized and Constructed in  InitializeOpenCLProgram()
 
 	bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
+	//Initialization
 	bool InitializeOpenCLProgram()
 	{
 		cl_uint NumOfPlatforms;						//the NO. of platforms
@@ -607,20 +662,26 @@ struct cl_ProgramWith_MultiDevice_Kernel
 			std::cout << "ClError Code " << CLStatus << " : Getting GPUs!\n";
 			return false;
 		}
-		std::cout << "\nNumber Of GPUs: " << NumberOfGPUs << "\n";
+		std::cout << "\n\nNumber Of GPUs: " << NumberOfGPUs << "\n";
+
+		if (NumberOfGPUs < 1)
+		{
+			std::cout << " : NO GPUs Available!!\n";
+			return false;
+		}
 
 		ChosenDevices = (cl_device_id*)malloc(NumberOfGPUs * sizeof(cl_device_id));
 		CLStatus = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, NumberOfGPUs, ChosenDevices, NULL);// Same line for code for Multi-GPU
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : GPUs Not set!\n";
+			std::cout << "ClError Code " << CLStatus << " : GPUs Not set!\n";
 			return false;
 		}
 
 		SingleContext = clCreateContext(NULL, NumberOfGPUs, ChosenDevices, NULL, NULL, &CLStatus);
 		if (CLStatus != CL_SUCCESS)
 		{
-			std::cout << "Error Code " << CLStatus << " : Context Not Created!\n";
+			std::cout << "ClError Code " << CLStatus << " : Context Not Created!\n";
 			return false;
 		}
 
@@ -644,10 +705,41 @@ struct cl_ProgramWith_MultiDevice_Kernel
 
 		//const char* ClSourceFilePath = "D:\\C++ Test Projects\\TestOpenCL4\\PunalManalanOpenCLKernelFunctions.cl";
 		std::string ClSourceFileInString;
-		GetFileContent(ClSourceFilePath, ClSourceFileInString);
-		const char* ClSourceFileInChar = ClSourceFileInString.c_str();
-		size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
-		SingleProgram = clCreateProgramWithSource(SingleContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, NULL);
+		if (GetFileContent(ClSourceFilePath, ClSourceFileInString))
+		{
+			const char* ClSourceFileInChar = ClSourceFileInString.c_str();
+			size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
+			SingleProgram = clCreateProgramWithSource(SingleContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &CLStatus);
+
+			if (CLStatus != CL_SUCCESS)
+			{
+				std::cout << "ClError Code " << CLStatus << " : Cl Program Not Created with Source!\n";
+				for (int i = 0; i < NumberOfGPUs; i++)
+				{
+					delete(PerDeviceValueStruct[i]);
+				}
+				free(PerDeviceValueStruct);
+				free(ChosenDevices);//Temp Variable Is Freed
+				return false;
+			}
+
+			CLStatus = clBuildProgram(SingleProgram, 0, NULL, NULL, NULL, NULL);
+			free(ChosenDevices);//Temp Variable Is Freed
+			if (CLStatus != CL_SUCCESS)
+			{
+				std::cout << "ClError Code " << CLStatus << " : Cl Program Not Built!\n";
+				for (int i = 0; i < NumberOfGPUs; i++)
+				{
+					delete(PerDeviceValueStruct[i]);
+				}
+				free(PerDeviceValueStruct);
+				return false;
+			}
+			NumberOfDevices = NumberOfGPUs;
+			return true;
+		}
+		//else
+		return false;
 
 		//Use this code below if you want to have binary information
 		//if (false)
@@ -665,28 +757,19 @@ struct cl_ProgramWith_MultiDevice_Kernel
 		//			
 		//	//clBuildProgram(binary_program, 1, &device, NULL, NULL, NULL);
 		//	//binary_kernel = clCreateKernel(binary_program, "kmain", &errcode_ret);
-		//	//f = fopen(BIN_PATH, "w");// Path to write the binary data into...
+		//	//f = fopen(YOUR_BIN_STORAGE_PATH, "w");// Path to write the binary data into...
 		//	//fwrite(binary, binary_size, 1, f);
 		//	//fclose(f);
-		//}
-
-		CLStatus = clBuildProgram(SingleProgram, 0, NULL, NULL, NULL, NULL);
-		free(ChosenDevices);//Temp Variable Is Freed
-		if (CLStatus != CL_SUCCESS)
-		{
-			return false;
-		}
-		return true;
+		//}		
 	}
 
-	cl_ProgramWith_MultiDevice_Kernel(cl_MultiKernelFunctionConstructionHelper ArrayOfKernelsAndTheirArugmentsNeededToAdd, std::string ClSourceFilePath) : ClSourceFilePath(ClSourceFilePath.c_str())
+	cl_ProgramWith_MultiDevice_Kernel(cl_MultiKernelFunctionConstructionHelper& ArrayOfKernelsAndTheirArugmentsNeededToAdd, std::string ClSourceFilePath) : ClSourceFilePath(ClSourceFilePath.c_str())
 	{
 		std::cout << "\n Constructing cl_ProgramWith_MultiDevice_Kernel!";
-		cl_int ClErrorResult;
-		// Construct SingleProgram
 
+		// Single Program Is First Initialized
+		IsConstructionSuccesful = InitializeOpenCLProgram();		
 		//CONTINUE THIS
-
 
 		if (IsConstructionSuccesful)
 		{
@@ -700,23 +783,33 @@ struct cl_ProgramWith_MultiDevice_Kernel
 			{
 				IsConstructionSuccesful = true;
 				NumberOfKernelFunctions = ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored;
-				for (int i = 0; i < ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored; ++i)
+				for (int i = 0; i < NumberOfKernelFunctions; ++i)
 				{
 					MultiDeviceKernelAndArgumentStruct[i] = new cl_MultiDevice_KernelAndArgumentsStruct({ NumberOfDevices , ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfReads, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfWrites, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfLocals, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->KernelFunctionName, &SingleProgram });
 
-					if (MultiDeviceKernelAndArgumentStruct[i] == nullptr)
+					if (MultiDeviceKernelAndArgumentStruct[i] != nullptr)
 					{
-						std::cout << "\n Error Allocating " << (sizeof(cl_MultiDevice_KernelAndArgumentsStruct)) << " Byes Of Memory for MultiDeviceKernelAndArgumentStruct[i] In cl_ProgramWith_MultiDevice_Kernel!";
-						IsConstructionSuccesful = false;
-
-						for (int j = 0; j < i; ++j)
+						if (MultiDeviceKernelAndArgumentStruct[i]->IsConstructionSuccesful)
 						{
-							delete MultiDeviceKernelAndArgumentStruct[j];
+							continue;
 						}
-						free(MultiDeviceKernelAndArgumentStruct);
-						NumberOfKernelFunctions = 0;
-						break;
+						else
+						{
+							delete MultiDeviceKernelAndArgumentStruct[i];
+						}
 					}
+					//else the code below will clean up
+					std::cout << "\n Error Allocating " << (sizeof(cl_MultiDevice_KernelAndArgumentsStruct)) << " Byes Of Memory for MultiDeviceKernelAndArgumentStruct[i] In cl_ProgramWith_MultiDevice_Kernel!";
+					IsConstructionSuccesful = false;
+
+					for (int j = 0; j < i; ++j)
+					{
+						delete MultiDeviceKernelAndArgumentStruct[j];
+					}
+					free(MultiDeviceKernelAndArgumentStruct);
+					NumberOfKernelFunctions = 0;
+					IsConstructionSuccesful = false;
+					break;
 				}
 			}
 		}
@@ -724,6 +817,26 @@ struct cl_ProgramWith_MultiDevice_Kernel
 		{
 			std::cout << "\n Construction Of cl_ProgramWith_MultiDevice_Kernel Failed creating cl_program from source for SingleProgram!";
 		}
+	}
+
+	//If Either of DevicesToRunKernelFrom/To is set to -1 Then All the Devices(GPU) Will Run
+	void RunKernelFunction(unsigned int KernelToRunNumber, int DevicesToRunKernelFrom, int DevicesToRunKernelTo)
+	{
+
+	}
+
+	void RunKernelFunction(std::string NameOfTheKernelToRun, int DevicesToRunKernelFrom, int DevicesToRunKernelTo)
+	{
+		for (int i = 0; i < NumberOfKernelFunctions; ++i)
+		{
+			if (MultiDeviceKernelAndArgumentStruct[i]->KernelFunctionName == NameOfTheKernelToRun)
+			{
+				RunKernelFunction(i, DevicesToRunKernelFrom, DevicesToRunKernelTo);
+				return;
+			}
+		}	
+		std::cout << "\n Cl Kernel by the name " << NameOfTheKernelToRun << " Is Not Found!";
+		std::cout << "\n Please Check whether you added the function in AddKernelFunction()!";
 	}
 
 	~cl_ProgramWith_MultiDevice_Kernel()
@@ -737,62 +850,28 @@ struct cl_ProgramWith_MultiDevice_Kernel
 			{
 				std::cout << "\n clError " << ClErrorResult << " : Releasing cl_program " << "in cl_ProgramWith_MultiDevice_Kernel!";
 			}
-			delete MultiDeviceKernelAndArgumentStruct;
+			ClErrorResult = clReleaseContext(SingleContext);
+			if (ClErrorResult != CL_SUCCESS)
+			{
+				std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context" << "in cl_ProgramWith_MultiDevice_Kernel!";
+			}
+			for (int i = 0; i < NumberOfKernelFunctions; ++i)
+			{
+				delete MultiDeviceKernelAndArgumentStruct[i];
+			}
+			free(MultiDeviceKernelAndArgumentStruct);
+			IsConstructionSuccesful = false;
 		}
 	}
 };
 
-/*Clean the resources.*/
-void OpenCLReleaseResources(bool ReleaseMemory)
-{
-	free(ChosenPlatform);
-	clReleaseContext(SingleContext);// Only one context to release
-	/**************************************************************************************************************/
-	/* GPU			Program			Resource			Release */
-	clReleaseProgram(SingleProgram);//Only One Program
-	/**************************************************************************************************************/
-
-	/**************************************************************************************************************/
-	/* GPU			Kernel			Resources			Release */
-	for (int i = 0; i < NumberOfGPUs; i++)
-	{
-		clReleaseKernel(FirstTestFunction_Kernel[i]);//NO.1
-		clReleaseKernel(SphericalHeadCapsuleTrace_Kernel[i]);//NO.2
-	}
-	/**************************************************************************************************************/
-
-	if (ReleaseMemory)
-	{
-		/**************************************************************************************************************/
-		/* GPU			Memory			Resources			Release */
-		/*_________FirstTestFunction Kernel Function_________*/
-		//ReleaseArrayOfMemoryObjects(FirstTestInputBuffer);//NO.1	
-		/**************************************************************************************************************/
-	}
-
-	/**************************************************************************************************************/
-	/* GPU			CommandQueue			Resources			Release */
-	for (int i = 0; i < NumberOfGPUs; i++)
-	{
-		clReleaseDevice(ChosenDevices[i]);
-		clReleaseCommandQueue(ClCommandQueues[i]);//Only One Command queue array
-	}
-	free(ChosenDevices);
-	free(ClCommandQueues);
-	free(MaxComputeUnitPerGPU);
-	free(MaxWorkItemPerGroup);
-	free(MaxGlobalMemoryOfDevice);
-	free(MaxPrivateMemoryBytesPerWorkGroup);
-	free(MaxLocalMemoryBytesPerWorkGroup);
-	/**************************************************************************************************************/
-	size_t* MaxWorkItemPerGroup = NULL;
-	size_t* MaxGlobalMemoryOfDevice = NULL;
-	size_t* MaxPrivateMemoryBytesPerWorkGroup = NULL;
-	size_t* MaxLocalMemoryBytesPerWorkGroup = NULL;
-	cl_program SingleProgram = NULL;
-}
-
 int main()
 {
+	//Testing 
+	cl_MultiKernelFunctionConstructionHelper TestKernels;
+	TestKernels.AddKernelFunction("Add_Integers",2,1,0);
+	cl_ProgramWith_MultiDevice_Kernel TestProgram{ TestKernels , "ASD"};
 
+	std::cout << "Before End";	
+	std::cout << "End Of program exe";
 }
