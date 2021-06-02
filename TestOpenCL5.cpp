@@ -110,16 +110,17 @@ enum cl_Memory_Type//NOTE: This is a Enum Based On CL_MEM_READ_ONLY, CL_MEM_WRIT
 	CL_READ_AND_WRITE = CL_MEM_READ_WRITE
 };
 
-//Always call this with new operator
+//NOTE: Always call this with new operator
 struct cl_KernelMemoryStruct
 {
+private:
 	//bool IsInitialized = false;// False When no Buffer in on Device, True is when Buffer is stored on Device
 	cl_mem GlobalMemoryInDevice = nullptr;// Local not needed as it is inaccessible by host..
-	void* PrivateMemoryInDevice = nullptr;// NOTE: This is also inaccessible, But this variable Holds a COPY
-	cl_Memory_Type MemoryTypeOfThisMemoryInDevice;
+	cl_Memory_Type MemoryTypeOfThisMemoryInDevice = Uninitialized_cl_Memory;
 	size_t MemoryInDeviceTotalSizeInBytes = 0;//NOTE: for private pass the sizeof(variable_type)
-	size_t MemoryInDevice_Occupied_SizeInBytes = 0;	
+	size_t MemoryInDevice_Occupied_SizeInBytes = 0;//NOTE: Actually 'MemoryInDeviceTotalSizeInBytes' occupies full space... but by 'MemoryInDevice_Occupied_SizeInBytes' I mean the memory YOU "use". I know this might sound confusing, but here is a simple example; Say you have a box that which can hold 20 pieces of bottles, but we only put in 10 pieces, meaning we used only 10 slot instead fully using 20 slots. 
 
+public:
 	cl_KernelMemoryStruct()
 	{
 		//IsInitialized = false;
@@ -127,8 +128,9 @@ struct cl_KernelMemoryStruct
 		std::cout << "\n Constructing cl_KernelMemoryStruct!";	
 	}
 
-	void cl_MemoryAllocationOnDevice(cl_context The_clContext_For_BufferCreation, cl_command_queue The_clCommandQueue_For_BufferCreation, cl_Memory_Type TheMemoryType, void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, bool OverWriteMemory)//Note: If MemorySize is 0, Then no memory is written on the device but memory is created
+	void cl_MemoryAllocationOnDevice(cl_context The_clContext_For_BufferCreation, cl_command_queue The_clCommandQueue_For_BufferCreation, cl_Memory_Type TheMemoryType, void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesfull)//Note: If MemorySize is 0, Then no memory is written on the device but memory is created, Note: for CreateOnlyOptionalLargerBufferSize to take effect pass a size larger than SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type
 	{
+		IsFunctionSuccesfull = false;
 		cl_int CLStatus;
 
 		if (OverWriteMemory)
@@ -138,7 +140,7 @@ struct cl_KernelMemoryStruct
 			{
 				if (MemoryTypeOfThisMemoryInDevice != TheMemoryType)
 				{
-					std::cout << "\n Error Supplied MemoryType Does not Match with Type Of MemoryInDevice" << ": OverWriting Buffer In: cl_KernelMemoryStruct!";
+					std::cout << "\n Error Supplied MemoryType Does not Match with Type Of MemoryInDevice" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
 					return;
 				}
 				//else// This is unlikely to happen see the above two if stement, MemoryTypeOfThisMemoryInDevice != cl_Memory_Type::Uninitialized_cl_Memory, Then MemoryTypeOfThisMemoryInDevice != TheMemoryType
@@ -148,30 +150,24 @@ struct cl_KernelMemoryStruct
 				//		std::cout << "Error " << CLStatus << " : Default 'Uninitialized_cl_Memory' Enum passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE\n";
 				//	}
 				//}
-				if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type >= MemoryInDeviceTotalSizeInBytes)
+				if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type <= MemoryInDeviceTotalSizeInBytes)
 				{	
 					if (MemoryTypeOfThisMemoryInDevice == cl_Memory_Type::CL_PRIVATE)
 					{
-						free(PrivateMemoryInDevice);
-						PrivateMemoryInDevice = nullptr;
-
-						PrivateMemoryInDevice = malloc(SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char));
-						if (PrivateMemoryInDevice == nullptr)
+						if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type != MemoryInDeviceTotalSizeInBytes)
 						{
-							std::cout << "\n Error Allocating" << SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char) << "PrivateMemoryInDevice Variable In: cl_KernelMemoryStruct";
+							std::cout << "\n Error Trying to change the Size of Private Variable(NOTE: This is impossible to happen. Because size of variables type does not change...)" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
 							return;
 						}
-						MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-						MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
 					}
 					else
 					{
-						if (MemoryTypeOfThisMemoryInDevice != cl_Memory_Type::CL_LOCALENUM)// Uninitialized_cl_Memory Is imposible in this case, reason begin if IsInitialized == true, then MemoryTypeOfThisMemoryInDevice is definitely not Uninitialized_cl_Memory
+						if (MemoryTypeOfThisMemoryInDevice != cl_Memory_Type::CL_LOCALENUM)// Uninitialized_cl_Memory Is imposible in this case, reason being if IsInitialized == true, then MemoryTypeOfThisMemoryInDevice is definitely not Uninitialized_cl_Memory
 						{
 							void* TempDataCarryHelper = calloc(SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, sizeof(char));// malloc works great too, but i prefer to use calloc here, NOTE: Char is 1 Byte so using char
 							if (TempDataCarryHelper == nullptr)
 							{
-								std::cout << "\n Error Allocating" << SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char) << "TempDataCarryHelper Variable In: cl_KernelMemoryStruct";
+								std::cout << "\n Error Allocating" << SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char) << "TempDataCarryHelper Variable In: cl_KernelMemoryStruct\n";
 								return;
 							}
 
@@ -194,8 +190,23 @@ struct cl_KernelMemoryStruct
 							MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 							MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
 						}
-					}					
+						else
+						{
+							std::cout << "\n CRITICAL WARNING Trying To OverWrite Local Memory(This type can not be written or overwritten...)" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+							return;
+						}
+					}		
 				}
+				else
+				{
+					std::cout << "\n Error Size Passed is larger than the Available buffer Space" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+					return;
+				}
+			}
+			else
+			{
+				std::cout << "\n Error Trying To OverWrite Uninitialized Memory" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+				return;
 			}
 		}
 		else
@@ -208,12 +219,6 @@ struct cl_KernelMemoryStruct
 				{
 					std::cout << "\n ClError Code " << CLStatus << " : Releasing Memory On device In: cl_KernelMemoryStruct!\n";
 					return;
-				}
-
-				if (PrivateMemoryInDevice != nullptr)
-				{
-					free(PrivateMemoryInDevice);
-					PrivateMemoryInDevice = nullptr;
 				}
 
 				//IsInitialized = false;
@@ -236,12 +241,6 @@ struct cl_KernelMemoryStruct
 
 				case cl_Memory_Type::CL_PRIVATE:
 				{
-					PrivateMemoryInDevice = malloc(SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char));
-					if (PrivateMemoryInDevice == nullptr)
-					{
-						std::cout << "\n Error Allocating" << SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type * sizeof(char) << "PrivateMemoryInDevice Variable In: cl_KernelMemoryStruct";
-						return;
-					}
 					MemoryTypeOfThisMemoryInDevice = TheMemoryType;
 					MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 					MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
@@ -251,24 +250,40 @@ struct cl_KernelMemoryStruct
 
 				case cl_Memory_Type::Uninitialized_cl_Memory:
 				{
-					std::cout << "\n Error " << CLStatus << " : Default 'Uninitialized_cl_Memory' Enum passed In: cl_KernelMemoryStruct! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE\n";
+					std::cout << "\n Error " << CLStatus << " : Default 'Uninitialized_cl_Memory' Enum Passed In: cl_KernelMemoryStruct! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE" << " : Creating Buffer In: cl_KernelMemoryStruct!\n";
 					return;
 					//break;// Not needed as return is done
 				}
 
 				default://CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY And CL_MEM_READ_WRITE
 				{
-					GlobalMemoryInDevice = clCreateBuffer(The_clContext_For_BufferCreation, TheMemoryType, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, NULL, &CLStatus);
-					if (CLStatus != CL_SUCCESS)
+					if ((TheMemoryType == CL_READ_ONLY) || (TheMemoryType == CL_WRITE_ONLY) || (TheMemoryType == CL_READ_AND_WRITE))
 					{
-						std::cout << "\n ClError Code " << CLStatus << " : Creating Buffer On device In: cl_KernelMemoryStruct!\n";
+						if (BUFFER_CREATION_ONLY_SizeOfBuffer >= SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type)
+						{
+							GlobalMemoryInDevice = clCreateBuffer(The_clContext_For_BufferCreation, TheMemoryType, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &CLStatus);
+							if (CLStatus != CL_SUCCESS)
+							{
+								std::cout << "\n ClError Code " << CLStatus << " : Creating Buffer On device In: cl_KernelMemoryStruct!\n";
+								return;
+							}
+							//IsInitialized = true;
+							MemoryTypeOfThisMemoryInDevice = TheMemoryType;
+							MemoryInDeviceTotalSizeInBytes = 0;
+							MemoryInDevice_Occupied_SizeInBytes = 0;
+							break;// NOTE: The Code Below will execute only if this break is accessed
+						}
+						else
+						{
+							std::cout << "\n Error Supplied Size Of SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type Excedes the size maximum size specified by BUFFER_CREATION_ONLY_SizeOfBuffer" << " : Creating Buffer In: cl_KernelMemoryStruct!\n";
+							return;
+						}
+					}
+					else
+					{
+						std::cout << "\n Error Undefined Enum Passed In: cl_KernelMemoryStruct! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE" << " : Creating Buffer In: cl_KernelMemoryStruct!\n";
 						return;
 					}
-					//IsInitialized = true;
-					MemoryTypeOfThisMemoryInDevice = TheMemoryType;
-					MemoryInDeviceTotalSizeInBytes = 0;
-					MemoryInDevice_Occupied_SizeInBytes = 0;
-					break;// Only for this the below code would execute
 				}
 			}		
 
@@ -290,10 +305,11 @@ struct cl_KernelMemoryStruct
 					MemoryInDevice_Occupied_SizeInBytes = 0;
 					return;
 				}
-				MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-				MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
+				MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+				MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 			}
 		}
+		IsFunctionSuccesfull = true;
 	}
 
 	~cl_KernelMemoryStruct()
@@ -302,22 +318,11 @@ struct cl_KernelMemoryStruct
 		//if (IsInitialized)
 		if (MemoryTypeOfThisMemoryInDevice != cl_Memory_Type::Uninitialized_cl_Memory)
 		{
-			if (MemoryTypeOfThisMemoryInDevice == cl_Memory_Type::CL_PRIVATE)
+			cl_int ClErrorResult;
+			ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);
+			if (ClErrorResult != CL_SUCCESS)
 			{
-				if (PrivateMemoryInDevice != nullptr)
-				{
-					free(PrivateMemoryInDevice);// If MemoryTypeOfThisMemoryInDevice is cl_Memory_Type::CL_PRIVATE, Then PrivateMemoryInDevice is not a nullptr
-					PrivateMemoryInDevice = nullptr;
-				}
-			}
-			else
-			{
-				cl_int ClErrorResult;
-				ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);
-				if (ClErrorResult != CL_SUCCESS)
-				{
-					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_KernelMemoryStruct's Device Memory In: cl_KernelMemoryStruct!";
-				}
+				std::cout << "\n clError " << ClErrorResult << " : Releasing cl_KernelMemoryStruct's Device Memory In: cl_KernelMemoryStruct!";
 			}
 		}
 	}
@@ -326,28 +331,46 @@ struct cl_KernelMemoryStruct
 //NOTE: DO NOT USE WITHOUT CALLING THE CONSTRUCTOR FIRST
 struct cl_KernelSingleArgumentStruct
 {
-	const bool IsLocalMemory;
-	const bool IsReadMemory;
-	const bool IsWriteMemory;
+private:
+	const cl_context* cl_ContextForThisArgument;
+	const cl_command_queue* cl_CommandQueueForThisArgument;
+	const cl_Memory_Type clMemory_Type_Of_Argument;
+	bool IsDataSendCompleted = false;
 	bool TrueForCreateFalseForOverWrite = true;//When True Creates The Buffer
-	size_t CL_MemorySizeToCreate = 0;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global	
 	void* DataFromHost = nullptr;//For Global and Private Only , Pass NULL for Local...
 	size_t DataFromHostSize = 0;//For Global ONLY, Reads Data When IsReadMemory is true and IsWriteMemory is true or false And IsLocalMemory is false, Memory Can be Written to the buffer
-	cl_KernelMemoryStruct BufferOnDevice;//Example: Buffer on GPU device
-	//NOTE:IF TrueForCreateFalseForOverWrite is false And INPUTorOUTPUTDataHostSizeToCopySize > CL_MemorySizeToCreate
-	//     Memory is released and reallocaed
+	size_t CL_MemorySizeToCreate = 0;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global			
+	cl_KernelMemoryStruct* BufferOnDevice;//Example: Buffer on GPU device	
 
+public:
 	//Contructor
-	cl_KernelSingleArgumentStruct(bool InitializeIsLocalMemory, bool InitializeTrueForReadOnlyFalseForWriteOnly) : IsLocalMemory(InitializeIsLocalMemory), TrueForReadOnlyFalseForWriteOnly(InitializeTrueForReadOnlyFalseForWriteOnly)
+	cl_KernelSingleArgumentStruct(cl_Memory_Type ArgclMemory_Type_Of_Argument, const cl_context* Argcl_ContextForThisArgument,	const cl_command_queue* Argcl_CommandQueueForThisArgument) : clMemory_Type_Of_Argument(ArgclMemory_Type_Of_Argument), cl_ContextForThisArgument(Argcl_ContextForThisArgument), cl_CommandQueueForThisArgument(Argcl_CommandQueueForThisArgument)
 	{
 		std::cout << "\n Constructing cl_KernelSingleArgumentStruct!";
-
-		//TrueForCreateFalseForOverWrite = true;
-		//CL_MemorySizeToCreate = 0;
-		//DataFromHost = nullptr;
-		//INPUTorOUTPUTDataHostSizeToCopySize = 0;
-
+		IsDataSendCompleted = false;
+		BufferOnDevice = new cl_KernelMemoryStruct;
 	}//const bool Are Initialized in Initialization list 
+
+	void PassDataToDeviceBuffer()
+	{
+		if (IsDataSendCompleted)
+		{
+			if (TrueForCreateFalseForOverWrite)
+			{
+				BufferOnDevice->cl_MemoryAllocationOnDevice(*cl_ContextForThisArgument, *cl_CommandQueueForThisArgument, clMemory_Type_Of_Argument,DataFromHost, DataFromHostSize, CL_MemorySizeToCreate);
+			}
+		}
+	}
+
+	void PassDataToThisKernelArgument(void* DataToPass, size_t SizeOfData, bool ARGUMENT_TrueForCreateFalseForOverWrite)
+	{
+		if (IsDataSendCompleted)
+		{
+
+		}
+	}
+
+	
 
 	//Destructor
 	~cl_KernelSingleArgumentStruct()
