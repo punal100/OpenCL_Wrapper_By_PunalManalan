@@ -123,15 +123,21 @@ private:
 public:
 	cl_KernelMemoryStruct()
 	{
+		std::cout << "\n Constructing cl_KernelMemoryStruct!";
 		//IsInitialized = false;
 		MemoryTypeOfThisMemoryInDevice = Uninitialized_cl_Memory;
-		std::cout << "\n Constructing cl_KernelMemoryStruct!";	
 	}
 
-	void cl_MemoryAllocationOnDevice(cl_context The_clContext_For_BufferCreation, cl_command_queue The_clCommandQueue_For_BufferCreation, cl_Memory_Type TheMemoryType, void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesfull)//Note: If MemorySize is 0, Then no memory is written on the device but memory is created, Note: for CreateOnlyOptionalLargerBufferSize to take effect pass a size larger than SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type
+	void cl_MemoryAllocationOnDevice(cl_context The_clContext_For_BufferCreation, cl_command_queue The_clCommandQueue_For_BufferCreation, cl_Memory_Type TheMemoryType, void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesful)//Note: If MemorySize is 0, Then no memory is written on the device but memory is created, Note: for CreateOnlyOptionalLargerBufferSize to take effect pass a size larger than SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type
 	{
-		IsFunctionSuccesfull = false;
+		IsFunctionSuccesful = false;
 		cl_int CLStatus;
+
+		if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type < 1)
+		{
+			std::cout << "\n Error Supplied Memory Size of " << SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type << " Bytes Is Less than 1 Bytes, Pass atleast 1 byte of Data" << ": cl_MemoryAllocationOnDevice In: cl_KernelMemoryStruct!\n";
+			return;
+		}
 
 		if (OverWriteMemory)
 		{
@@ -183,17 +189,23 @@ public:
 
 								if (CLStatus != CL_SUCCESS)
 								{
-									std::cout << "\n Error Code " << CLStatus << " : OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+									std::cout << "\n CL_Error Code " << CLStatus << " : OverWriting Buffer In: cl_KernelMemoryStruct!\n";
 									return;
 								}
 							}
-							MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-							MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
+							MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 						}
 						else
 						{
-							std::cout << "\n CRITICAL WARNING Trying To OverWrite Local Memory(This type can not be written or overwritten...)" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
-							return;
+							if (PointerToMemoryToCopyFrom != nullptr)
+							{
+								std::cout << "\n CRITICAL WARNING Trying To OverWrite Local Memory(This type can not be written or overwritten from host...) So Pass nullptr to the parameter 'PointerToMemoryToCopyFrom'" << ": OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+							}
+							else
+							{
+								MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
+								MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
+							}
 						}
 					}		
 				}
@@ -235,6 +247,7 @@ public:
 					MemoryTypeOfThisMemoryInDevice = TheMemoryType;
 					MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 					MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
+					IsFunctionSuccesful = true;
 					return;
 					//break;// Not needed as return is done
 				}
@@ -244,6 +257,7 @@ public:
 					MemoryTypeOfThisMemoryInDevice = TheMemoryType;
 					MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 					MemoryInDevice_Occupied_SizeInBytes = MemoryInDeviceTotalSizeInBytes;
+					IsFunctionSuccesful = true;
 					return;
 					//break;// Not needed as return is done
 				}
@@ -296,7 +310,7 @@ public:
 					CLStatus = clReleaseMemObject(GlobalMemoryInDevice);
 					if (CLStatus != CL_SUCCESS)
 					{
-						std::cout << "\n ClError Code " << CLStatus << " : Releasing Memory On device In: cl_KernelMemoryStruct!\n";
+						std::cout << "\n CL_Error Code " << CLStatus << " : Releasing Memory On device In: cl_KernelMemoryStruct!\n";
 						return;
 					}
 					//IsInitialized = false;
@@ -309,7 +323,7 @@ public:
 				MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
 			}
 		}
-		IsFunctionSuccesfull = true;
+		IsFunctionSuccesful = true;
 	}
 
 	~cl_KernelMemoryStruct()
@@ -337,74 +351,253 @@ private:
 	const cl_Memory_Type clMemory_Type_Of_Argument;
 	bool IsDataSendCompleted = false;
 	bool TrueForCreateFalseForOverWrite = true;//When True Creates The Buffer
-	void* DataFromHost = nullptr;//For Global and Private Only , Pass NULL for Local...
+	void* COPY_OF_DataFromHost = nullptr;//For Global and Private Only , Pass NULL for Local...
 	size_t DataFromHostSize = 0;//For Global ONLY, Reads Data When IsReadMemory is true and IsWriteMemory is true or false And IsLocalMemory is false, Memory Can be Written to the buffer
 	size_t CL_MemorySizeToCreate = 0;//For Local And Global //NOTE: NO NEED TO Allocate memory for local from host side... memory allocation from host is only required for global			
-	cl_KernelMemoryStruct* BufferOnDevice;//Example: Buffer on GPU device	
+	cl_KernelMemoryStruct* BufferOnDevice = nullptr;//Example: Buffer on GPU device	
 
 public:
+	bool IsConstructionSuccesful = false;// NOTE: Do not change this manualy! unless you know what you are doing
+
 	//Contructor
-	cl_KernelSingleArgumentStruct(cl_Memory_Type ArgclMemory_Type_Of_Argument, const cl_context* Argcl_ContextForThisArgument,	const cl_command_queue* Argcl_CommandQueueForThisArgument) : clMemory_Type_Of_Argument(ArgclMemory_Type_Of_Argument), cl_ContextForThisArgument(Argcl_ContextForThisArgument), cl_CommandQueueForThisArgument(Argcl_CommandQueueForThisArgument)
+	cl_KernelSingleArgumentStruct(const cl_Memory_Type ArgclMemory_Type_Of_Argument, const cl_context* Argcl_ContextForThisArgument, const cl_command_queue* Argcl_CommandQueueForThisArgument) : clMemory_Type_Of_Argument(ArgclMemory_Type_Of_Argument), cl_ContextForThisArgument(Argcl_ContextForThisArgument), cl_CommandQueueForThisArgument(Argcl_CommandQueueForThisArgument)
 	{
 		std::cout << "\n Constructing cl_KernelSingleArgumentStruct!";
 		IsDataSendCompleted = false;
 		BufferOnDevice = new cl_KernelMemoryStruct;
+		if (BufferOnDevice == nullptr)
+		{			
+			IsConstructionSuccesful = false;
+			std::cout << "\n Error Allocating " << sizeof(cl_KernelMemoryStruct) << " Byes Of Memory for BufferOnDevice In cl_KernelSingleArgumentStruct!";
+		}
+		else
+		{
+			IsConstructionSuccesful = true;
+		}
 	}//const bool Are Initialized in Initialization list 
 
+	//Do not call this without calling PassDataToThisKernelArgument() first
 	void PassDataToDeviceBuffer()
 	{
-		if (IsDataSendCompleted)
+		if (!IsDataSendCompleted)
 		{
-			if (TrueForCreateFalseForOverWrite)
+			BufferOnDevice->cl_MemoryAllocationOnDevice(*cl_ContextForThisArgument, *cl_CommandQueueForThisArgument, clMemory_Type_Of_Argument, COPY_OF_DataFromHost, DataFromHostSize, CL_MemorySizeToCreate, !TrueForCreateFalseForOverWrite, IsDataSendCompleted);
+			if (!IsDataSendCompleted)
 			{
-				BufferOnDevice->cl_MemoryAllocationOnDevice(*cl_ContextForThisArgument, *cl_CommandQueueForThisArgument, clMemory_Type_Of_Argument,DataFromHost, DataFromHostSize, CL_MemorySizeToCreate);
+				std::cout << "\n Error New Data Was not sent to buffer" << ": Passing Data To DeviceBuffer In: cl_KernelSingleArgumentStruct!\n";
 			}
 		}
-	}
-
-	void PassDataToThisKernelArgument(void* DataToPass, size_t SizeOfData, bool ARGUMENT_TrueForCreateFalseForOverWrite)
-	{
-		if (IsDataSendCompleted)
+		else
 		{
-
+			std::cout << "\n Error Same Data Was already sent to buffer" << ": Passing Data To DeviceBuffer In: cl_KernelSingleArgumentStruct!\n";
 		}
 	}
-
 	
+	//NOTE: AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR is by default false, 
+	void PassDataToThisKernelArgument(void* DataToPass, size_t SizeOfData,const bool If_Data_Empty_PassZeroForSizeOfData_And_SetThisToFalse, size_t BufferSizeToCreate, bool ARGUMENT_TrueForCreateFalseForOverWrite, bool& IsSuccesful, const bool /*AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR*/ = false)
+	{
+		const bool AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR = false;//NOTE: This parameter is Deprecated, So in place of it a dummy variable is put
+		//NOTE: This Deprecated version works perfectly fine but i do not recommend using it, as you MAY make some kind of mistake while using it
+		IsSuccesful = false;
+		if (If_Data_Empty_PassZeroForSizeOfData_And_SetThisToFalse)//Yes, Variable name too long, but it Explains what it does
+		{
+			if (SizeOfData > 0)
+			{
+				// Deprecated 
+				if (AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR)
+				{
+					DataToPass = calloc(1, sizeof(char));
+					SizeOfData = 1;
+				}
+				else// Error Code
+				{
+					std::cout << "\n Error Is_Data_Empty is set to true but SizeOfData is Greater than Zero" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+					return;
+				}				
+			}
+			else
+			{
+				if (DataToPass != nullptr)
+				{
+					std::cout << "\n Error Is_Data_Empty is set to true but DataToPass is not set to nullptr" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+					return;
+				}
+				else
+				{
+					// Correct
+					DataToPass = calloc(1, sizeof(char));
+					SizeOfData = 1;
+				}				
+			}
+		}
+		else
+		{
+			if (SizeOfData < 2)
+			{
+				std::cout << "\n Error SizeOfData of " << SizeOfData << " bytes Is Less than 2 Bytes" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+				std::cout << "NOTE: If you are trying to pass Empty/Null Data set the 'DataToPass' to nullptr, 'SizeOfData' to 0 and 'If_Data_Empty_PassZeroForSizeOfData_And_SetThisToFalse' to true\n";
+				return;
+			}
+		}
+
+		if (!ARGUMENT_TrueForCreateFalseForOverWrite)
+		{
+			if (IsDataSendCompleted)
+			{
+				if (CL_MemorySizeToCreate < SizeOfData)
+				{
+					if (AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR)
+					{
+						ARGUMENT_TrueForCreateFalseForOverWrite = true;
+						CL_MemorySizeToCreate = SizeOfData;
+					}
+					else
+					{
+						std::cout << "\n Error SizeOfData Exceeds BufferSize OverWrite Buffer Not Possible" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+						return;
+					}					
+				}
+			}
+			else
+			{		
+				if (AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR)
+				{
+					ARGUMENT_TrueForCreateFalseForOverWrite = true;
+					DataFromHostSize = SizeOfData;
+					CL_MemorySizeToCreate = SizeOfData;
+				}
+				else
+				{
+					std::cout << "\n Error OverWrite Not Possible as IsDataSendCompleted is set to false" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+					return;
+				}				
+			}
+		}
+		else
+		{
+			if (SizeOfData > BufferSizeToCreate)
+			{
+				if (AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR)
+				{
+					CL_MemorySizeToCreate = SizeOfData;
+				}
+				else
+				{
+					std::cout << "\n Error SizeOfData Exceeds BufferSize Create Buffer Not Possible" << " : Passing Data To KernelArgument In: cl_KernelSingleArgumentStruct!\n";
+					return;
+				}				
+			}
+		}
+
+		void* TempDataCarryHelper = calloc(SizeOfData, sizeof(char));// malloc works great too, but i prefer to use calloc here, NOTE: Char is 1 Byte so using char
+		if (TempDataCarryHelper == nullptr)
+		{
+			std::cout << "\n Error Allocating" << SizeOfData * sizeof(char) << "TempDataCarryHelper Variable In: cl_KernelSingleArgumentStruct!\n";
+			return;
+		}
+
+		if (SizeOfData > 0)
+		{
+			for (int i = 0; i < SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type; ++i)// Memccpy bad
+			{
+				((char*)TempDataCarryHelper)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+			}
+
+			CLStatus = clEnqueueWriteBuffer(The_clCommandQueue_For_BufferCreation, GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, TempDataCarryHelper, 0, NULL, NULL);
+			free(TempDataCarryHelper);// Free the data
+
+			if (CLStatus != CL_SUCCESS)
+			{
+				std::cout << "\n Error Code " << CLStatus << " : OverWriting Buffer In: cl_KernelMemoryStruct!\n";
+				return;
+			}
+		}
+
+
+		IsDataSendCompleted = false;
+		TrueForCreateFalseForOverWrite = ARGUMENT_TrueForCreateFalseForOverWrite;
+		COPY_OF_DataFromHost = DataToPass;
+		PassDataToDeviceBuffer();
+		IsSuccesful = IsDataSendCompleted;//The Return Value
+	}	
 
 	//Destructor
 	~cl_KernelSingleArgumentStruct()
 	{
 		std::cout << "\n Destructing cl_KernelSingleArgumentStruct!";
+		if (IsConstructionSuccesful)
+		{
+			delete BufferOnDevice;
+		}
 		//BufferOnDevice.~cl_KernelMemoryStruct(); Automatically called upon destruction
+	}
+};
+
+//Always call using new operator
+struct cl_KernelMultipleArgumentStruct
+{
+private:
+	bool IsConstructionSuccesful = false;// NOTE: Never Change this not worth the time...
+	const unsigned int TotalNumberOfArugments;
+	const unsigned int NumberOfReads;		//Min: 0						To		Max: (NumberOfReads			- 1) = Read			Only Data
+	const unsigned int NumberOfWrites;		//Min: NumberOfReads			To		Max: (NumberOfWrites		- 1) = Write		Only Data
+	const unsigned int NumberOfRead_Writes;	//Min: NumberOfWrites			To		Max: (NumberOfRead_Writes	- 1) = Read_Write	Only Data
+	const unsigned int NumberOfLocals;		//Min: NumberOfRead_Writes		To		Max: (NumberOfLocal			- 1) = Local		Only Data
+	const unsigned int NumberOfPrivates;	//Min: NumberOfLocal			To		Max: (NumberOfPrivate		- 1) = Private		Only Data
+
+	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
+
+public:
+	cl_KernelMultipleArgumentStruct(
+		const unsigned int ArgNumberOfReads				,			const unsigned int ArgNumberOfWrites,
+		const unsigned int ArgNumberOfRead_Writes		,
+		const unsigned int ArgNumberOfLocals			,			const unsigned int ArgNumberOfPrivates) :
+		NumberOfReads(ArgNumberOfReads)					,			NumberOfWrites(ArgNumberOfWrites),
+		NumberOfRead_Writes(ArgNumberOfRead_Writes)		,
+		NumberOfLocals(ArgNumberOfLocals)				,			NumberOfPrivates(ArgNumberOfPrivates),
+		TotalNumberOfArugments(NumberOfReads + NumberOfWrites + NumberOfRead_Writes + NumberOfLocals + NumberOfPrivates)
+	{
+		std::cout << "\n Constructing cl_KernelMultipleArgumentStruct!";
+		IsConstructionSuccesful = false;
+
+		if (TotalNumberOfArugments > 0)
+		{
+			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
+		}
+
+		if (SingleKernelFunctionMultiArgumentsArray == nullptr)
+		{
+			std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
+			IsConstructionSuccesful = false;
+		}	
 	}
 };
 
 //NOTE: DO NOT USE WITHOUT CALLING THE CONSTRUCTOR FIRST
 struct cl_KernelMultipleArgumentStruct
 {
-	const unsigned int NumberOfArugments;//Example:		SingleKernelFunctionMultiArgumentsArray[Min: 0,					 Max: NumberOfArugments						 - 1]// Minimum and Maximum range to access particular arguments
+	const unsigned int TotalNumberOfArugments;//Example:		SingleKernelFunctionMultiArgumentsArray[Min: 0,					 Max: TotalNumberOfArugments						 - 1]// Minimum and Maximum range to access particular arguments
 	const unsigned int NumberOfReads;//					SingleKernelFunctionMultiArgumentsArray[Min: 0,					 Max: NumberOfReads							 - 1]
 	const unsigned int NumberOfWrites;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfReads,		 Max: NumberOfReads + NumberOfWrites		 - 1]
 	const unsigned int NumberOfReadWrites;//			SingleKernelFunctionMultiArgumentsArray[Min: NumberOfWrites,	 Max: NumberOfWrites + NumberOfReadWrites	 - 1]
 	const unsigned int NumberOfLocals;//				SingleKernelFunctionMultiArgumentsArray[Min: NumberOfReadWrites, Max: NumberOfReadWrites + NumberOfLocals	 - 1]
-	//NOTE: For (NumberOfArugments - 1),(NumberOfReads - 1),(NumberOfWrites - 1),(NumberOfLocals - 1) If they are less than Zero than  Force the output of Zero
+	//NOTE: For (TotalNumberOfArugments - 1),(NumberOfReads - 1),(NumberOfWrites - 1),(NumberOfLocals - 1) If they are less than Zero than  Force the output of Zero
 
 	bool IsConstructionSuccesful = false;// If you hate Memory leaks, then Don't Even try to manualy change it... If you love memory leaks Please do so!
 
 	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
 
-	cl_KernelMultipleArgumentStruct(unsigned int ArgNumberOfReads, unsigned int ArgNumberOfWrites, unsigned int ArgNumberOfReadWrites, unsigned int ArgNumberOfLocals) : NumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfReadWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfReadWrites(ArgNumberOfReadWrites), NumberOfLocals(ArgNumberOfLocals)
+	cl_KernelMultipleArgumentStruct(const unsigned int ArgNumberOfReads, const unsigned int ArgNumberOfWrites, const unsigned int ArgNumberOfReadWrites, const unsigned int ArgNumberOfLocals, const unsigned int ArgNumberOfPrivates) : TotalNumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfReadWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfReadWrites(ArgNumberOfReadWrites), NumberOfLocals(ArgNumberOfLocals)
 	{
 		std::cout << "\n Constructing cl_KernelMultipleArgumentStruct!";
-		if (NumberOfArugments > 0)
+		if (TotalNumberOfArugments > 0)
 		{
-			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(NumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
+			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
 		}
 		
 		if (SingleKernelFunctionMultiArgumentsArray == nullptr)
 		{
-			std::cout << "\n Error Allocating " << (NumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
+			std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
 			IsConstructionSuccesful = false;
 		}
 		else
@@ -475,7 +668,7 @@ struct cl_KernelMultipleArgumentStruct
 		std::cout << "\n Destructing cl_KernelMultipleArgumentStruct!";
 		if (IsConstructionSuccesful)
 		{
-			for (int i = 0; i < NumberOfArugments; ++i)
+			for (int i = 0; i < TotalNumberOfArugments; ++i)
 			{
 				delete SingleKernelFunctionMultiArgumentsArray[i];
 			}
