@@ -1,13 +1,14 @@
 /********************************************************************************************************************************
-// This Code is Written by Punal Manalan
-// Use this code wherever and whenever you want to!
+OpenCL Wrapper By Punal Manalan
+Use this code wherever and whenever you want to!
 
-// Information About the Code:
-// This is a LightWeight, Easy to use Simple Wrapper for OpenCL
-// From the Constrction to Destruction everything is Done automaticaly!
-// No need for manual destruction and releasing cl resources!
-// No need to write tedious amount of code to care memory leaks!
-// Upoing going out of scope or exiting the program Every resource used is safely released and deleted
+Information About This Wrapper:
+1. This is a LightWeight, Easy to use Simple Wrapper for OpenCL.
+2. This Wrapper specializes in Heavy Computation on GPU(or CPU).
+3. From Constrction to Destruction everything is Done automaticaly!
+4. No need for manual destruction and releasing cl resources!
+5. No need to write Tedious amount of code to counter memory leaks!
+6. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
 *********************************************************************************************************************************/
 
 #include <iostream>
@@ -363,17 +364,15 @@ public:
 	cl_KernelSingleArgumentStruct(const cl_Memory_Type ArgclMemory_Type_Of_Argument, const cl_context* Argcl_ContextForThisArgument, const cl_command_queue* Argcl_CommandQueueForThisArgument) : clMemory_Type_Of_Argument(ArgclMemory_Type_Of_Argument), cl_ContextForThisArgument(Argcl_ContextForThisArgument), cl_CommandQueueForThisArgument(Argcl_CommandQueueForThisArgument)
 	{
 		std::cout << "\n Constructing cl_KernelSingleArgumentStruct!";
+		IsConstructionSuccesful = false;
 		IsDataSendCompleted = false;
 		BufferOnDevice = new cl_KernelMemoryStruct;
 		if (BufferOnDevice == nullptr)
 		{			
-			IsConstructionSuccesful = false;
 			std::cout << "\n Error Allocating " << sizeof(cl_KernelMemoryStruct) << " Byes Of Memory for BufferOnDevice In cl_KernelSingleArgumentStruct!";
-		}
-		else
-		{
-			IsConstructionSuccesful = true;
-		}
+			return;
+		}		
+		IsConstructionSuccesful = true;
 	}//const bool Are Initialized in Initialization list 
 
 	//Do not call this without calling PassDataToThisKernelArgument() first
@@ -496,27 +495,18 @@ public:
 			return;
 		}
 
-		if (SizeOfData > 0)
+		for (int i = 0; i < SizeOfData; ++i)// Memccpy bad
 		{
-			for (int i = 0; i < SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type; ++i)// Memccpy bad
-			{
-				((char*)TempDataCarryHelper)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
-			}
-
-			CLStatus = clEnqueueWriteBuffer(The_clCommandQueue_For_BufferCreation, GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, TempDataCarryHelper, 0, NULL, NULL);
-			free(TempDataCarryHelper);// Free the data
-
-			if (CLStatus != CL_SUCCESS)
-			{
-				std::cout << "\n Error Code " << CLStatus << " : OverWriting Buffer In: cl_KernelMemoryStruct!\n";
-				return;
-			}
-		}
-
+			((char*)TempDataCarryHelper)[i] = ((char*)DataToPass)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+		}		
 
 		IsDataSendCompleted = false;
 		TrueForCreateFalseForOverWrite = ARGUMENT_TrueForCreateFalseForOverWrite;
-		COPY_OF_DataFromHost = DataToPass;
+		if (COPY_OF_DataFromHost != nullptr)
+		{
+			free(COPY_OF_DataFromHost);
+		}
+		COPY_OF_DataFromHost = TempDataCarryHelper;
 		PassDataToDeviceBuffer();
 		IsSuccesful = IsDataSendCompleted;//The Return Value
 	}	
@@ -528,8 +518,11 @@ public:
 		if (IsConstructionSuccesful)
 		{
 			delete BufferOnDevice;
+			if (COPY_OF_DataFromHost != nullptr)
+			{
+				free(COPY_OF_DataFromHost);
+			}
 		}
-		//BufferOnDevice.~cl_KernelMemoryStruct(); Automatically called upon destruction
 	}
 };
 
@@ -547,34 +540,107 @@ private:
 
 	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
 
+	void CreateKernelSingleArgumentStruct(int &ArgumentsCreated, int NumberOfArgumentsToCreate, cl_Memory_Type ArgumentTypeToCreate, const cl_context* cl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+		for (int i = ArgumentsCreated; i < NumberOfArgumentsToCreate; ++i)
+		{
+			SingleKernelFunctionMultiArgumentsArray[i] = new cl_KernelSingleArgumentStruct(ArgumentTypeToCreate, cl_ContextForThisKernel, Argcl_CommandQueueForThisKernel);
+			if (SingleKernelFunctionMultiArgumentsArray[i] != nullptr)
+			{
+				if (SingleKernelFunctionMultiArgumentsArray[i]->IsConstructionSuccesful == false)// ! works great but, '== false' make it readable
+				{
+					for (int j = 0; j <= i; ++i)// Greater than or equal to i
+					{
+						delete SingleKernelFunctionMultiArgumentsArray[i];
+					}
+					free(SingleKernelFunctionMultiArgumentsArray);
+					return;
+				}
+			}
+			else
+			{
+				for (int j = 0; j < i; ++i)// Greater than i
+				{
+					delete SingleKernelFunctionMultiArgumentsArray[i];
+				}
+				free(SingleKernelFunctionMultiArgumentsArray);
+				return;
+			}
+		}
+		ArgumentsCreated = ArgumentsCreated + NumberOfArgumentsToCreate;
+		IsSuccesful = true;
+	}
+
 public:
 	cl_KernelMultipleArgumentStruct(
 		const unsigned int ArgNumberOfReads				,			const unsigned int ArgNumberOfWrites,
 		const unsigned int ArgNumberOfRead_Writes		,
-		const unsigned int ArgNumberOfLocals			,			const unsigned int ArgNumberOfPrivates) :
+		const unsigned int ArgNumberOfLocals			,			const unsigned int ArgNumberOfPrivates,
+		const cl_context* Argcl_ContextForThisKernel	,			const cl_command_queue* Argcl_CommandQueueForThisKernel):
 		NumberOfReads(ArgNumberOfReads)					,			NumberOfWrites(ArgNumberOfWrites),
 		NumberOfRead_Writes(ArgNumberOfRead_Writes)		,
 		NumberOfLocals(ArgNumberOfLocals)				,			NumberOfPrivates(ArgNumberOfPrivates),
 		TotalNumberOfArugments(NumberOfReads + NumberOfWrites + NumberOfRead_Writes + NumberOfLocals + NumberOfPrivates)
 	{
 		std::cout << "\n Constructing cl_KernelMultipleArgumentStruct!";
-		IsConstructionSuccesful = false;
+		IsConstructionSuccesful = false;// Yes this is set to false
 
 		if (TotalNumberOfArugments > 0)
 		{
 			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
 		}
+		else
+		{
+			std::cout << "\n Error The TotalNumberOfArugments Is Set to Zero In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
 
 		if (SingleKernelFunctionMultiArgumentsArray == nullptr)
 		{
 			std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
-			IsConstructionSuccesful = false;
+			return;
 		}	
+
+		bool IsSuccesful = false;
+		int TotalArgumentsCreated = 0;
+		CreateKernelSingleArgumentStruct(TotalArgumentsCreated, NumberOfReads, cl_Memory_Type::CL_READ_ONLY, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, IsSuccesful);
+		if (!IsSuccesful)
+		{
+			std::cout << "\n Error Single Kernel Argument Creation of type cl_Memory_Type::CL_READ_ONLY Failed In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
+		CreateKernelSingleArgumentStruct(TotalArgumentsCreated, NumberOfWrites, cl_Memory_Type::CL_WRITE_ONLY, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, IsSuccesful);
+		if (!IsSuccesful)
+		{
+			std::cout << "\n Error Single Kernel Argument Creation of type cl_Memory_Type::CL_WRITE_ONLY Failed In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
+		CreateKernelSingleArgumentStruct(TotalArgumentsCreated, NumberOfRead_Writes, cl_Memory_Type::CL_READ_AND_WRITE, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, IsSuccesful);
+		if (!IsSuccesful)
+		{
+			std::cout << "\n Error Single Kernel Argument Creation of type cl_Memory_Type::CL_READ_AND_WRITE Failed In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
+		CreateKernelSingleArgumentStruct(TotalArgumentsCreated, NumberOfLocals, cl_Memory_Type::CL_LOCALENUM, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, IsSuccesful);
+		if (!IsSuccesful)
+		{
+			std::cout << "\n Error Single Kernel Argument Creation of type cl_Memory_Type::CL_LOCALENUM Failed In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
+		CreateKernelSingleArgumentStruct(TotalArgumentsCreated, NumberOfPrivates, cl_Memory_Type::CL_PRIVATE, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, IsSuccesful);
+		if (!IsSuccesful)
+		{
+			std::cout << "\n Error Single Kernel Argument Creation of type cl_Memory_Type::CL_PRIVATE Failed In: cl_KernelMultipleArgumentStruct!\n";
+			return;
+		}
+
+		IsConstructionSuccesful = true;
 	}
 };
 
 //NOTE: DO NOT USE WITHOUT CALLING THE CONSTRUCTOR FIRST
-struct cl_KernelMultipleArgumentStruct
+struct cl_KernelMultipleArgumentStructA
 {
 	const unsigned int TotalNumberOfArugments;//Example:		SingleKernelFunctionMultiArgumentsArray[Min: 0,					 Max: TotalNumberOfArugments						 - 1]// Minimum and Maximum range to access particular arguments
 	const unsigned int NumberOfReads;//					SingleKernelFunctionMultiArgumentsArray[Min: 0,					 Max: NumberOfReads							 - 1]
@@ -587,7 +653,7 @@ struct cl_KernelMultipleArgumentStruct
 
 	cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
 
-	cl_KernelMultipleArgumentStruct(const unsigned int ArgNumberOfReads, const unsigned int ArgNumberOfWrites, const unsigned int ArgNumberOfReadWrites, const unsigned int ArgNumberOfLocals, const unsigned int ArgNumberOfPrivates) : TotalNumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfReadWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfReadWrites(ArgNumberOfReadWrites), NumberOfLocals(ArgNumberOfLocals)
+	cl_KernelMultipleArgumentStructA(const unsigned int ArgNumberOfReads, const unsigned int ArgNumberOfWrites, const unsigned int ArgNumberOfReadWrites, const unsigned int ArgNumberOfLocals, const unsigned int ArgNumberOfPrivates) : TotalNumberOfArugments((ArgNumberOfReads + ArgNumberOfWrites + ArgNumberOfReadWrites + ArgNumberOfLocals)), NumberOfReads(ArgNumberOfReads), NumberOfWrites(ArgNumberOfWrites), NumberOfReadWrites(ArgNumberOfReadWrites), NumberOfLocals(ArgNumberOfLocals)
 	{
 		std::cout << "\n Constructing cl_KernelMultipleArgumentStruct!";
 		if (TotalNumberOfArugments > 0)
@@ -663,7 +729,7 @@ struct cl_KernelMultipleArgumentStruct
 		}
 	}
 
-	~cl_KernelMultipleArgumentStruct()
+	~cl_KernelMultipleArgumentStructA()
 	{
 		std::cout << "\n Destructing cl_KernelMultipleArgumentStruct!";
 		if (IsConstructionSuccesful)
