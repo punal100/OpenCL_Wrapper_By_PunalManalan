@@ -156,6 +156,41 @@ public:
 		IsConstructionSuccesful = true;
 	}
 
+	cl_KernelFunctionArgumentOrderListStruct(const cl_KernelFunctionArgumentOrderListStruct* CopyStruct) : TotalNumberOfArugments(CopyStruct->TotalNumberOfArugments), KernelFunctionName(CopyStruct->KernelFunctionName)
+	{
+		IsConstructionSuccesful = false;
+		if (CopyStruct->IsConstructionSuccesful && CopyStruct->IsThisListUsable)
+		{
+			IsThisListUsable = false;
+			KernelArgumentsInOrder = (cl_Memory_Type**)malloc(TotalNumberOfArugments * sizeof(cl_Memory_Type*));
+			if (KernelArgumentsInOrder == nullptr)
+			{
+				std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_Memory_Type*)) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
+				return;
+			}
+
+			for (int i = 0; i < TotalNumberOfArugments; ++i)
+			{
+				KernelArgumentsInOrder[i] = (cl_Memory_Type*)malloc(TotalNumberOfArugments * sizeof(cl_Memory_Type));
+				if (KernelArgumentsInOrder[i] == nullptr)
+				{
+					std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_Memory_Type*)) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
+					for (int j = 0; j < i; ++j)
+					{
+						free(KernelArgumentsInOrder[j]);
+					}
+					free(KernelArgumentsInOrder);
+					return;
+				}
+				else
+				{
+					*(KernelArgumentsInOrder[i]) = *(CopyStruct->KernelArgumentsInOrder[i]);
+				}
+			}
+			IsConstructionSuccesful = true;
+		}		
+	}
+
 	void SetMemoryTypeOfArugment(const unsigned int ArgumentNumber, cl_Memory_Type MemoryType, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
@@ -233,7 +268,7 @@ struct cl_PerDeviceValuesStruct
 			ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 			return;
 		}
@@ -248,7 +283,7 @@ struct cl_PerDeviceValuesStruct
 			ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 			return;
 		}
@@ -263,7 +298,7 @@ struct cl_PerDeviceValuesStruct
 			ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 			return;
 		}
@@ -278,7 +313,7 @@ struct cl_PerDeviceValuesStruct
 			ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 			return;
 		}
@@ -293,7 +328,7 @@ struct cl_PerDeviceValuesStruct
 			ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 			return;
 		}
@@ -311,7 +346,7 @@ struct cl_PerDeviceValuesStruct
 			cl_int ClErrorResult = clReleaseCommandQueue(DeviceClCommandQueue);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!";
+				std::cout << "\n clError " << ClErrorResult << " : Releasing CommandQueue: " << "in cl_PerDeviceValuesStruct!\n";
 			}
 		}
 	}
@@ -736,7 +771,7 @@ public:
 		BufferOnDevice = new cl_MemoryStruct(ArgclMemory_Type_Of_Argument, Argcl_ContextForThisArgument, Argcl_CommandQueueForThisArgument, TheKernel, KernelArgumentNumber);
 		if (BufferOnDevice == nullptr)
 		{			
-			std::cout << "\n Error Allocating " << sizeof(cl_MemoryStruct) << " Byes Of Memory for BufferOnDevice In cl_KernelSingleArgumentStruct!";
+			std::cout << "\n Error Allocating " << sizeof(cl_MemoryStruct) << " Byes Of Memory for BufferOnDevice In cl_KernelSingleArgumentStruct!\n";
 			return;
 		}	
 		if (!BufferOnDevice->IsConstructionSuccesful)
@@ -954,7 +989,7 @@ public:
 			SingleKernelFunctionMultiArgumentsArray = (cl_KernelSingleArgumentStruct**)malloc(OrderedListOfArugments->TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*));
 			if (SingleKernelFunctionMultiArgumentsArray == nullptr)
 			{
-				std::cout << "\n Error Allocating " << (OrderedListOfArugments->TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!";
+				std::cout << "\n Error Allocating " << (OrderedListOfArugments->TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!\n";
 				return;
 			}
 		}
@@ -1008,8 +1043,8 @@ public:
 	//NOTE: Kernel Arguments are Ordered from left to right, Read only memory in left, write only in right, Local in middle of them
 	//NOTE: any memory which is plain int, float etc etc those which are NOT cl_mem, Will NOT BE INCLUDED HERE instead they will be given as parameters in kernel Host function
 	cl_MultiDevice_KernelFunctionStruct(const unsigned int ArgNumberOfDevices, const cl_KernelFunctionArgumentOrderListStruct* ArgOrderedListOfArugments,
-		const cl_context* Argcl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel,
-		std::string ArgKernelFunctionName, cl_program* BuiltClProgramContainingTheSpecifiedFunction) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgKernelFunctionName)
+		const cl_context* Argcl_ContextForThisKernel, const cl_PerDeviceValuesStruct* Argcl_PerDeviceValueStruct,
+		cl_program* BuiltClProgramContainingTheSpecifiedFunction) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgOrderedListOfArugments->KernelFunctionName)
 	{
 		IsConstructionSuccesful = false;
 		std::cout << "\n Constructing cl_MultiDevice_KernelFunctionStruct!";
@@ -1018,14 +1053,14 @@ public:
 			MultiDeviceKernelArgumentsArray = (cl_KernelMultipleArgumentStruct**)malloc(NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*));
 			if (MultiDeviceKernelArgumentsArray == nullptr)
 			{
-				std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*)) << " Byes Of Memory for MultiDeviceKernelArgumentsArray In cl_MultiDevice_KernelFunctionStruct!";
+				std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*)) << " Byes Of Memory for MultiDeviceKernelArgumentsArray In cl_MultiDevice_KernelFunctionStruct!\n";
 				return;
 			}
 
 			MultiDeviceKernelFunction = (cl_kernel**)malloc(NumberOfDevices * sizeof(cl_kernel*));
 			if (MultiDeviceKernelFunction == nullptr)
 			{
-				std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_kernel*)) << " Byes Of Memory for MultiDeviceKernelFunction In cl_MultiDevice_KernelFunctionStruct!";
+				std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_kernel*)) << " Byes Of Memory for MultiDeviceKernelFunction In cl_MultiDevice_KernelFunctionStruct!\n";
 				free(MultiDeviceKernelArgumentsArray);
 				return;
 			}
@@ -1035,7 +1070,7 @@ public:
 				MultiDeviceKernelFunction[i] = (cl_kernel*)malloc(sizeof(cl_kernel));
 				if(MultiDeviceKernelFunction[i] == nullptr)
 				{
-					std::cout << "\n Error Allocating " << sizeof(cl_kernel) << " Byes Of Memory for MultiDeviceKernelFunction["<< i <<"] In cl_MultiDevice_KernelFunctionStruct!";
+					std::cout << "\n Error Allocating " << sizeof(cl_kernel) << " Byes Of Memory for MultiDeviceKernelFunction["<< i <<"] In cl_MultiDevice_KernelFunctionStruct!\n";
 					for (int j = 0; j < i; ++j)
 					{
 						free(MultiDeviceKernelFunction[j]);
@@ -1058,7 +1093,7 @@ public:
 			*(MultiDeviceKernelFunction[i]) = clCreateKernel(*BuiltClProgramContainingTheSpecifiedFunction, KernelFunctionName.c_str(), &ClErrorResult);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n clError " << ClErrorResult << " : Kernel Creation Failed in cl_MultiDevice_KernelAndArgumentsStruct!\n";
+				std::cout << "\n clError " << ClErrorResult << " : Kernel Creation Failed in cl_MultiDevice_KernelFunctionStruct!\n";
 				for (int j = 0; j < i; ++j)
 				{
 					clReleaseKernel(*(MultiDeviceKernelFunction[j]));
@@ -1073,10 +1108,10 @@ public:
 				free(MultiDeviceKernelArgumentsArray);
 				return;
 			}	
-			MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, MultiDeviceKernelFunction[i]);
+			MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, &Argcl_PerDeviceValueStruct->DeviceClCommandQueue, MultiDeviceKernelFunction[i]);
 			if (MultiDeviceKernelArgumentsArray[i] == nullptr)
 			{
-				std::cout << "\n Error Allocating " << sizeof(cl_KernelMultipleArgumentStruct) << " Byes Of Memory for MultiDeviceKernelArgumentsArray[" << i << "] In cl_MultiDevice_KernelFunctionStruct!";
+				std::cout << "\n Error Allocating " << sizeof(cl_KernelMultipleArgumentStruct) << " Byes Of Memory for MultiDeviceKernelArgumentsArray[" << i << "] In cl_MultiDevice_KernelFunctionStruct!\n";
 				
 				clReleaseKernel(*(MultiDeviceKernelFunction[i]));// Because the above code succesfuly ran so we are releasing this
 				for (int j = 0; j < i; ++j)
@@ -1121,10 +1156,11 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	cl_context SingleContext;
 	unsigned int NumberOfDevices;
 	cl_device_id* ChosenDevices = nullptr;
+	cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;								// Initalized and Constructed in  InitializeOpenCLProgram()
 	unsigned int TotalNumberOfKernelFunctions = 0;											// Don't try to manually change this unless you know how to do it properly
-	cl_KernelFunctionArgumentOrderListStruct** OrderedKernelArgumentList = nullptr;		// This Contains All the Kernel Functions information
-	cl_MultiDevice_KernelFunctionStruct** MultiDevice_And_MultiKernel = nullptr;		// Initialization And Construction functions will take care of it	
-	cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;							// Initalized and Constructed in  InitializeOpenCLProgram()
+	cl_KernelFunctionArgumentOrderListStruct** OrderedKernelArgumentList = nullptr;			// This Contains All the Kernel Functions information
+	cl_MultiDevice_KernelFunctionStruct** MultiDevice_And_MultiKernel = nullptr;			// Initialization And Construction functions will take care of it	
+	
 
 	bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
@@ -1182,7 +1218,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 			PerDeviceValueStruct[i] = new cl_PerDeviceValuesStruct({ ChosenDevices[i], &SingleContext, ClErrorResult });
 			if ((ClErrorResult != CL_SUCCESS) || (PerDeviceValueStruct[i] == nullptr))
 			{
-				std::cout << "\n Error Allocating " << (NumberOfGPUs * sizeof(cl_PerDeviceValuesStruct*)) << " Byes Of Memory for PerDeviceValueStruct In InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+				std::cout << "\n Error Allocating " << (NumberOfGPUs * sizeof(cl_PerDeviceValuesStruct*)) << " Byes Of Memory for PerDeviceValueStruct In InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				for (int j = 0; j < i; i++)
 				{
 					delete(PerDeviceValueStruct[i]);
@@ -1192,7 +1228,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				ClErrorResult = clReleaseContext(SingleContext);
 				if (ClErrorResult != CL_SUCCESS)
 				{
-					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
 			}
 		}
@@ -1217,7 +1253,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				ClErrorResult = clReleaseContext(SingleContext);
 				if (ClErrorResult != CL_SUCCESS)
 				{
-					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
 			}
 
@@ -1234,7 +1270,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				ClErrorResult = clReleaseContext(SingleContext);
 				if (ClErrorResult != CL_SUCCESS)
 				{
-					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+					std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
 			}
 			NumberOfDevices = NumberOfGPUs;			
@@ -1246,17 +1282,17 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}	
 
 	void ReleaseAndFreeClData()
-	{
+	{		
 		cl_int ClErrorResult;
 		ClErrorResult = clReleaseProgram(SingleProgram);
 		if (ClErrorResult != CL_SUCCESS)
 		{
-			std::cout << "\n clError " << ClErrorResult << " : Releasing cl_program " << "in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			std::cout << "\n clError " << ClErrorResult << " : Releasing cl_program " << "in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 		}
 		ClErrorResult = clReleaseContext(SingleContext);
 		if (ClErrorResult != CL_SUCCESS)
 		{
-			std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			std::cout << "\n clError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 		}
 		for (int i = 0; i < NumberOfDevices; i++)
 		{
@@ -1273,7 +1309,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		
 		if (*ArgOrderedKernelArgumentList != nullptr)
 		{
-			std::cout << "\n Error The value of the variable 'ArgOrderedKernelArgumentList' Is not nullptr, It should be empty, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			std::cout << "\n Error The value of the variable 'ArgOrderedKernelArgumentList' Is not nullptr, It should be empty, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			return;
 		}
 		else
@@ -1295,19 +1331,17 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 
 	void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(const std::string ClSourceFilePath, const cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, const unsigned int& ArgTotalNumberOfKernelFunctions, bool &IsSuccesful)
 	{
-		MultiDevice_And_MultiKernel = (cl_MultiDevice_KernelAndArgumentsStruct**)malloc(ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored * sizeof(cl_MultiDevice_KernelAndArgumentsStruct*));
+		IsSuccesful = false;
+		MultiDevice_And_MultiKernel = (cl_MultiDevice_KernelFunctionStruct**)malloc(TotalNumberOfKernelFunctions * sizeof(cl_MultiDevice_KernelFunctionStruct*));
 		if (MultiDevice_And_MultiKernel == nullptr)
 		{
-			std::cout << "\n Error Allocating " << (ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored * sizeof(cl_MultiDevice_KernelAndArgumentsStruct*)) << " Byes Of Memory for MultiDevice_And_MultiKernel In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-			IsConstructionSuccesful = false;
+			std::cout << "\n Error Allocating " << (TotalNumberOfKernelFunctions * sizeof(cl_MultiDevice_KernelFunctionStruct*)) << " Byes Of Memory for MultiDevice_And_MultiKernel In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 		}
 		else
 		{
-			IsConstructionSuccesful = true;
-			NumberOfKernelFunctions = ArrayOfKernelsAndTheirArugmentsNeededToAdd.NumbersOfKernelStored;
-			for (int i = 0; i < NumberOfKernelFunctions; ++i)
+			for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 			{
-				MultiDevice_And_MultiKernel[i] = new cl_MultiDevice_KernelAndArgumentsStruct({ NumberOfDevices , ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfReads, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfWrites, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->NumberOfLocals, ArrayOfKernelsAndTheirArugmentsNeededToAdd.ArrayOfKernelFunction[i]->KernelFunctionName, &SingleProgram });
+				MultiDevice_And_MultiKernel[i] = new cl_MultiDevice_KernelFunctionStruct(NumberOfDevices, OrderedKernelArgumentList[i], &SingleContext, PerDeviceValueStruct[i], &SingleProgram);
 
 				if (MultiDevice_And_MultiKernel[i] != nullptr)
 				{
@@ -1321,7 +1355,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 					}
 				}
 				//else the code below will clean up
-				std::cout << "\n Error Allocating " << (sizeof(cl_MultiDevice_KernelAndArgumentsStruct)) << " Byes Of Memory for MultiDevice_And_MultiKernel[i] In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+				std::cout << "\n Error Allocating " << (sizeof(cl_MultiDevice_KernelFunctionStruct)) << " Byes Of Memory for MultiDevice_And_MultiKernel[i] In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				IsConstructionSuccesful = false;
 
 				for (int j = 0; j < i; ++j)
@@ -1329,10 +1363,9 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 					delete MultiDevice_And_MultiKernel[j];
 				}
 				free(MultiDevice_And_MultiKernel);
-				NumberOfKernelFunctions = 0;
-				IsConstructionSuccesful = false;
-				break;
+				return;
 			}
+			IsSuccesful = true;
 		}
 	}
 
@@ -1340,6 +1373,53 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, const cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, const unsigned int& ArgTotalNumberOfKernelFunctions) : ClSourceFilePath(ClSourceFilePath)
 	{
 		std::cout << "\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Manual Constructor";
+		IsConstructionSuccesful = false;
+		bool IsSuccesful = false;
+
+		// Single Program Is First Initialized
+		InitializeOpenCLProgram(IsSuccesful);
+
+		if (IsSuccesful)
+		{
+			OrderedKernelArgumentList = (cl_KernelFunctionArgumentOrderListStruct**)malloc(TotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*));
+			if (OrderedKernelArgumentList == nullptr)
+			{
+				ReleaseAndFreeClData();
+				std::cout << "\n Error Allocating " << (TotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for OrderedKernelArgumentList In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				return;
+			}
+			
+			for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+			{
+				OrderedKernelArgumentList[i] = new cl_KernelFunctionArgumentOrderListStruct(ArgOrderedKernelArgumentList[i]);
+				if (OrderedKernelArgumentList[i] == nullptr)
+				{
+					std::cout << "\n Error Allocating " << sizeof(cl_KernelFunctionArgumentOrderListStruct) << " Byes Of Memory for OrderedKernelArgumentList["<< i <<"] In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					ReleaseAndFreeClData();
+					for (int j = 0; j < i; ++j)
+					{
+						delete OrderedKernelArgumentList[i];
+					}
+					free(OrderedKernelArgumentList);
+					return;
+				}
+			}
+			TotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions;
+
+			cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccesful);
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				ReleaseAndFreeClData();
+				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+				{
+					delete OrderedKernelArgumentList[i];
+				}
+				return;
+			}
+			IsConstructionSuccesful = true;
+		}
+
 	}
 
 	//Automatic
@@ -1350,7 +1430,6 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		bool IsSuccesful = false;
 		// Single Program Is First Initialized
 		InitializeOpenCLProgram(IsSuccesful);
-		//CONTINUE THIS	
 
 		if (IsSuccesful)
 		{
@@ -1360,77 +1439,88 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(ClSourceFileInString, &OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccesful);
 				if (!IsSuccesful)
 				{
-					std::cout << "\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+					std::cout << "\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
-				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+				else
 				{
-					if (OrderedKernelArgumentList[i]->IsConstructionSuccesful)
+					for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 					{
-						if (OrderedKernelArgumentList[i]->IsThisListUsable)
+						if (OrderedKernelArgumentList[i]->IsConstructionSuccesful)
 						{
-							FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ClSourceFileInString, OrderedKernelArgumentList[i]->KernelFunctionName, *(OrderedKernelArgumentList[i]), IsSuccesful);
+							if (OrderedKernelArgumentList[i]->IsThisListUsable)
+							{
+								FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ClSourceFileInString, OrderedKernelArgumentList[i]->KernelFunctionName, *(OrderedKernelArgumentList[i]), IsSuccesful);
+								//IsSuccesful = IsSuccesful;// If the IsSuccesful is false NOTE: the function above returns whether it was Succesful Or not
+							}
+							else
+							{
+								std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+								IsSuccesful = false;
+							}
 						}
 						else
 						{
-							//PENDING RESOURCE RELEASE
-							std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+							std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+							IsSuccesful = false;
+						}
+						if (!IsSuccesful)
+						{
 							ReleaseAndFreeClData();
+							for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+							{
+								delete OrderedKernelArgumentList[i];
+							}
 							return;
 						}
 					}
-					else
-					{
-						//PENDING RESOURCE RELEASE
-						std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-						return;
-					}
-					if (!IsSuccesful)
-					{
-						//PENDING RESOURCE RELEASE
-						std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-						ReleaseAndFreeClData();
-						return;
-					}
-				}
+				}								
 			}
 			else
 			{
 				std::cout << "\n Error GetFileContent Did returned false In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+				ReleaseAndFreeClData();
 				return;
 			}
+
 			cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccesful);
 			if (!IsSuccesful)
-			{
-				std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			{				
+				std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				ReleaseAndFreeClData();
+				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+				{
+					delete OrderedKernelArgumentList[i];
+				}
+				return;
 			}
 		}
 		else
 		{
+			std::cout << "\n Error Initilization Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			ReleaseAndFreeClData();
-			std::cout << "\n Error Initilization Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";			
 			return;
 		}
 		IsConstructionSuccesful = true;
 	}
 
 	//If Either of DevicesToRunKernelFrom/To is set to -1 Then All the Devices(GPU) Will Run
-	void RunKernelFunction(unsigned int KernelToRunNumber, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, bool ChooseOptimalTotalWorkItemsAndGroupSize, int TotalWorkItems, int TotalWorkGroups)
+	void RunKernelFunction(unsigned int KernelToRunNumber, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, int TotalWorkItems, bool ChooseOptimalTotalWorkItemsAndGroupSize = 0, int TotalWorkGroups = 0)
 	{
 
 	}
 
-	void RunKernelFunction(std::string NameOfTheKernelToRun, int DevicesToRunKernelFrom, int DevicesToRunKernelTo)
+	void RunKernelFunction(std::string NameOfTheKernelToRun, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, int TotalWorkItems)
 	{
-		for (int i = 0; i < NumberOfKernelFunctions; ++i)
+		for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 		{
-			if (MultiDevice_And_MultiKernel[i]->KernelFunctionName == NameOfTheKernelToRun)
+			if (OrderedKernelArgumentList[i]->KernelFunctionName == NameOfTheKernelToRun)
 			{
-				RunKernelFunction(i, DevicesToRunKernelFrom, DevicesToRunKernelTo);
+				RunKernelFunction(i, DevicesToRunKernelFrom, DevicesToRunKernelTo, TotalWorkItems);
 				return;
 			}
 		}	
-		std::cout << "\n Cl Kernel by the name " << NameOfTheKernelToRun << " Is Not Found!";
-		std::cout << "\n Please Check whether you added the function in AddKernelFunction()!";
+		std::cout << "\n Cl Kernel by the name " << NameOfTheKernelToRun << " Is Not Found!\n";
+		std::cout << "\n Please Check for missed letters, symbols or numbers in the Function Name!\n";
 	}
 
 	void GetBinaryInformationOfProgram(size_t& Binary_Size_Of_CLProgram, std::string& Binary_Of_CLProgram, bool& IsSuccesful)
@@ -1465,8 +1555,13 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 			ReleaseAndFreeClData();
 			for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 			{
+				delete OrderedKernelArgumentList[i];
+			}
+			for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+			{
 				delete MultiDevice_And_MultiKernel[i];
 			}
+			//PENDING RESOURCE RELEASE
 			free(MultiDevice_And_MultiKernel);
 		}
 	}
