@@ -705,7 +705,7 @@ public:
 
 	void AllocateMemoryAndPassToKernel(void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesful)
 	{
-		bool IsFunctionSuccesful;
+		IsFunctionSuccesful;
 		MemoryAllocationOnDevice(PointerToMemoryToCopyFrom, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, BUFFER_CREATION_ONLY_SizeOfBuffer, OverWriteMemory, IsFunctionSuccesful);
 		if (!IsFunctionSuccesful)
 		{
@@ -1132,6 +1132,8 @@ public:
 		IsConstructionSuccesful = true;
 	}
 
+
+
 	~cl_MultiDevice_KernelFunctionStruct()
 	{
 		if (IsConstructionSuccesful)
@@ -1329,7 +1331,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		IsSuccesful = true;
 	}
 
-	void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(const std::string ClSourceFilePath, const cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, const unsigned int& ArgTotalNumberOfKernelFunctions, bool &IsSuccesful)
+	void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions, bool &IsSuccesful)
 	{
 		IsSuccesful = false;
 		MultiDevice_And_MultiKernel = (cl_MultiDevice_KernelFunctionStruct**)malloc(TotalNumberOfKernelFunctions * sizeof(cl_MultiDevice_KernelFunctionStruct*));
@@ -1370,7 +1372,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}
 
 	//Manual
-	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, const cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, const unsigned int& ArgTotalNumberOfKernelFunctions) : ClSourceFilePath(ClSourceFilePath)
+	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions) : ClSourceFilePath(ClSourceFilePath)
 	{
 		std::cout << "\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Manual Constructor";
 		IsConstructionSuccesful = false;
@@ -1567,12 +1569,22 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}
 };
 
+typedef cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct* OpenCLWrapper;
+
 int main()
 {
-	//Testing 
-	cl_MultiDevice_KernelFunctionStruct TestKernels;
-	TestKernels.AddKernelFunction("Add_Integers",2,1,0);
-	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct TestProgram{ TestKernels , "D:\\c++ test projects\\testopencl5\\PunalOpenclFunctionsProgram.cl"};
+	//Testing
+	bool IsSuccesful = false;
+	cl_KernelFunctionArgumentOrderListStruct** OrderedTest = (cl_KernelFunctionArgumentOrderListStruct**)malloc(sizeof(cl_KernelFunctionArgumentOrderListStruct*));
+	OrderedTest[0] = new cl_KernelFunctionArgumentOrderListStruct(3, "Add_Integers");	
+	OrderedTest[0]->SetMemoryTypeOfArugment(0, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
+	OrderedTest[0]->SetMemoryTypeOfArugment(1, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
+	OrderedTest[0]->SetMemoryTypeOfArugment(2, cl_Memory_Type::CL_WRITE_ONLY, IsSuccesful);
+
+	std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
+	OpenCLWrapper TESTING = new cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(FilePath, OrderedTest, 3);
+
+	delete TESTING;
 
 	std::cout << "\nBefore End";
 	std::cout << "\nEnd Of program exe";
