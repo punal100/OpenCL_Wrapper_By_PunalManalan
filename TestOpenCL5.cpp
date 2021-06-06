@@ -111,6 +111,177 @@ enum class cl_Memory_Type//NOTE: This is a Enum Based On CL_MEM_READ_ONLY, CL_ME
 	CL_PRIVATE = 5//3
 };
 
+// Always Call the Constructor
+struct PlatformVendorStruct
+{
+private:	
+	bool IsPlatformChosen = false;
+	cl_uint ChosenPlatform = 0;
+	cl_uint TotalNumberOfPlatformVendors = 0;
+	std::string** AllAvailablePlatformVendorNames = nullptr;
+	
+public:	
+	bool IsConstructionSuccesful = false;
+	PlatformVendorStruct(bool& IsSuccesful)
+	{
+		IsConstructionSuccesful = false;
+		IsSuccesful = false;
+		TotalNumberOfPlatformVendors = 0;
+		cl_int ClErrorResult = clGetPlatformIDs(0, NULL, &TotalNumberOfPlatformVendors);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
+		if (ClErrorResult != CL_SUCCESS)
+		{
+			std::cout << "\n ClError Code " << ClErrorResult << " : Getting platforms In PlatformVendorStruct!\n";
+			return;
+		}
+		else
+		{
+			AllAvailablePlatformVendorNames = (std::string**)malloc(TotalNumberOfPlatformVendors * sizeof(std::string*));
+			if (AllAvailablePlatformVendorNames == nullptr)
+			{
+				std::cout << "\n Error Allocating " << sizeof(char) * TotalNumberOfPlatformVendors * sizeof(std::string*) << " Byes Of Memory for AllAvailablePlatformVendorNames PlatformVendorStruct!\n";
+				return;
+			}
+		}
+
+		cl_platform_id PlatformID;
+		for (cl_uint i = 0; i < TotalNumberOfPlatformVendors; ++i)
+		{
+			ClErrorResult = clGetPlatformIDs(i, &PlatformID, NULL);// for the first platform //Single Line code
+			if (ClErrorResult != CL_SUCCESS)
+			{
+				std::cout << "\n ClError Code " << ClErrorResult << " : Platform Not set In PlatformVendorStruct!\n";
+				return;
+			}
+			else
+			{
+				char* ReturnValue = NULL;
+				size_t SizeOfReturnValue;
+
+				ClErrorResult = clGetPlatformInfo(PlatformID, CL_PLATFORM_VENDOR, NULL, ReturnValue, &SizeOfReturnValue); // Get the size of the ReturnValue
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					std::cout << "\n ClError Code " << ClErrorResult << " : Getting Size of CL_PLATFORM_VENDOR in clGetPlatformInfo In PlatformVendorStruct!\n";
+					return;
+				}
+
+				ReturnValue = (char*)malloc(SizeOfReturnValue * sizeof(char));
+				if (ReturnValue == nullptr)
+				{
+					std::cout << "\n Error Allocating " << sizeof(char) * SizeOfReturnValue << " Byes Of Memory for ReturnValue PlatformVendorStruct!\n";
+					return;
+				}
+
+				ClErrorResult = clGetPlatformInfo(PlatformID, CL_PLATFORM_VENDOR, SizeOfReturnValue, ReturnValue, NULL); // Get the Return Value
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					std::cout << "\n ClError Code " << ClErrorResult << " : Getting Value of CL_PLATFORM_VENDOR in clGetPlatformInfo In PlatformVendorStruct!\n";
+					free(ReturnValue);
+					return;
+				}
+				else
+				{
+					AllAvailablePlatformVendorNames[i] = new std::string(ReturnValue);
+					if (AllAvailablePlatformVendorNames[i] == nullptr)
+					{
+						std::cout << "\n Error Allocating " << sizeof(std::string*) << " Byes Of Memory for AllAvailablePlatformVendorNames[" << i << "] PlatformVendorStruct!\n";
+						for (int j = 0; j < i; ++j)
+						{
+							delete AllAvailablePlatformVendorNames[j];
+						}
+						free(AllAvailablePlatformVendorNames);
+						return;
+					}
+					free(ReturnValue);
+				}
+			}
+		}
+		IsConstructionSuccesful = true;
+		IsSuccesful = true;
+	}
+
+	void GetPlatformVendorName(int PlatformNumber, std::string& PlatformVendorName, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+		if (IsConstructionSuccesful)
+		{
+			PlatformVendorName = *(AllAvailablePlatformVendorNames[PlatformNumber]);
+			IsSuccesful = true;
+		}
+		else
+		{
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "Error Calling GetTotalNumberOfPlatformVendors Without Constructing the struct In: PlatformVendorStruct!\n";
+				return;
+			}
+		}
+	}
+	void GetTotalNumberOfPlatformVendors(int& ArgTotalNumberOfPlatformVendors, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+		if (IsConstructionSuccesful)
+		{
+			ArgTotalNumberOfPlatformVendors = TotalNumberOfPlatformVendors;
+			IsSuccesful = true;
+		}
+		else
+		{
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "Error Calling GetTotalNumberOfPlatformVendors Without Constructing the struct In: PlatformVendorStruct!\n";
+				return;
+			}
+		}
+	}
+	void GetChosenPlatform(cl_uint& ArgChosenPlatform, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling GetChosenPlatform Without Constructing the struct In: PlatformVendorStruct!\n";
+			return;
+		}
+		if (!IsPlatformChosen)
+		{
+			std::cout << "Error Platform Is Not Chosen In GetChosenPlatform In: PlatformVendorStruct!\n";
+			return;
+		}
+		ArgChosenPlatform = ChosenPlatform;
+		IsSuccesful = true;
+	}
+
+	void SetChosenPlatform(cl_uint ArgChosenPlatform, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling SetChosenPlatform Without Constructing the struct In: PlatformVendorStruct!\n";
+			return;
+		}
+
+		if ((ArgChosenPlatform > 0) && (ArgChosenPlatform < TotalNumberOfPlatformVendors))
+		{
+			ChosenPlatform = ArgChosenPlatform;
+			IsPlatformChosen = true;
+			IsSuccesful = true;
+		}
+	}
+
+	~PlatformVendorStruct()
+	{
+		if (IsConstructionSuccesful)
+		{
+			for (cl_uint i = 0; i < TotalNumberOfPlatformVendors; ++i)
+			{
+				delete AllAvailablePlatformVendorNames[i];
+			}
+			free(AllAvailablePlatformVendorNames);
+		}
+	}
+};
+
 struct cl_KernelFunctionArgumentOrderListStruct
 {
 public:
@@ -205,6 +376,13 @@ public:
 	void SetMemoryTypeOfArugment(const unsigned int ArgumentNumber, cl_Memory_Type MemoryType, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling SetMemoryTypeOfArugment Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n";
+			return;
+		}
+
 		if (MemoryType == cl_Memory_Type::Uninitialized_cl_Memory)
 		{
 			std::cout << "\n Error Trying to Set The MemoryType of the Argument Number'" << ArgumentNumber << "' to cl_Memory_Type::Uninitialized_cl_Memory In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
@@ -376,7 +554,7 @@ struct cl_PerDeviceValuesStruct
 
 };
 
-//NOTE: Always call this with new operator
+//NOTE: NeverForget the Constructor
 struct cl_MemoryStruct
 {
 private:
@@ -544,6 +722,13 @@ public:
 	void MemoryAllocationOnDevice(void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesful)//Note: If MemorySize is 0, Then no memory is written on the device but memory is created, Note: for CreateOnlyOptionalLargerBufferSize to take effect pass a size larger than SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type
 	{
 		IsFunctionSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling MemoryAllocationOnDevice Without Constructing the struct In: cl_MemoryStruct!\n";
+			return;
+		}
+
 		cl_int ClErrorResult;
 
 		if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type < 1)
@@ -710,6 +895,13 @@ public:
 	void PassBufferToKernel(bool& IsFunctionSuccesful)
 	{
 		IsFunctionSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling PassBufferToKernel Without Constructing the struct In: cl_MemoryStruct!\n";
+			return;
+		}
+
 		cl_int ClErrorResult;
 		if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
 		{
@@ -743,7 +935,14 @@ public:
 
 	void AllocateMemoryAndPassToKernel(void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool& IsFunctionSuccesful)
 	{
-		IsFunctionSuccesful;
+		IsFunctionSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling AllocateMemoryAndPassToKernel Without Constructing the struct In: cl_MemoryStruct!\n";
+			return;
+		}
+
 		MemoryAllocationOnDevice(PointerToMemoryToCopyFrom, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, BUFFER_CREATION_ONLY_SizeOfBuffer, OverWriteMemory, IsFunctionSuccesful);
 		if (!IsFunctionSuccesful)
 		{
@@ -824,6 +1023,12 @@ public:
 	//Do not call this without calling PassDataToThisKernelArgument() first
 	void PassDataToDeviceBuffer()
 	{
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling PassDataToDeviceBuffer Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n";
+			return;
+		}
+
 		if (!IsDataSendCompleted)
 		{
 			BufferOnDevice->MemoryAllocationOnDevice(COPY_OF_DataFromHost, DataFromHostSize, CL_MemorySizeToCreate, !TrueForCreateFalseForOverWrite, IsDataSendCompleted);
@@ -844,6 +1049,13 @@ public:
 		const bool AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR = false;//NOTE: This parameter is Deprecated, So in place of it a dummy variable is put
 		//NOTE: This Deprecated version works perfectly fine but i do not recommend using it, as you MAY make some kind of mistake while using it
 		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling PassDataToThisKernelArgument Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n";
+			return;
+		}
+
 		if (If_Data_Empty_PassZeroForSizeOfData_And_SetThisToFalse)//Yes, Variable name too long, but it Explains what it does
 		{
 			if (SizeOfData > 0)
@@ -973,7 +1185,7 @@ public:
 	}
 };
 
-// Always call using new operator
+// NOTE: Call the constructor First
 struct cl_KernelMultipleArgumentStruct
 {
 private:
@@ -1066,8 +1278,7 @@ public:
 	}
 };
 
-// ALWAYS CALL CONSTRUCTOR(if you are not using 'new' keyword)
-// NOTE: Single Device Works Perfectly
+// NOTE: Single Device Works Perfectly, ALWAYS CALL CONSTRUCTOR(if you are not using 'new' keyword)
 struct cl_MultiDevice_KernelFunctionStruct
 {
 private:
@@ -1170,8 +1381,6 @@ public:
 		IsConstructionSuccesful = true;
 	}
 
-
-
 	~cl_MultiDevice_KernelFunctionStruct()
 	{
 		if (IsConstructionSuccesful)
@@ -1189,7 +1398,7 @@ public:
 	}
 };
 
-// Use this If you want to manually add specific functions
+// NOTE:Use this If you want to manually add specific functions
 struct OpenCL_KernelFunctionsStruct
 {
 public:
@@ -1240,6 +1449,12 @@ public:
 	void SetTheNameAndNumberOfArgumentsForNextKernelFunction(std::string FunctionName, unsigned int TotalNumberOfArgumentsForTheFunction, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling SetTheNameAndNumberOfArgumentsForNextKernelFunction Without Constructing the struct In: OpenCL_KernelFunctionsStruct!\n";
+			return;
+		}
+
 		if (TotalNumberOfFunctionsNameAndTotalArgumentSet < TotalNumberOfFuctions)
 		{
 			OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] = new cl_KernelFunctionArgumentOrderListStruct(TotalNumberOfArgumentsForTheFunction, FunctionName);
@@ -1280,6 +1495,14 @@ public:
 
 	void SetMemoryTypeOfArugment(const unsigned int FunctionNumber, const unsigned int ArgumentNumber, cl_Memory_Type MemoryType, bool& IsSuccesful)//NOTE: Function Number Starts from 0 To (TotalFunctions - 1), Example: For the first Function Use 0, for the Second use 1 and so on
 	{
+		IsSuccesful = false;
+		
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling SetMemoryTypeOfArugment Without Constructing the struct In: OpenCL_KernelFunctionsStruct!\n";
+			return;
+		}
+
 		if (ArgumentNumber < OpenCL_KernelFunctions[FunctionNumber]->TotalNumberOfArugments)
 		{
 			if (OpenCL_KernelFunctions[FunctionNumber]->IsThisListUsable)
@@ -1349,11 +1572,13 @@ public:
 	}
 };
 
+// IMPORTANT NOTE: This is the Only struct You will ever need, Because this Struct Does everything you want an OpenCL Wrapper to do
 struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 {
 	const std::string ClSourceFilePath;
-	cl_program SingleProgram;
-	cl_context SingleContext;
+	cl_platform_id ChosenPlatform = nullptr;
+	cl_program SingleProgram = nullptr;
+	cl_context SingleContext = nullptr;
 	unsigned int NumberOfDevices;
 	cl_device_id* ChosenDevices = nullptr;
 	cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;								// Initalized and Constructed in  InitializeOpenCLProgram()
@@ -1365,11 +1590,11 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
 	//Initialization
-	void InitializeOpenCLProgram(bool &IsSuccesful)
+	void InitializeOpenCLProgram(bool &IsSuccesful, cl_uint PlatformToUse)
 	{
 		IsSuccesful = false;
 		cl_uint NumOfPlatforms;						//the NO. of platforms
-		cl_platform_id ChosenPlatform = nullptr;	//the chosen platform Will only be choosing one platform which will be the first one
+		//ChosenPlatform = nullptr;					////the chosen platform Will only be choosing one platform which will be the first one
 		cl_uint	NumberOfGPUs = 0;					//cl_uint	NumberOfGPUorCPU = 0;// We will Only be using GPU here
 
 		bool ReturnResult = true;
@@ -1377,24 +1602,28 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		if (ClErrorResult != CL_SUCCESS)
 		{
 			std::cout << "\n ClError Code " << ClErrorResult << " : Getting platforms in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 
-		ClErrorResult = clGetPlatformIDs(1, &ChosenPlatform, NULL);// for the first platform //Single Line code
+		ClErrorResult = clGetPlatformIDs(PlatformToUse, &ChosenPlatform, NULL);// for the first platform //Single Line code
 		if (ClErrorResult != CL_SUCCESS)
 		{
 			std::cout << "\n ClError Code " << ClErrorResult << " : Platform Not set in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 
 		ClErrorResult = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &NumberOfGPUs);
 		if (ClErrorResult != CL_SUCCESS)
 		{
 			std::cout << "\n ClError Code " << ClErrorResult << " : Getting GPUs in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 		std::cout << "\n\nTotal Number Of GPUs Available: " << NumberOfGPUs << "\n";
 
 		if (NumberOfGPUs < 1)
 		{
 			std::cout << "\n : Error NO GPUs Available in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 
 		ChosenDevices = (cl_device_id*)malloc(NumberOfGPUs * sizeof(cl_device_id));
@@ -1402,6 +1631,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		if (ClErrorResult != CL_SUCCESS)
 		{
 			std::cout << "\n ClError Code " << ClErrorResult << " : GPUs Not set in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 
 		SingleContext = clCreateContext(NULL, NumberOfGPUs, ChosenDevices, NULL, NULL, &ClErrorResult);
@@ -1409,6 +1639,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		{
 			free(ChosenDevices);
 			std::cout << "\n ClError Code " << ClErrorResult << " : Context Not Created in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 
 		PerDeviceValueStruct = (cl_PerDeviceValuesStruct**)malloc(NumberOfGPUs * sizeof(cl_PerDeviceValuesStruct*));
@@ -1430,6 +1661,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				{
 					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
+				return;
 			}
 		}
 
@@ -1455,6 +1687,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				{
 					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
+				return;
 			}
 
 			ClErrorResult = clBuildProgram(SingleProgram, 0, NULL, NULL, NULL, NULL);
@@ -1472,6 +1705,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 				{
 					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				}
+				return;
 			}
 			NumberOfDevices = NumberOfGPUs;			
 			IsSuccesful = true;
@@ -1504,8 +1738,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 
 	void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
 	{
-		IsSuccesful = false;
-
+		IsSuccesful = false;		
 		
 		if (*ArgOrderedKernelArgumentList != nullptr)
 		{
@@ -1536,6 +1769,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 		if (MultiDevice_And_MultiKernel == nullptr)
 		{
 			std::cout << "\n Error Allocating " << (TotalNumberOfKernelFunctions * sizeof(cl_MultiDevice_KernelFunctionStruct*)) << " Byes Of Memory for MultiDevice_And_MultiKernel In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
 		}
 		else
 		{
@@ -1570,14 +1804,22 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}
 
 	//Manual
-	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(std::string ClSourceFilePath, OpenCL_KernelFunctionsStruct* KernelFunctionsStruct, unsigned int ArgTotalNumberOfKernelFunctions, bool& IsSuccesful) : ClSourceFilePath(ClSourceFilePath)
+	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(std::string ClSourceFilePath, OpenCL_KernelFunctionsStruct* KernelFunctionsStruct, unsigned int ArgTotalNumberOfKernelFunctions, PlatformVendorStruct* PlatformToUse, bool& IsSuccesful) : ClSourceFilePath(ClSourceFilePath)
 	{
 		std::cout << "\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Manual Constructor";
 		IsConstructionSuccesful = false;
 		IsSuccesful = false;
 
+		cl_uint PlatformNumberToUse = 0;
+		PlatformToUse->GetChosenPlatform(PlatformNumberToUse, IsSuccesful);
+		if (IsSuccesful)
+		{
+			std::cout << "\n Error PlatformToUse->GetChosenPlatform returned false In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			return;
+		}
+
 		// Single Program Is First Initialized
-		InitializeOpenCLProgram(IsSuccesful);
+		InitializeOpenCLProgram(IsSuccesful, PlatformNumberToUse);
 
 		if (IsSuccesful && KernelFunctionsStruct->IsConstructionSuccesful)
 		{
@@ -1623,13 +1865,22 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}
 
 	//Automatic
-	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, bool& IsSuccesful) : ClSourceFilePath(ClSourceFilePath)
+	cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, PlatformVendorStruct* PlatformToUse, bool& IsSuccesful) : ClSourceFilePath(ClSourceFilePath)
 	{
 		std::cout << "\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Automatic Constructor";
 		IsConstructionSuccesful = false;
 		IsSuccesful = false;
-		// Single Program Is First Initialized
-		InitializeOpenCLProgram(IsSuccesful);
+
+		cl_uint PlatformNumberToUse = 0;
+		PlatformToUse->GetChosenPlatform(PlatformNumberToUse, IsSuccesful);
+		if (IsSuccesful)
+		{
+			std::cout << "\n Error PlatformToUse->GetChosenPlatform returned false In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			return;
+		}
+
+		// Single Program Is First Initialized	
+		InitializeOpenCLProgram(IsSuccesful, PlatformNumberToUse);
 
 		if (IsSuccesful)
 		{
@@ -1678,7 +1929,7 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 			else
 			{
 				IsSuccesful = false;
-				std::cout << "\n Error GetFileContent Did returned false In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+				std::cout << "\n Error GetFileContent returned false In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 				ReleaseAndFreeClData();
 				return;
 			}
@@ -1705,18 +1956,32 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	}
 
 	//If Either of DevicesToRunKernelFrom/To is set to -1 Then All the Devices(GPU) Will Run
-	void RunKernelFunction(unsigned int KernelToRunNumber, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, int TotalWorkItems, bool ChooseOptimalTotalWorkItemsAndGroupSize = 0, int TotalWorkGroups = 0)
+	void RunKernelFunction(unsigned int KernelToRunNumber, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, bool SplitWorkBetweenDevices, int TotalWorkItems, bool& IsSuccesful, bool ChooseOptimalTotalWorkItemsAndGroupSize = true, int TotalWorkGroups = 0)
 	{
+		IsSuccesful = false;
 
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling RunKernelFunction Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
+		}
 	}
 
-	void RunKernelFunction(std::string NameOfTheKernelToRun, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, int TotalWorkItems)
+	void RunKernelFunction(std::string NameOfTheKernelToRun, int DevicesToRunKernelFrom, int DevicesToRunKernelTo, bool SplitWorkBetweenDevices, int TotalWorkItems, bool& IsSuccesful, bool ChooseOptimalTotalWorkItemsAndGroupSize = true, int TotalWorkGroups = 0)
 	{
+		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling RunKernelFunction Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
+		}
+
 		for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 		{
 			if (OrderedKernelArgumentList[i]->KernelFunctionName == NameOfTheKernelToRun)
 			{
-				RunKernelFunction(i, DevicesToRunKernelFrom, DevicesToRunKernelTo, TotalWorkItems);
+				RunKernelFunction(i, DevicesToRunKernelFrom, DevicesToRunKernelTo, SplitWorkBetweenDevices, TotalWorkItems, IsSuccesful, ChooseOptimalTotalWorkItemsAndGroupSize, TotalWorkGroups);
 				return;
 			}
 		}	
@@ -1727,6 +1992,13 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 	void GetBinaryInformationOfProgram(size_t& Binary_Size_Of_CLProgram, std::string& Binary_Of_CLProgram, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+
+		if (!IsConstructionSuccesful)
+		{
+			std::cout << "Error Calling GetBinaryInformationOfProgram Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
+		}
+
 		cl_int ClErrorResult;		
 		clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &Binary_Size_Of_CLProgram, NULL);
 		if (ClErrorResult != CL_SUCCESS)
@@ -1735,6 +2007,11 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 			return;
 		}
 		char* CharBinary_Of_CLProgram = (char*)malloc(sizeof(char) * Binary_Size_Of_CLProgram);
+		if (CharBinary_Of_CLProgram == nullptr)
+		{
+			std::cout << "\n Error Allocating " << sizeof(char) << " Byes Of Memory for CharBinary_Of_CLProgram In GetBinaryInformationOfProgram In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			return;
+		}
 		clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARIES, Binary_Size_Of_CLProgram, &CharBinary_Of_CLProgram, NULL);
 		if (ClErrorResult != CL_SUCCESS)
 		{
@@ -1762,12 +2039,12 @@ struct cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 			{
 				delete MultiDevice_And_MultiKernel[i];
 			}
-			//PENDING RESOURCE RELEASE
 			free(MultiDevice_And_MultiKernel);
 		}
 	}
 };
 
+// Note: This Is the Shortened Name, Does not matter if you use the struct name directly
 #define OpenCLWrapper cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct
 //#define ManualInitializeKernelFunctions(PointerToVariableToInitialize, NumberOfFunctionsToAdd, IsSuccesful)ManualInitializeKernelFunctionList(PointerToVariableToInitialize, NumberOfFunctionsToAdd, IsSuccesful);// The reason Why i wrote the same function as a macro Is, Macro looks good... Yes I know this a illogical reason, but i like it this way.
 
@@ -1776,21 +2053,55 @@ int main()
 	//Testing
 	bool IsSuccesful = false;
 	OpenCL_KernelFunctionsStruct Functions_List(1, IsSuccesful);
-	if (IsSuccesful)
+	if (!IsSuccesful)
 	{
-		Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, IsSuccesful);
-		if (IsSuccesful)
+		std::cout << "\n Error: Variable construction Unsuccesful";
+		return 1;
+	}
+
+	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, IsSuccesful);
+	if (!IsSuccesful)
+	{
+		std::cout << "\n Error: Function Unsuccesful";
+		return 1;
+	}
+	
+	//Always Check for Failures 
+	Functions_List.SetMemoryTypeOfArugment(0, 0, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
+	Functions_List.SetMemoryTypeOfArugment(0, 1, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
+	Functions_List.SetMemoryTypeOfArugment(0, 2, cl_Memory_Type::CL_WRITE_ONLY, IsSuccesful);
+
+
+	PlatformVendorStruct AvailablePlatformVendors(IsSuccesful);
+	if (!IsSuccesful)
+	{
+		std::cout << "\n Error: Variable construction Unsuccesful";
+		return 1;
+	}
+
+	int TotalNumberOfPlatforms;
+	AvailablePlatformVendors.GetTotalNumberOfPlatformVendors(TotalNumberOfPlatforms, IsSuccesful);
+	if (!IsSuccesful)
+	{
+		std::cout << "\n Error: Function Unsuccesful";
+		return 1;
+	}
+
+	std::string PlatformVendorName;
+	for (int i = 0; i < TotalNumberOfPlatforms; ++i)
+	{
+		AvailablePlatformVendors.GetPlatformVendorName(i, PlatformVendorName, IsSuccesful);
+		if (!IsSuccesful)
 		{
-			Functions_List.SetMemoryTypeOfArugment(0, 0, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
-			Functions_List.SetMemoryTypeOfArugment(0, 1, cl_Memory_Type::CL_READ_ONLY, IsSuccesful);
-			Functions_List.SetMemoryTypeOfArugment(0, 2, cl_Memory_Type::CL_WRITE_ONLY, IsSuccesful);
+			std::cout << "\n Error: Function Unsuccesful";
+			return 1;
 		}
+
+		std::cout << "\n Platform Vendor Nunber: '"<<i<<"', Platform Vendor Name: '" << PlatformVendorName << "'\n";
 	}
 
 	std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OpenCLWrapper EntireOpenCLProgram(FilePath, &Functions_List, 1, IsSuccesful);
-	if (IsSuccesful)
-	{
+	OpenCLWrapper EntireOpenCLProgram(FilePath, &Functions_List, 1, &AvailablePlatformVendors, IsSuccesful);
 
-	}	
+	return 0;
 }
