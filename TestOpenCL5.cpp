@@ -103,7 +103,7 @@ namespace Essential
 	void Malloc_PointerToArrayOfPointers(void*** PointerTo_PointerToArrayOfPointers, unsigned int NumOfPointerToAdd, unsigned int SizeOfEachPointer, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
-		if (*PointerTo_PointerToArrayOfPointers == nullptr)
+		if (*PointerTo_PointerToArrayOfPointers != nullptr)
 		{
 			std::cout << "\n Error Not Null : PointerToArrayOfPointers already pointing to some memory, free the memory First. in Malloc_PointerToArrayOfPointers In: Essential!\n";
 		}
@@ -112,8 +112,7 @@ namespace Essential
 			*PointerTo_PointerToArrayOfPointers = (void**)malloc(NumOfPointerToAdd * SizeOfEachPointer);
 			if (*PointerTo_PointerToArrayOfPointers == nullptr)
 			{
-				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essential!\n";
-				IsSuccesful = true;
+				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essential!\n";				
 			}
 			else
 			{
@@ -121,6 +120,7 @@ namespace Essential
 				{
 					(*PointerTo_PointerToArrayOfPointers)[i] = nullptr;// Setting nullptr for each element
 				}
+				IsSuccesful = true;
 			}
 		}
 	}
@@ -505,6 +505,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							return;
 						}
 					}
+					IsThisListUsable = true;
 					IsConstructionSuccesful = true;
 				}				
 			}		
@@ -1477,6 +1478,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			else
 			{
 				std::cout << "\n Error The OrderedListOfArugments Is Not Constructed, So Is Unusable In: cl_KernelMultipleArgumentStruct!\n";
+				return;
 			}
 
 			bool IsSuccesful = false;
@@ -1539,6 +1541,20 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				return;
 			}
 
+			if (!ArgOrderedListOfArugments->IsConstructionSuccesful)
+			{
+				std::cout << "\n Error The OrderedListOfArugments Is Not Properly Set, So Is Unusable In: cl_MultiDevice_KernelFunctionStruct!\n";
+				return;
+			}
+			else
+			{
+				if (!ArgOrderedListOfArugments->IsThisListUsable)
+				{
+					std::cout << "\n Error The OrderedListOfArugments Is Not Constructed, So Is Unusable In: cl_MultiDevice_KernelFunctionStruct!\n";
+					return;
+				}			
+			}
+
 			if (NumberOfDevices > 0)
 			{
 				MultiDeviceKernelArgumentsArray = (cl_KernelMultipleArgumentStruct**)malloc(NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*));
@@ -1599,6 +1615,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					free(MultiDeviceKernelArgumentsArray);
 					return;
 				}	
+
 				MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, &Argcl_PerDeviceValueStruct->DeviceClCommandQueue, MultiDeviceKernelFunction[i]);
 				if (MultiDeviceKernelArgumentsArray[i] == nullptr)
 				{
