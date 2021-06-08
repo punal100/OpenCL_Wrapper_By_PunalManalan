@@ -412,6 +412,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	// NOTE: Call Constructor Before Using 
 	struct cl_KernelFunctionArgumentOrderListStruct
 	{			
+	public:
 		bool IsThisListUsable = false;
 
 		const std::string KernelFunctionName;
@@ -940,6 +941,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					return;
 				}
 			}
+			else
+			{
+				std::cout << "\n Error Buffer does not exist, unable to free buffer" << ": BufferCreation In: cl_MemoryStruct!\n";
+			}
 		}
 
 		void BufferCreation(size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool& IsFunctionSuccesful)
@@ -1339,6 +1344,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = false;
 				if (DoesBufferAlreadyExist)
 				{
+					FreeBuffer(IsConstructionSuccesful);//Temprarly using IsConstructionSuccesful boolean here
+					IsConstructionSuccesful = false;
 					if (clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory)
 					{
 						cl_int ClErrorResult;
@@ -1574,6 +1581,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	
 		const cl_KernelFunctionArgumentOrderListStruct* OrderedListOfArugments;
 		cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
+		cl_kernel ThisKernel;
 
 		void CreateKernelSingleArgumentStruct(const cl_context* cl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel, const cl_kernel* TheKernel, bool& IsSuccesful)
 		{
@@ -1625,7 +1633,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 	public:
 		cl_KernelMultipleArgumentStruct(const cl_KernelFunctionArgumentOrderListStruct* ArgOrderedListOfArugments,
-			const cl_context* Argcl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel, const cl_kernel* TheKernel) : OrderedListOfArugments(ArgOrderedListOfArugments)
+			const cl_context* Argcl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel, cl_program* BuiltClProgramContainingTheSpecifiedFunctions) : OrderedListOfArugments(ArgOrderedListOfArugments)
 		{
 			std::cout << "\n Constructing cl_KernelMultipleArgumentStruct!";
 
@@ -1634,7 +1642,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			bool IsSuccesful = false;
 			IsConstructionSuccesful = false;// Yes this is set to false
 
-			if ((ArgOrderedListOfArugments == nullptr) || (Argcl_ContextForThisKernel == nullptr) || (Argcl_CommandQueueForThisKernel == nullptr) || (TheKernel == nullptr))
+			if ((ArgOrderedListOfArugments == nullptr) || (Argcl_ContextForThisKernel == nullptr) || (Argcl_CommandQueueForThisKernel == nullptr) || (BuiltClProgramContainingTheSpecifiedFunctions == nullptr))
 			{
 				std::cout << "\n Error nullptr Passed as value for const variables In: cl_KernelMultipleArgumentStruct!";
 				std::cout << "\n Error Construction Failed cl_KernelMultipleArgumentStruct!";
@@ -1665,13 +1673,22 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				return;
 			}
 			
-			int TotalArgumentsCreated = 0;
-			CreateKernelSingleArgumentStruct(Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, TheKernel, IsSuccesful);
+			cl_int ClErrorResult = 0;
+			ThisKernel = clCreateKernel(*BuiltClProgramContainingTheSpecifiedFunctions, OrderedListOfArugments->KernelFunctionName.c_str(), &ClErrorResult);
+			if (ClErrorResult != CL_SUCCESS)
+			{
+				std::cout << "\n CLError " << ClErrorResult << " : Kernel Creation Failed in cl_KernelMultipleArgumentStruct!\n";
+				return;
+			}
+
+			CreateKernelSingleArgumentStruct(Argcl_ContextForThisKernel, Argcl_CommandQueueForThisKernel, &ThisKernel, IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Single Kernel Argument Failed In: cl_KernelMultipleArgumentStruct!\n";
+				clReleaseKernel(ThisKernel);
 				return;
-			}
+			}			
+
 			IsConstructionSuccesful = true;
 		}
 
@@ -1680,6 +1697,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			std::cout << "\n Destructing cl_KernelMultipleArgumentStruct!";
 			if (IsConstructionSuccesful)
 			{
+				clReleaseKernel(ThisKernel);
 				if (SingleKernelFunctionMultiArgumentsArray != nullptr)
 				{
 					for (int i = 0; i < OrderedListOfArugments->TotalNumberOfArugments; ++i)
@@ -1699,7 +1717,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	private:
 		const unsigned int NumberOfDevices;
 		const std::string KernelFunctionName;
-		cl_kernel** MultiDeviceKernelFunction = nullptr;
 		cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray = nullptr;
 
 	public:
@@ -1708,16 +1725,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		//NOTE: any memory which is plain int, float etc etc those which are NOT cl_mem, Will NOT BE INCLUDED HERE instead they will be given as parameters in kernel Host function
 		cl_MultiDevice_KernelFunctionStruct(const unsigned int ArgNumberOfDevices, const cl_KernelFunctionArgumentOrderListStruct* ArgOrderedListOfArugments,
 			const cl_context* Argcl_ContextForThisKernel, const cl_PerDeviceValuesStruct* Argcl_PerDeviceValueStruct,
-			cl_program* BuiltClProgramContainingTheSpecifiedFunction) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgOrderedListOfArugments->KernelFunctionName)
+			cl_program* BuiltClProgramContainingTheSpecifiedFunctions) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgOrderedListOfArugments->KernelFunctionName)
 		{
 			std::cout << "\n Constructing cl_MultiDevice_KernelFunctionStruct!";
 
-			MultiDeviceKernelFunction = nullptr;
 			MultiDeviceKernelArgumentsArray = nullptr;
 
 			IsConstructionSuccesful = false;
 
-			if ((ArgOrderedListOfArugments == nullptr) || (Argcl_ContextForThisKernel == nullptr) || (Argcl_PerDeviceValueStruct == nullptr) || (BuiltClProgramContainingTheSpecifiedFunction == nullptr))
+			if ((ArgOrderedListOfArugments == nullptr) || (Argcl_ContextForThisKernel == nullptr) || (Argcl_PerDeviceValueStruct == nullptr) || (BuiltClProgramContainingTheSpecifiedFunctions == nullptr))
 			{
 				std::cout << "\n Error nullptr Passed as value for const variables In: cl_MultiDevice_KernelFunctionStruct!";
 				std::cout << "\n Error Construction Failed cl_MultiDevice_KernelFunctionStruct!";
@@ -1746,32 +1762,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*)) << " Byes Of Memory for MultiDeviceKernelArgumentsArray In cl_MultiDevice_KernelFunctionStruct!\n";
 					return;
-				}
-
-
-				Essential::Malloc_PointerToArrayOfPointers((void***)&MultiDeviceKernelFunction, NumberOfDevices, sizeof(cl_kernel*), IsSuccesful);
-				if (!IsSuccesful)
-				{
-					std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_kernel*)) << " Byes Of Memory for MultiDeviceKernelFunction In cl_MultiDevice_KernelFunctionStruct!\n";
-					free(MultiDeviceKernelArgumentsArray);
-					return;
-				}
-
-				for (int i = 0; i < NumberOfDevices; ++i)
-				{
-					MultiDeviceKernelFunction[i] = (cl_kernel*)malloc(sizeof(cl_kernel));
-					if(MultiDeviceKernelFunction[i] == nullptr)
-					{
-						std::cout << "\n Error Allocating " << sizeof(cl_kernel) << " Byes Of Memory for MultiDeviceKernelFunction["<< i <<"] In cl_MultiDevice_KernelFunctionStruct!\n";
-						for (int j = 0; j < i; ++j)
-						{
-							free(MultiDeviceKernelFunction[j]);
-						}
-						free(MultiDeviceKernelFunction);
-						free(MultiDeviceKernelArgumentsArray);
-						return;
-					}
-				}
+				}				
 			}
 			else
 			{
@@ -1781,43 +1772,16 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			cl_int ClErrorResult;
 			for (int i = 0; i < NumberOfDevices; ++i)
-			{			
-				*(MultiDeviceKernelFunction[i]) = clCreateKernel(*BuiltClProgramContainingTheSpecifiedFunction, KernelFunctionName.c_str(), &ClErrorResult);
-				if (ClErrorResult != CL_SUCCESS)
-				{
-					std::cout << "\n CLError " << ClErrorResult << " : Kernel Creation Failed in cl_MultiDevice_KernelFunctionStruct!\n";
-					for (int j = 0; j < i; ++j)
-					{
-						clReleaseKernel(*(MultiDeviceKernelFunction[j]));
-						delete MultiDeviceKernelArgumentsArray[j];					
-					}
-
-					for (int j = 0; j < NumberOfDevices; ++j)
-					{
-						free(MultiDeviceKernelFunction[j]);
-					}
-					free(MultiDeviceKernelFunction);
-					free(MultiDeviceKernelArgumentsArray);
-					return;
-				}	
-
-				MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, &Argcl_PerDeviceValueStruct->DeviceClCommandQueue, MultiDeviceKernelFunction[i]);
+			{	
+				MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, &Argcl_PerDeviceValueStruct->DeviceClCommandQueue, BuiltClProgramContainingTheSpecifiedFunctions);
 				if (MultiDeviceKernelArgumentsArray[i] == nullptr)
 				{
 					std::cout << "\n Error Allocating " << sizeof(cl_KernelMultipleArgumentStruct) << " Byes Of Memory for MultiDeviceKernelArgumentsArray[" << i << "] In cl_MultiDevice_KernelFunctionStruct!\n";
 				
-					clReleaseKernel(*(MultiDeviceKernelFunction[i]));// Because the above code succesfuly ran so we are releasing this
 					for (int j = 0; j < i; ++j)
 					{
-						clReleaseKernel(*(MultiDeviceKernelFunction[j]));
 						delete MultiDeviceKernelArgumentsArray[j];					
-					}				
-
-					for (int j = 0; j < NumberOfDevices; ++j)
-					{
-						free(MultiDeviceKernelFunction[j]);
 					}
-					free(MultiDeviceKernelFunction);
 					free(MultiDeviceKernelArgumentsArray);
 					return;
 				}
@@ -1832,11 +1796,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				for (int i = 0; i < NumberOfDevices; ++i)
 				{
-					clReleaseKernel(*(MultiDeviceKernelFunction[i]));
 					delete MultiDeviceKernelArgumentsArray[i];
-					free(MultiDeviceKernelFunction[i]);
 				}
-				free(MultiDeviceKernelFunction);
 				free(MultiDeviceKernelArgumentsArray);
 				IsConstructionSuccesful = false;
 			}
@@ -2505,42 +2466,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}	
 			
 		}
-
-		void GetBinaryInformationOfProgram(size_t& Binary_Size_Of_CLProgram, std::string& Binary_Of_CLProgram, bool& IsSuccesful)
-		{
-			IsSuccesful = false;
-
-			if (!IsConstructionSuccesful)
-			{
-				std::cout << "\n Error Calling GetBinaryInformationOfProgram Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
-			}
-
-			cl_int ClErrorResult;		
-			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &Binary_Size_Of_CLProgram, NULL);
-			if (ClErrorResult != CL_SUCCESS)
-			{
-				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Size Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
-			}
-			char* CharBinary_Of_CLProgram = (char*)malloc(sizeof(char) * Binary_Size_Of_CLProgram);
-			if (CharBinary_Of_CLProgram == nullptr)
-			{
-				std::cout << "\n Error Allocating " << sizeof(char) << " Byes Of Memory for CharBinary_Of_CLProgram In GetBinaryInformationOfProgram In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
-			}
-			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARIES, Binary_Size_Of_CLProgram, &CharBinary_Of_CLProgram, NULL);
-			if (ClErrorResult != CL_SUCCESS)
-			{
-				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Information Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				free(CharBinary_Of_CLProgram);
-				return;
-			}
-			Binary_Of_CLProgram = CharBinary_Of_CLProgram;
-			free(CharBinary_Of_CLProgram);
-			IsSuccesful = true;
-		}
-
+		
 		unsigned int GetTotalNumberOfDevices()
 		{
 			if (IsConstructionSuccesful)
@@ -2564,6 +2490,40 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error Calling GetTotalNumberOfKernelFunctions Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
 			return 0;
+		}
+		void GetBinaryInformationOfProgram(size_t& Binary_Size_Of_CLProgram, std::string& Binary_Of_CLProgram, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling GetBinaryInformationOfProgram Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				return;
+			}
+
+			cl_int ClErrorResult;
+			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &Binary_Size_Of_CLProgram, NULL);
+			if (ClErrorResult != CL_SUCCESS)
+			{
+				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Size Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				return;
+			}
+			char* CharBinary_Of_CLProgram = (char*)malloc(sizeof(char) * Binary_Size_Of_CLProgram);
+			if (CharBinary_Of_CLProgram == nullptr)
+			{
+				std::cout << "\n Error Allocating " << sizeof(char) << " Byes Of Memory for CharBinary_Of_CLProgram In GetBinaryInformationOfProgram In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				return;
+			}
+			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARIES, Binary_Size_Of_CLProgram, &CharBinary_Of_CLProgram, NULL);
+			if (ClErrorResult != CL_SUCCESS)
+			{
+				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Information Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				free(CharBinary_Of_CLProgram);
+				return;
+			}
+			Binary_Of_CLProgram = CharBinary_Of_CLProgram;
+			free(CharBinary_Of_CLProgram);
+			IsSuccesful = true;
 		}
 		void GetKernelNumberByKernelName(unsigned int& KernelNumber, std::string NameOfTheKernel, bool& IsSuccesful)
 		{
@@ -2610,7 +2570,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		}
 		cl_KernelFunctionArgumentOrderListStruct GetKernelInformation(std::string NameOfTheKernel, bool& IsSuccesful)
 		{
-			bool IsSuccesful = false;
+			IsSuccesful = false;
 			unsigned int KernelNumber = 0;
 			GetKernelNumberByKernelName(KernelNumber, NameOfTheKernel, IsSuccesful);
 			if (IsSuccesful)
