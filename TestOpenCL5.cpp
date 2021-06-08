@@ -19,16 +19,17 @@ Information About This Wrapper:
 #include <iostream>
 #include <fstream>// For file reading
 
-#define __CL_ENABLE_EXCEPTIONS
+//#define __CL_ENABLE_EXCEPTIONS
 //#define CL_API_SUFFIX__VERSION_1_2
 #define CL_USE_DEPRECATED_OPENCL_2_0_APIS
+//#define CL_TARGET_OPENCL_VERSION 120
 #include <CL/cl.h>// OpenCl
 
 #ifndef ESSENTIAL_FUNCTIONS_BY_PUNAL
 #define ESSENTIAL_FUNCTIONS_BY_PUNAL
 #include <chrono>// Mainly For FRAMERATE(FPS) LOCK
 
-namespace Essential
+namespace Essenbp//Essential Functions By Punal
 {
 	uint64_t TimeSinceEpochInMilliSecond()
 	{
@@ -106,31 +107,31 @@ namespace Essential
 		
 		if (PointerTo_PointerToArrayOfPointers == nullptr)
 		{
-			std::cout << "\n Error nullptr Passed for 'PointerTo_PointerToArrayOfPointers'. in Malloc_PointerToArrayOfPointers In: Essential!\n";
+			std::cout << "\n Error nullptr Passed for 'PointerTo_PointerToArrayOfPointers'. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
 			return;
 		}
 
-		if (NumOfPointerToAdd < 1)
+		if (NumOfPointerToAdd == 0)
 		{
-			std::cout << "\n Error NumOfPointerToAdd Is Less than 1. in Malloc_PointerToArrayOfPointers In: Essential!\n";
+			std::cout << "\n Error NumOfPointerToAdd Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
 			return;
 		}
-		if (SizeOfEachPointer < 1)
+		if (SizeOfEachPointer == 0)
 		{
-			std::cout << "\n Error SizeOfEachPointer Is Less than 1. in Malloc_PointerToArrayOfPointers In: Essential!\n";
+			std::cout << "\n Error SizeOfEachPointer Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
 			return;
 		}
 
 		if (*PointerTo_PointerToArrayOfPointers != nullptr)
 		{
-			std::cout << "\n Error Not Null : PointerToArrayOfPointers already pointing to some memory, free the memory First. in Malloc_PointerToArrayOfPointers In: Essential!\n";
+			std::cout << "\n Error Not Null : PointerToArrayOfPointers already pointing to some memory, free the memory First. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
 		}
 		else
 		{
 			*PointerTo_PointerToArrayOfPointers = (void**)calloc(NumOfPointerToAdd, SizeOfEachPointer);// Setting everything to Zero
 			if (*PointerTo_PointerToArrayOfPointers == nullptr)
 			{
-				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essential!\n";				
+				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essenbp!\n";				
 				return;
 			}
 			IsSuccesful = true;
@@ -148,7 +149,7 @@ namespace Essential
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
 			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open File in GetFileContent In: Essential,\n File Path: " << Path << "\n";
+			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open File in GetFileContent In: Essenbp,\n File Path: " << Path << "\n";
 		}
 		else
 		{
@@ -169,7 +170,7 @@ namespace Essential
 
 		if (TheFile != nullptr)
 		{
-			std::cout << "\nError : Unable to Open File in GetFileContent In: Essential,\n File Path: " << Path << "\n";
+			std::cout << "\nError : Unable to Open File in GetFileContent In: Essenbp,\n File Path: " << Path << "\n";
 		}
 		else
 		{
@@ -228,7 +229,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				Essential::Malloc_PointerToArrayOfPointers((void***)&AllAvailablePlatformVendorNames, TotalNumberOfPlatformVendors, sizeof(std::string*), IsSuccesful);
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&AllAvailablePlatformVendorNames, TotalNumberOfPlatformVendors, sizeof(std::string*), IsSuccesful);
 				if (!IsSuccesful)
 				{
 					std::cout << "\n Error Allocating :" << TotalNumberOfPlatformVendors * sizeof(std::string*) << " Byes Of Memory for AllAvailablePlatformVendorNames cl_PlatformVendorStruct!\n";
@@ -445,7 +446,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsConstructionSuccesful = false;
 			KernelArgumentsInOrder = nullptr;
 
-			Essential::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
@@ -506,7 +507,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 			}
 
-			Essential::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
@@ -543,7 +544,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsConstructionSuccesful = false;
 			bool IsSuccesful = false;
 
-			Essential::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
@@ -1665,7 +1666,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (OrderedListOfArugments->IsThisListUsable)
 				{
-					Essential::Malloc_PointerToArrayOfPointers((void***)&SingleKernelFunctionMultiArgumentsArray, OrderedListOfArugments->TotalNumberOfArugments, sizeof(cl_KernelSingleArgumentStruct*), IsSuccesful);
+					Essenbp::Malloc_PointerToArrayOfPointers((void***)&SingleKernelFunctionMultiArgumentsArray, OrderedListOfArugments->TotalNumberOfArugments, sizeof(cl_KernelSingleArgumentStruct*), IsSuccesful);
 					if (!IsSuccesful)
 					{
 						std::cout << "\n Error Allocating " << (OrderedListOfArugments->TotalNumberOfArugments * sizeof(cl_KernelSingleArgumentStruct*)) << " Byes Of Memory for SingleKernelFunctionMultiArgumentsArray In cl_KernelMultipleArgumentStruct!\n";
@@ -1702,6 +1703,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}			
 
 			IsConstructionSuccesful = true;
+		}
+
+		void PassDataToThisKernelArgument(unsigned int const KernelArgNumber, void* DataToPass, size_t SizeOfData, const bool If_Data_Empty_PassZeroForSizeOfData_And_SetThisToFalse, size_t BufferSizeToCreate, bool ARGUMENT_TrueForCreateFalseForOverWrite, bool& IsSuccesful)
+		{
+			if (OrderedListOfArugments->IsThisListUsable)
+			{
+
+			}
 		}
 
 		~cl_KernelMultipleArgumentStruct()
@@ -1769,7 +1778,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			bool IsSuccesful = false;
 			if (NumberOfDevices > 0)
 			{
-				Essential::Malloc_PointerToArrayOfPointers((void***)&MultiDeviceKernelArgumentsArray, NumberOfDevices, sizeof(cl_KernelMultipleArgumentStruct*), IsSuccesful);
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiDeviceKernelArgumentsArray, NumberOfDevices, sizeof(cl_KernelMultipleArgumentStruct*), IsSuccesful);
 				if (!IsSuccesful)
 				{
 					std::cout << "\n Error Allocating " << (NumberOfDevices * sizeof(cl_KernelMultipleArgumentStruct*)) << " Byes Of Memory for MultiDeviceKernelArgumentsArray In cl_MultiDevice_KernelFunctionStruct!\n";
@@ -1782,7 +1791,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				return;
 			}
 
-			cl_int ClErrorResult;
+			cl_int ClErrorResult = 0;
 			for (int i = 0; i < NumberOfDevices; ++i)
 			{	
 				MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, Argcl_ContextForThisKernel, &Argcl_PerDeviceValueStruct->DeviceClCommandQueue, BuiltClProgramContainingTheSpecifiedFunctions);
@@ -1837,7 +1846,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				Essential::Malloc_PointerToArrayOfPointers((void***)&OpenCL_KernelFunctions, NumberOfFunctionsToAdd, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccesful);
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&OpenCL_KernelFunctions, NumberOfFunctionsToAdd, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccesful);
 				if (!IsSuccesful)
 				{
 					std::cout << "\n Error Allocating " << (NumberOfFunctionsToAdd * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for VariableToInitialize In ManualInitializeKernelFunctionList In: cl_KernelFunctionsStruct!\n";
@@ -2074,7 +2083,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				return;
 			}
 
-			Essential::Malloc_PointerToArrayOfPointers((void***)&PerDeviceValueStruct, NumberOfGPUs, sizeof(cl_PerDeviceValuesStruct*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&PerDeviceValueStruct, NumberOfGPUs, sizeof(cl_PerDeviceValuesStruct*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating " << (NumberOfGPUs * sizeof(cl_PerDeviceValuesStruct*)) << " Byes Of Memory for PerDeviceValueStruct In InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";				
@@ -2114,7 +2123,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			//const char* ClSourceFilePath = "D:\\C++ Test Projects\\TestOpenCL4\\PunalManalanOpenCLKernelFunctions.cl";
 			std::string ClSourceFileInString;
-			Essential::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
+			Essenbp::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
 			if (IsSuccesful)
 			{
 				const char* ClSourceFileInChar = ClSourceFileInString.c_str();
@@ -2215,7 +2224,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions, bool &IsSuccesful)
 		{
 			IsSuccesful = false;
-			Essential::Malloc_PointerToArrayOfPointers((void***)&MultiDevice_And_MultiKernel, TotalNumberOfKernelFunctions, sizeof(cl_MultiDevice_KernelFunctionStruct*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiDevice_And_MultiKernel, TotalNumberOfKernelFunctions, sizeof(cl_MultiDevice_KernelFunctionStruct*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating " << (TotalNumberOfKernelFunctions * sizeof(cl_MultiDevice_KernelFunctionStruct*)) << " Byes Of Memory for MultiDevice_And_MultiKernel In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
@@ -2264,7 +2273,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			NumberOfDevices = 0;
 			ChosenDevices = nullptr;
 			PerDeviceValueStruct = nullptr;
-			TotalNumberOfKernelFunctions = 0;
+			TotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions;
 			OrderedKernelArgumentList = nullptr;
 			MultiDevice_And_MultiKernel = nullptr;
 
@@ -2293,11 +2302,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				IsSuccesful = false;// reseting
 
-				Essential::Malloc_PointerToArrayOfPointers((void***)&OrderedKernelArgumentList, TotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccesful);
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&OrderedKernelArgumentList, TotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccesful);
 				if (!IsSuccesful)
-				{
-					ReleaseAndFreeClData();
+				{					
 					std::cout << "\n Error Allocating " << (TotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for OrderedKernelArgumentList In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					ReleaseAndFreeClData();
 					return;
 				}
 				else 
@@ -2374,7 +2383,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (IsSuccesful)
 			{
 				std::string ClSourceFileInString;
-				Essential::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
+				Essenbp::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
 				if(IsSuccesful)
 				{				
 					FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(ClSourceFileInString, &OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccesful);
