@@ -103,6 +103,13 @@ namespace Essential
 	void Malloc_PointerToArrayOfPointers(void*** PointerTo_PointerToArrayOfPointers, unsigned int NumOfPointerToAdd, unsigned int SizeOfEachPointer, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+		
+		if (PointerTo_PointerToArrayOfPointers == nullptr)
+		{
+			std::cout << "\n Error nullptr Passed for 'PointerTo_PointerToArrayOfPointers'. in Malloc_PointerToArrayOfPointers In: Essential!\n";
+			return;
+		}
+
 		if (NumOfPointerToAdd < 1)
 		{
 			std::cout << "\n Error NumOfPointerToAdd Is Less than 1. in Malloc_PointerToArrayOfPointers In: Essential!\n";
@@ -120,19 +127,13 @@ namespace Essential
 		}
 		else
 		{
-			*PointerTo_PointerToArrayOfPointers = (void**)malloc(NumOfPointerToAdd * SizeOfEachPointer);
+			*PointerTo_PointerToArrayOfPointers = (void**)calloc(NumOfPointerToAdd, SizeOfEachPointer);// Setting everything to Zero
 			if (*PointerTo_PointerToArrayOfPointers == nullptr)
 			{
 				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essential!\n";				
+				return;
 			}
-			else
-			{
-				for (int i = 0; i < NumOfPointerToAdd; ++i)
-				{
-					(*PointerTo_PointerToArrayOfPointers)[i] = nullptr;// Setting nullptr for each element
-				}
-				IsSuccesful = true;
-			}
+			IsSuccesful = true;
 		}
 	}
 
@@ -1451,8 +1452,13 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					// Deprecated 
 					if (AUTO_AUDJUST_AND_FIX_SIZE_AND_DATA_COMPLETE_ERROR)
 					{
-						DataToPass = calloc(1, sizeof(char));
+						DataToPass = calloc(1, sizeof(char));						
 						SizeOfData = 1;
+						if (DataToPass == nullptr)
+						{
+							std::cout << "\n Error Allocating : " << 1 * sizeof(char) << " Byes Of Memory for DataToPass(NOTE: This funtion argument is reused) in PassDataToThisKernelArgument In: cl_KernelSingleArgumentStruct!\n";
+							return;
+						}
 					}
 					else// Error Code
 					{
@@ -1469,9 +1475,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					else
 					{
-						// Correct
-						DataToPass = calloc(1, sizeof(char));
+						// For Local Memory
+						// NOTE: This is a dummy value, it can not be sent to kernel... but can be stored in buffer(Sometimes storing Zero bytes in buffer causes Errors, so storing minimal amount of data which is 1 byte)
+						DataToPass = calloc(1, sizeof(char));						
 						SizeOfData = 1;
+						if (DataToPass == nullptr)
+						{
+							std::cout << "\n Error Allocating : " << 1 * sizeof(char) << " Byes Of Memory for DataToPass(NOTE: This funtion argument is reused) in PassDataToThisKernelArgument In: cl_KernelSingleArgumentStruct!\n";
+							return;
+						}
 					}				
 				}
 			}
@@ -1543,7 +1555,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			for (int i = 0; i < SizeOfData; ++i)// Memccpy bad
 			{
-				((char*)TempDataCarryHelper)[i] = ((char*)DataToPass)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+				((char*)TempDataCarryHelper)[i] = ((char*)DataToPass)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'				
 			}		
 
 			IsDataSendCompleted = false;
@@ -1581,7 +1593,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	
 		const cl_KernelFunctionArgumentOrderListStruct* OrderedListOfArugments;
 		cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
-		cl_kernel ThisKernel;
+		cl_kernel ThisKernel = NULL;
 
 		void CreateKernelSingleArgumentStruct(const cl_context* cl_ContextForThisKernel, const cl_command_queue* Argcl_CommandQueueForThisKernel, const cl_kernel* TheKernel, bool& IsSuccesful)
 		{
@@ -2041,6 +2053,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 
 			ChosenDevices = (cl_device_id*)malloc(NumberOfGPUs * sizeof(cl_device_id));
+			if (ChosenDevices == nullptr)
+			{
+				std::cout << "\n Error Allocating : " << NumberOfGPUs * sizeof(cl_device_id) << " Byes Of Memory for ChosenDevices in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				return;
+			}
+
 			ClErrorResult = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, NumberOfGPUs, ChosenDevices, NULL);// Same line for code for Multi-GPU
 			if (ClErrorResult != CL_SUCCESS)
 			{
@@ -2501,7 +2519,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				return;
 			}
 
-			cl_int ClErrorResult;
+			cl_int ClErrorResult = 0;
 			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &Binary_Size_Of_CLProgram, NULL);
 			if (ClErrorResult != CL_SUCCESS)
 			{
