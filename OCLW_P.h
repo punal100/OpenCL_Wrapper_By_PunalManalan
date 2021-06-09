@@ -145,32 +145,69 @@ namespace Essenbp//Essential Functions By Punal
 
 	struct UnknownDataAndSize
 	{
+	private:
+		bool IsDummyValue = true;
 		void* Data = nullptr;
 		size_t SizeOfData = 0;
 
-		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful)
+	public:
+		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool DoADummyCopy = false)
 		{
 			IsSuccesful = false;
-			SizeOfData = ArgSizeOfData;
-			if (SizeOfData == 0)
+			
+			if (!DoADummyCopy)
 			{
-				std::cout << "\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSize!\n";
-				return;
-			}
-
-			SizeOfData = ArgSizeOfData;
-			Data = malloc(SizeOfData);
-			if (Data == nullptr)
-			{
-				std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSize!\n";
-				return;
+				if (ArgData == nullptr)
+				{
+					std::cout << "\n Error nullptr for ArgData in CopyAndStoreData In: UnknownDataAndSize!\n";
+					std::cout << "If Dummy Value is to be passed set DoADummyCopy(4th argument) to false, and set ArgData = nullptr!\n";
+					return;
+				}
+				SizeOfData = ArgSizeOfData;
+				if (SizeOfData == 0)
+				{
+					std::cout << "\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSize!\n";
+					return;
+				}
+				Data = malloc(SizeOfData);
+				if (Data == nullptr)
+				{
+					std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSize!\n";
+					return;
+				}
+				else
+				{
+					for (int i = 0; i < SizeOfData; ++i)// Memccpy bad
+					{
+						((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+					}
+				}
 			}
 			else
 			{
-				for (int i = 0; i < SizeOfData; ++i)// Memccpy bad
+				if (ArgData != nullptr)
 				{
-					((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+					std::cout << "\n Error ArgData is not set to nullptr in CopyAndStoreData In: UnknownDataAndSize!\n";
+					std::cout << "If Actual value is to be passed ignore DoADummyCopy(4th argument)!\n";
+					return;
 				}
+				else
+				{
+					IsDummyValue = true;
+					Data = nullptr;
+				}
+			}
+		}
+
+		bool GetIsDataValue() { return IsDummyValue; }
+		void* GetData(){ return Data; }
+		size_t GetDataSize() { return SizeOfData; }
+
+		~UnknownDataAndSize()
+		{
+			if (Data != nullptr)
+			{
+				free(Data);
 			}
 		}
 	};
@@ -959,14 +996,17 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					else
 					{
-						cl_uint ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);// releasing Memory object every time this function is called	
-						if (ClErrorResult != CL_SUCCESS)
+						if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_LOCALENUM)
 						{
-							std::cout << "\n ClError Code " << ClErrorResult << " : Releasing Memory On device In: cl_MemoryStruct!\n";
-							return;
+							cl_uint ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);// releasing Memory object every time this function is called	
+							if (ClErrorResult != CL_SUCCESS)
+							{
+								std::cout << "\n ClError Code " << ClErrorResult << " : Releasing Memory On device In: cl_MemoryStruct!\n";
+								return;
+							}
 						}
+						
 					}
-
 					DoesBufferAlreadyExist = false;
 					MemoryInDeviceTotalSizeInBytes = 0;
 					MemoryInDevice_Occupied_SizeInBytes = 0;
@@ -1298,7 +1338,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							{
 								((char*)COPY_OF_PrivateMemoryType)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
-						}
+						}//Local can get pass through here but no code is required for it...
 						//else No need for else, as it is impossible for invalid or other enum type to get past through, unless a glitch occurs which is extremely unlikely...
 					}
 				}
@@ -1650,7 +1690,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								std::cout << "\n Error Construction Failed: Of SingleKernelFunctionMultiArgumentsArray[" << i << "] of type CreateKernelSingleArgumentStruct in CreateKernelSingleArgumentStruct In: cl_KernelMultipleArgumentStruct!\n";
 								for (int j = 0; j <= i; ++j)// Greater than or equal to i
 								{
-									delete SingleKernelFunctionMultiArgumentsArray[i];
+									delete SingleKernelFunctionMultiArgumentsArray[j];
 								}
 								free(SingleKernelFunctionMultiArgumentsArray);
 								return;
@@ -1661,7 +1701,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							std::cout << "\n Error Allocating :" << sizeof(cl_KernelSingleArgumentStruct) << " Byes Of Memory for CreateKernelSingleArgumentStruct in CreateKernelSingleArgumentStruct In: cl_KernelMultipleArgumentStruct!\n";
 							for (int j = 0; j < i; ++j)// Greater than i
 							{
-								delete SingleKernelFunctionMultiArgumentsArray[i];
+								delete SingleKernelFunctionMultiArgumentsArray[j];
 							}
 							free(SingleKernelFunctionMultiArgumentsArray);
 							return;
@@ -2048,7 +2088,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	private:
 		const cl_KernelFunctionArgumentOrderListStruct* ArugmentList;
 		Essenbp::UnknownDataAndSize** ArrayOfArgumentData = nullptr;
-		bool IsDataSent = false;
+		bool** ArrayOfIsArgumentSetBoolean = nullptr;
 
 	public:
 		bool IsConstructionSuccesful = false;
@@ -2076,38 +2116,77 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 			}
 
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSize*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfIsArgumentSetBoolean, ArugmentList->TotalNumberOfArugments, sizeof(bool*), IsSuccesful);
 			if (!IsSuccesful)
 			{
-				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool*) << " Byes Of Memory for ArrayOfIsArgumentSetBoolean In: cl_KernelArgumentSendStruct!\n";
 				std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
 				return;
 			}
-			else 
+			else
 			{
-				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSize*), IsSuccesful);
+				if (!IsSuccesful)
 				{
-					ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSize();
-					if (ArrayOfArgumentData[i] != nullptr)
+					std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
+					std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+					free(ArrayOfIsArgumentSetBoolean);
+					return;
+				}
+				else
+				{
+					for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 					{
-
-						std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
-						for (int j = 0; j < i; i++)
+						ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSize();
+						ArrayOfIsArgumentSetBoolean[i] = new bool(false);
+						if (ArrayOfArgumentData[i] == nullptr)
 						{
-							delete ArrayOfArgumentData[i];
+							if (ArrayOfIsArgumentSetBoolean[i] != nullptr)
+							{
+								delete ArrayOfIsArgumentSetBoolean[i];
+							}
+							std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
+							for (int j = 0; j < i; j++)
+							{
+								delete ArrayOfArgumentData[j];
+								delete ArrayOfIsArgumentSetBoolean[j];
+							}
+							free(ArrayOfArgumentData);
+							free(ArrayOfIsArgumentSetBoolean);
+							std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+							return;
 						}
-						free(ArrayOfArgumentData);
-						std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
-						return;
+						else
+						{
+							if (ArrayOfIsArgumentSetBoolean[i] == nullptr)
+							{
+								//if (ArrayOfArgumentData[i] != nullptr)
+								//{
+								delete ArrayOfArgumentData[i];
+								//}
+								std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool) << " Byes Of Memory for ArrayOfIsArgumentSetBoolean[" << i << "] In: cl_KernelArgumentSendStruct!\n";
+								for (int j = 0; j < i; j++)
+								{
+									delete ArrayOfIsArgumentSetBoolean[j];
+									delete ArrayOfArgumentData[j];
+								}
+								free(ArrayOfIsArgumentSetBoolean);
+								free(ArrayOfArgumentData);
+								std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+								return;
+							}
+						}
 					}
 				}
-			}
+			}			
 			IsConstructionSuccesful = true;
 		}
 
-		void IsDataReadyForSend(bool& IsSuccesful)
+		//This ArgumentNumberWhichIsNotReady -1 if true, else anywhere between 0 to (Total Numbers of Arguments - 1) which is the argument of the kernel function, to whom data has not been sent
+		void IsDataReadyForSend(bool& IsSuccesful, cl_int ArgumentNumberWhichIsNotReady)
 		{
 			IsSuccesful = false;
+			ArgumentNumberWhichIsNotReady = -1;
 
 			if (!IsConstructionSuccesful)
 			{
@@ -2116,17 +2195,91 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				//PENDING
+				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
+				{
+					if (!(*(ArrayOfIsArgumentSetBoolean[i])))
+					{
+						ArgumentNumberWhichIsNotReady = i;
+						return;
+					}
+				}
+				IsSuccesful = true;
+				return;
 			}
 		}
 
-		void PassDataToArgument(unsigned int ArgumentNumber, void* ArgData, size_t ArdSizeOfData, bool& IsSuccesful)
+		void StoreDataToPassToArgumentForLater(unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful)
 		{
+			IsSuccesful = false;
 			//PENDING
-			if (ArgData == nullptr)// Always nullptr for Local Data
+			if (!IsConstructionSuccesful)
 			{
-				// PENDING
+				std::cout << "\n Error Calling StoreDataToPassToArgumentForLater Without Constructing the struct In: cl_KernelArgumentSendStruct!\n";
+				return;
 			}
+			else
+			{
+				if(ArgumentNumber >= ArugmentList->TotalNumberOfArugments)
+				{
+					std::cout << "\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in StoreDataToPassToArgumentForLater In: PassDataStructToKernel!\n";
+					return;
+				}
+				else
+				{
+					if (ArgData == nullptr)// Always nullptr for Local Data
+					{
+						if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_LOCALENUM)
+						{
+							ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
+							if (IsSuccesful)
+							{
+								*(ArrayOfIsArgumentSetBoolean[ArgumentNumber]) = true;
+							}
+							else
+							{
+								std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								return;
+							}
+						}
+						else
+						{
+							if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_PRIVATE)
+							{
+								if (*(ArrayOfIsArgumentSetBoolean[ArgumentNumber]))// After the First time(sencond and so on), the values are initialized to false at construction
+								{
+									if (ArgSizeOfData != ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
+									{
+										std::cout << "\n Error Trying to Change the Size of OCLW_P::cl_Memory_Type::CL_PRIVATE DataType StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+										std::cout << "Size of Private Data type can only be set once, because Variable types do not changes their data type sizes...\n";
+										return;
+									}
+									else
+									{
+										ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
+									}
+								}
+								else
+								{
+									ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);// For First time use
+								}
+							}
+							else
+							{
+								if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_READ_ONLY)
+								{
+									//PENDING
+								}
+							}
+						}
+					}
+					else
+					{
+
+					}
+				}
+				
+			}
+			
 		}
 
 		~cl_KernelArgumentSendStruct()
@@ -2137,8 +2290,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 				{
 					delete ArrayOfArgumentData[i];
+					delete ArrayOfIsArgumentSetBoolean[i];
 				}
 				free(ArrayOfArgumentData);
+				free(ArrayOfIsArgumentSetBoolean);
 			}
 			IsConstructionSuccesful = false;
 		}
@@ -2242,9 +2397,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if ((ClErrorResult != CL_SUCCESS) || (PerDeviceValueStruct[i] == nullptr))
 					{
 						std::cout << "\n Error Allocating " << sizeof(cl_PerDeviceValuesStruct) << " Byes Of Memory for PerDeviceValueStruct[" << i << "] In InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-						for (int j = 0; j < i; i++)
+						for (int j = 0; j < i; j++)
 						{
-							delete(PerDeviceValueStruct[i]);
+							delete(PerDeviceValueStruct[j]);
 						}
 						free(PerDeviceValueStruct);
 						free(ChosenDevices);
@@ -2458,7 +2613,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							ReleaseAndFreeClData();
 							for (int j = 0; j < i; ++j)
 							{
-								delete OrderedKernelArgumentList[i];
+								delete OrderedKernelArgumentList[j];
 							}
 							free(OrderedKernelArgumentList);
 							return;
