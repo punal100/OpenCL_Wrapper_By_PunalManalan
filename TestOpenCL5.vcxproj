@@ -157,6 +157,9 @@
   <ItemGroup>
     <None Include="PunalOpenclFunctionsProgram.cl" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OCLW_P.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
