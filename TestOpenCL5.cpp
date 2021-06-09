@@ -3,12 +3,13 @@ OpenCL Wrapper By Punal Manalan
 Use this code wherever and whenever you want to!
 
 Information About This Wrapper:
-1. This is a LightWeight, Easy to use Simple Wrapper for OpenCL.
-2. This Wrapper specializes in Heavy Computation on GPU.
-3. From Constrction to Destruction everything is Done automaticaly!
-4. No need for manual destruction and releasing cl resources!
-5. No need to write Tedious amount of code to counter memory leaks!
-6. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
+1. This is a LightWeight, Easy to use Wrapper for OpenCL.
+2. 'OCLW_P::OpenCLWrapper' This Single line of code does Everything(Including Adding Functions) Automaticaly
+3. This Wrapper specializes in Heavy Computation on GPU.
+4. From Constrction to Destruction everything is Done automaticaly!
+5. No need for manual destruction and releasing cl resources!
+6. No need to write Tedious amount of code to counter memory leaks!
+7. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
 *********************************************************************************************************************************/
 
 #ifndef OPENCL_WRAPPER_BY_PUNAL
