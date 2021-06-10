@@ -1240,7 +1240,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										}
 
 										ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, TempDataCarryHelper, 0, NULL, NULL);
-										free(TempDataCarryHelper);// Free the data
+										free(TempDataCarryHelper);// Free the Data
 
 										if (ClErrorResult != CL_SUCCESS)
 										{
@@ -1553,7 +1553,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					else
 					{
 						// For Local Memory
-						// NOTE: This is a dummy value, it can not be sent to kernel... but can be stored in buffer(Sometimes storing Zero bytes in buffer causes Errors, so storing minimal amount of data which is 1 byte)
+						// NOTE: This is a dummy value, it can not be sent to kernel... but can be stored in buffer(Sometimes storing Zero bytes in buffer causes Errors, so storing minimal amount of Data which is 1 byte)
 						DataToPass = calloc(1, sizeof(char));
 						SizeOfData = 1;
 						if (DataToPass == nullptr)
@@ -2087,8 +2087,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	{
 	private:
 		const cl_KernelFunctionArgumentOrderListStruct* ArugmentList;
+		bool** ArrayOfOverWriteDataSetBoolean = nullptr;
+		bool** ArrayOfIsArgumentAlreadySetBoolean = nullptr;
 		Essenbp::UnknownDataAndSize** ArrayOfArgumentData = nullptr;
-		bool** ArrayOfIsArgumentSetBoolean = nullptr;
 
 	public:
 		bool IsConstructionSuccesful = false;
@@ -2116,74 +2117,91 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 			}
 
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfIsArgumentSetBoolean, ArugmentList->TotalNumberOfArugments, sizeof(bool*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfOverWriteDataSetBoolean, ArugmentList->TotalNumberOfArugments, sizeof(bool*), IsSuccesful);
 			if (!IsSuccesful)
 			{
-				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool*) << " Byes Of Memory for ArrayOfIsArgumentSetBoolean In: cl_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool*) << " Byes Of Memory for ArrayOfOverWriteDataSetBoolean In: cl_KernelArgumentSendStruct!\n";
 				std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+				return;
+			}
+
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfIsArgumentAlreadySetBoolean, ArugmentList->TotalNumberOfArugments, sizeof(bool*), IsSuccesful);
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool*) << " Byes Of Memory for ArrayOfIsArgumentAlreadySetBoolean In: cl_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+				free(ArrayOfOverWriteDataSetBoolean);
+				return;
+			}
+			
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSize*), IsSuccesful);
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+				free(ArrayOfOverWriteDataSetBoolean);
+				free(ArrayOfIsArgumentAlreadySetBoolean);
 				return;
 			}
 			else
 			{
-				Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSize*), IsSuccesful);
-				if (!IsSuccesful)
+				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 				{
-					std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
-					std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
-					free(ArrayOfIsArgumentSetBoolean);
-					return;
-				}
-				else
-				{
-					for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
+					ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSize();
+					ArrayOfOverWriteDataSetBoolean[i] = new bool(false);
+					ArrayOfIsArgumentAlreadySetBoolean[i] = new bool(false);
+
+					IsSuccesful = *(ArrayOfArgumentData[i]) && *(ArrayOfIsArgumentAlreadySetBoolean[i]) && *(ArrayOfOverWriteDataSetBoolean[i]);
+
+					if (!IsSuccesful)
 					{
-						ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSize();
-						ArrayOfIsArgumentSetBoolean[i] = new bool(false);
-						if (ArrayOfArgumentData[i] == nullptr)
+						if (ArrayOfArgumentData[i] != nullptr)
 						{
-							if (ArrayOfIsArgumentSetBoolean[i] != nullptr)
-							{
-								delete ArrayOfIsArgumentSetBoolean[i];
-							}
-							std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
-							for (int j = 0; j < i; j++)
-							{
-								delete ArrayOfArgumentData[j];
-								delete ArrayOfIsArgumentSetBoolean[j];
-							}
-							free(ArrayOfArgumentData);
-							free(ArrayOfIsArgumentSetBoolean);
-							std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
-							return;
+							delete ArrayOfArgumentData[i];
 						}
 						else
 						{
-							if (ArrayOfIsArgumentSetBoolean[i] == nullptr)
-							{
-								//if (ArrayOfArgumentData[i] != nullptr)
-								//{
-								delete ArrayOfArgumentData[i];
-								//}
-								std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool) << " Byes Of Memory for ArrayOfIsArgumentSetBoolean[" << i << "] In: cl_KernelArgumentSendStruct!\n";
-								for (int j = 0; j < i; j++)
-								{
-									delete ArrayOfIsArgumentSetBoolean[j];
-									delete ArrayOfArgumentData[j];
-								}
-								free(ArrayOfIsArgumentSetBoolean);
-								free(ArrayOfArgumentData);
-								std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
-								return;
-							}
+							std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
 						}
+
+						if (ArrayOfOverWriteDataSetBoolean[i] != nullptr)
+						{
+							delete ArrayOfOverWriteDataSetBoolean[i];
+						}
+						else
+						{
+							std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool) << " Byes Of Memory for ArrayOfOverWriteDataSetBoolean[" << i << "] In: cl_KernelArgumentSendStruct!\n";
+						}
+
+						if (ArrayOfIsArgumentAlreadySetBoolean[i] != nullptr)
+						{
+							delete ArrayOfIsArgumentAlreadySetBoolean[i];
+						}
+						else
+						{
+							std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(bool) << " Byes Of Memory for ArrayOfIsArgumentAlreadySetBoolean[" << i << "] In: cl_KernelArgumentSendStruct!\n";
+						}						
+
+						for (int j = 0; j < i; j++)
+						{
+							delete ArrayOfArgumentData[j];
+							delete ArrayOfOverWriteDataSetBoolean[i];
+							delete ArrayOfIsArgumentAlreadySetBoolean[j];
+						}
+
+						free(ArrayOfArgumentData);
+						free(ArrayOfOverWriteDataSetBoolean);
+						free(ArrayOfIsArgumentAlreadySetBoolean);
+						std::cout << "\n Error Construction Failed cl_KernelArgumentSendStruct!";
+						return;
 					}
 				}
-			}			
+			}
 			IsConstructionSuccesful = true;
 		}
 
-		//This ArgumentNumberWhichIsNotReady -1 if true, else anywhere between 0 to (Total Numbers of Arguments - 1) which is the argument of the kernel function, to whom data has not been sent
-		void IsDataReadyForSend(bool& IsSuccesful, cl_int ArgumentNumberWhichIsNotReady)
+		//This ArgumentNumberWhichIsNotReady -1 if true, else anywhere between 0 to (Total Numbers of Arguments - 1) which is the argument of the kernel function, to whom Data has not been sent
+		void IsDataReadyForSend(bool& IsSuccesful, cl_int& ArgumentNumberWhichIsNotReady)
 		{
 			IsSuccesful = false;
 			ArgumentNumberWhichIsNotReady = -1;
@@ -2197,7 +2215,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 				{
-					if (!(*(ArrayOfIsArgumentSetBoolean[i])))
+					if (!(*(ArrayOfIsArgumentAlreadySetBoolean[i])))
 					{
 						ArgumentNumberWhichIsNotReady = i;
 						return;
@@ -2208,10 +2226,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void StoreDataToPassToArgumentForLater(unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful)
+		//NOTE: For LOCAL Data ArgData should be nullptr
+		//NOTE: For PRIVATE Data ArgData should be nullptr And ArgSizeOfData should match the size first inputed
+		//NOTE: For READ, WRITE and READ_AND_WRITE Data ArgData should NOT be nullptr and ArgSizeOfData should be great than 0 
+		//NOTE: For READ, WRITE and READ_AND_WRITE Data If ArgData is nullptr and ArgSizeOfData is 0 then previously written memory will be reused
+		//NOTE: 5th argument OverWriteMemory if set to true previous allocated memory location is reused NOTE: ArgSizeOfData should be less than or equal to previous memory! by default it is set to false
+		void StoreDataToPassToArgumentForLater(unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false)
 		{
 			IsSuccesful = false;
-			//PENDING
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling StoreDataToPassToArgumentForLater Without Constructing the struct In: cl_KernelArgumentSendStruct!\n";
@@ -2226,61 +2248,164 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					if (ArgData == nullptr)// Always nullptr for Local Data
+					if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_LOCALENUM)
 					{
-						if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_LOCALENUM)
+						if (OverWriteMemory_NOTForLOCAL_PRIVATE)
 						{
-							ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
-							if (IsSuccesful)
-							{
-								*(ArrayOfIsArgumentSetBoolean[ArgumentNumber]) = true;
-							}
-							else
-							{
-								std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
-								return;
-							}
+							std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_LOCALENUM can not be written or overwritten StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+							std::cout << "NOTE: For PRIVATE and LOCAL Memory set OverWriteMemory_NOTForLOCAL_PRIVATE to false\n"
 						}
 						else
 						{
-							if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_PRIVATE)
+							if (ArgData == nullptr)
 							{
-								if (*(ArrayOfIsArgumentSetBoolean[ArgumentNumber]))// After the First time(sencond and so on), the values are initialized to false at construction
+								ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
+								if (!IsSuccesful)
 								{
-									if (ArgSizeOfData != ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
+									std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								}
+							}
+							else
+							{
+								std::cout << "\n Error Trying to Send Data to Local Memory, ArgData should be nullptr in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+							}
+						}
+						
+
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error StoreDataToPassToArgumentForLater Failed In: cl_KernelArgumentSendStruct!\n";
+						}
+						return;
+					}
+
+					if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_PRIVATE)
+					{
+						if (OverWriteMemory_NOTForLOCAL_PRIVATE)
+						{
+							std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_PRIVATE is compatable with OverWriteMemory_NOTForLOCAL_PRIVATE StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+							std::cout << "NOTE: For PRIVATE and LOCAL Memory set OverWriteMemory_NOTForLOCAL_PRIVATE to false\n"
+						}
+						else
+						{
+							if (*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]))// After the First time(sencond and so on), the values are initialized to false at construction
+							{
+								if (ArgSizeOfData != ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
+								{
+									std::cout << "\n Error Trying to Change the Size of cl_Memory_Type::CL_PRIVATE DataType in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+									std::cout << "Size of Private Data type can only be set once, because Variable types do not changes their Data type sizes...\n";
+								}
+								else
+								{
+									ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);
+									//ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArrayOfArgumentData[ArgumentNumber]->GetDataSize(), IsSuccesful, true);// Same as above since ArgSizeOfData == ArrayOfArgumentData[ArgumentNumber]->GetDataSize()
+									if (!IsSuccesful)
 									{
-										std::cout << "\n Error Trying to Change the Size of OCLW_P::cl_Memory_Type::CL_PRIVATE DataType StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
-										std::cout << "Size of Private Data type can only be set once, because Variable types do not changes their data type sizes...\n";
-										return;
+										std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+									}
+								}
+							}
+							else
+							{
+								ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);// For First time use
+								if (!IsSuccesful)
+								{
+									std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								}
+							}
+						}
+
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error StoreDataToPassToArgumentForLater Failed In: cl_KernelArgumentSendStruct!\n";
+						}
+						return;
+					}
+
+					if ((*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_READ_ONLY) || (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_WRITE_ONLY) || (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_READ_AND_WRITE))
+					{
+						if (ArgData != nullptr)
+						{
+							if (ArgSizeOfData < 1)
+							{
+								std::cout << "\n Error Size of Data is Less than 1 Bytes in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+							}
+							else
+							{
+								if (OverWriteMemory_NOTForLOCAL_PRIVATE)
+								{
+									if (*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]))
+									{										
+										if (ArgSizeOfData > ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
+										{
+											std::cout << "\n Error Trying to OverWrite previous Data But ArgSizeOfData "<< ArgSizeOfData <<" Bytes Is Greater than Previous Data Size "<< ArrayOfArgumentData[ArgumentNumber]->GetDataSize() <<" Bytes in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+										}
+										else
+										{
+											// Previous Data will be OverWritten
+											ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);
+											if (!IsSuccesful)
+											{
+												std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											}
+											else
+											{
+												*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = true;
+											}
+										}										
 									}
 									else
 									{
-										ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
+										std::cout << "\n Error Trying to OverWrite previous Data but There is no previous Data stored in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
 									}
 								}
 								else
 								{
-									ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);// For First time use
+									ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);
+									if (!IsSuccesful)
+									{
+										std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+									}
+								}								
+							}
+						}
+						else
+						{
+							if (ArgSizeOfData == 0)
+							{
+								if (*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]))
+								{
+									// Previous Data Will be reused
+									IsSuccesful = true;// setting it to succesful
 								}
+								else
+								{
+									std::cout << "\n Error Trying to Reuse previous Data Thre is no previous Data stored in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";									
+								}								
 							}
 							else
 							{
-								if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == OCLW_P::cl_Memory_Type::CL_READ_ONLY)
-								{
-									//PENDING
-								}
-							}
+								std::cout << "\n Error Trying to Reuse previous Data But ArgSizeOfData is Not Set to 0 in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								std::cout << "NOTE: To Reuse Previous Data set ArgData to nullptr, and ArgSizeOfData to 0\n"
+							}							
 						}
-					}
-					else
-					{
 
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error StoreDataToPassToArgumentForLater Failed In: cl_KernelArgumentSendStruct!\n";
+						}
+						else
+						{
+							*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = true;
+						}
+						return;
 					}
+					//cl_Memory_Type::Uninitialized_cl_Memory or undefined memorytype is not possible here since list is declared fully initialized
 				}
-				
-			}
-			
+			}			
 		}
+
+
 
 		~cl_KernelArgumentSendStruct()
 		{
@@ -2290,10 +2415,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 				{
 					delete ArrayOfArgumentData[i];
-					delete ArrayOfIsArgumentSetBoolean[i];
+					delete ArrayOfIsArgumentAlreadySetBoolean[i];
 				}
 				free(ArrayOfArgumentData);
-				free(ArrayOfIsArgumentSetBoolean);
+				free(ArrayOfIsArgumentAlreadySetBoolean);
 			}
 			IsConstructionSuccesful = false;
 		}
