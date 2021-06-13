@@ -12,7 +12,6 @@ namespace Essenbp//Essential Functions By Punal
 	struct UnknownDataAndSize
 	{
 	private:
-		bool IsDummyValue = true;
 		void* Data = nullptr;
 		size_t SizeOfData = 0;
 
@@ -47,6 +46,7 @@ namespace Essenbp//Essential Functions By Punal
 					{
 						((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 					}
+					IsSuccesful = true;
 				}
 			}
 			else
@@ -59,15 +59,35 @@ namespace Essenbp//Essential Functions By Punal
 				}
 				else
 				{
-					IsDummyValue = true;
 					Data = nullptr;
+					IsSuccesful = true;
 				}
 			}
 		}
 
-		bool GetIsDataValue() { return IsDummyValue; }
 		void* GetData() { return Data; }
 		size_t GetDataSize() { return SizeOfData; }
+
+		//NOTE:Use this if Direct access to data is required
+		//NOTE: by using this
+		void** FreeAndResizeDataAndReturnPointerToDataPointer(size_t ArgSizeOfData, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+			SizeOfData = ArgSizeOfData;
+			if (SizeOfData == 0)
+			{
+				std::cout << "\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer In: UnknownDataAndSize!\n";
+				return nullptr;
+			}
+			Data = malloc(SizeOfData);
+			if (Data == nullptr)
+			{
+				std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer In: UnknownDataAndSize!\n";
+				return nullptr;
+			}
+			IsSuccesful = true;
+			return &Data;
+		}
 
 		~UnknownDataAndSize()
 		{
