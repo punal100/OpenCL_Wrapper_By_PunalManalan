@@ -6,7 +6,11 @@ int Test1()
 
 	// Single Line Code, First platform is chosen by default 
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", IsSuccesful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
-	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetKernelInformation("Add_Integers", IsSuccesful), IsSuccesful);
+
+	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", OrderedStruct, IsSuccesful);
+
+	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
 	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
 
 	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };//Input
@@ -23,6 +27,16 @@ int Test1()
 	MultiNDRange.GetNDRangeOfDevice(0, IsSuccesful)->SetNDRange(10, 1, 0);
 
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
+
+	Essenbp::UnknownDataAndSize RetreivedData;
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, "Add_Integers", 2, RetreivedData, IsSuccesful);
+
+	std::cout << "\n\nRetreived Output Data";
+	for (int i = 0; i < 10; ++i)
+	{
+		std::cout << "\nValue of ["<<i<<"] Is" << ((int*)RetreivedData.GetData())[i];
+	}
+	std::cout << "\n\n";
 	return 0;
 }
 
@@ -94,12 +108,15 @@ int Test2()
 	std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram(FilePath, &Functions_List, 1, &AvailablePlatformVendors, IsSuccesful);
 
-	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetKernelInformation("Add_Integers", IsSuccesful), IsSuccesful);
+	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", OrderedStruct, IsSuccesful);
+
+	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
 	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
 
-	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };//Input
-	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };//Input
-	int IntC[10] = { 0,0,0,0,0,0,0,0,0,0 };//OutPut
+	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };			//Input   Arg 0
+	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };	//Input	  Arg 1
+	int IntC[10] = { 0,0,0,0,0,0,0,0,0,0 };				//OutPut  Arg 2
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
 	MultiDeviceData.StoreDataForKernelArgument(0, 0, IntA, 10 * sizeof(int), IsSuccesful);

@@ -661,7 +661,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	{
 	private:
 		const unsigned int NumberOfDevices;
-		cl_NDRangeStruct** MultiNDRange = nullptr; //PENDING
+		cl_NDRangeStruct** MultiNDRange = nullptr;
 
 	public:
 		bool IsConstructionSuccesful = false;
@@ -675,7 +675,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error : ArgTotalNumberOfDevices is 0, should be atleast In: cl_MultiDevice_NDRangeStruct!\n";
 			}
 
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
 			if (!IsSuccesful)
 			{
 				std::cout << "\n Error Allocating :" << NumberOfDevices * sizeof(cl_NDRangeStruct*) << " Byes Of Memory for MultiNDRange In: cl_MultiDevice_NDRangeStruct!\n";
@@ -1606,7 +1607,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 		bool GetDoesBufferAlreadyExist() { return DoesBufferAlreadyExist; }
 
-		void ReadBuffer(Essenbp::UnknownDataAndSize* RetreivedData, bool& IsSuccesful)
+		void ReadBuffer(Essenbp::UnknownDataAndSize& RetreivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = true;
 			if (!IsConstructionSuccesful)
@@ -1623,16 +1624,51 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (IsSuccesful)
 			{
-				//PENDING
-				cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, , TempDataCarryHelper, 0, NULL, NULL);
-
-				if (ClErrorResult != CL_SUCCESS)
+				if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_LOCALENUM)
 				{
-					std::cout << "Error Code " << ClErrorResult << " : Reading Buffer For Kernel Argument Number of " << KernelArgumentNumber << "'in ReadBuffer In: cl_MemoryStruct!\n";
+					std::cout << "\n Error: Trying to Read Local in Memory ReadBuffer In: cl_MemoryStruct!\n";
+					std::cout << "NOTE: Only Read,Write, ReadAndWrite Memory Be read! Local and Private can not be read\n";
+					IsSuccesful = false;
 				}
 				else
 				{
-					IsSuccesful = true;
+					if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
+					{
+						RetreivedData.CopyAndStoreData(COPY_OF_PrivateMemoryType, MemoryInDeviceTotalSizeInBytes, IsSuccesful);
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error :Calling RetreivedData.CopyAndStoreData() failed in ReadBuffer In: cl_MemoryStruct!\n";
+						}
+						else
+						{
+							IsSuccesful = true;
+						}
+						//std::cout << "\n Error: Trying to Read Private in Memory ReadBuffer In: cl_MemoryStruct!\n";
+						//std::cout << "NOTE: Only Read,Write, ReadAndWrite Memory Be read! Local and Private can not be read\n";
+						//IsSuccesful = false;
+					}
+					else
+					{
+						if (IsSuccesful)
+						{
+							void** PointerToDataPointer = RetreivedData.FreeAndResizeDataAndReturnPointerToDataPointer(MemoryInDeviceTotalSizeInBytes, IsSuccesful);
+							if (!IsSuccesful)
+							{
+								std::cout << "\n Error :Calling RetreivedData.FreeAndResizeDataAndReturnPointerToDataPointer() failed in ReadBuffer In: cl_MemoryStruct!\n";
+							}
+							cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, MemoryInDeviceTotalSizeInBytes, *PointerToDataPointer, 0, NULL, NULL);
+
+							if (ClErrorResult != CL_SUCCESS)
+							{
+								std::cout << "Error Code " << ClErrorResult << " : Reading Buffer For Kernel Argument Number of " << KernelArgumentNumber << "'in ReadBuffer In: cl_MemoryStruct!\n";
+								return;
+							}
+							else
+							{
+								IsSuccesful = true;
+							}
+						}
+					}
 				}
 			}
 			if (!IsSuccesful)
@@ -1730,6 +1766,27 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 		bool IsBufferCreatedOnDevice() { return BufferOnDevice->GetDoesBufferAlreadyExist(); }
 
+		void RetreiveDataFromKernel(Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling RetreiveDataFromKernel Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
+				return;
+			}
+			BufferOnDevice->ReadBuffer(ReteivedData, IsSuccesful);
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error cl_MemoryStruct::ReadBuffer() Failed in RetreiveDataFromKernel In: cl_KernelMultipleArgumentStruct!\n";
+			}
+
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error RetreiveDataFromKernel Failed In: cl_KernelSingleArgumentStruct!\n";
+			}
+		}
+
 		//Destructor
 		~cl_KernelSingleArgumentStruct()
 		{
@@ -1750,6 +1807,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		const cl_KernelFunctionArgumentOrderListStruct* OrderedListOfArugments;
 		const cl_command_queue* cl_CommandQueueForThisKernel;
 		cl_kernel ThisKernel = NULL;
+
+		//PENDING Add retreuive data
 
 		void CreateKernelSingleArgumentStruct(const cl_context* cl_ContextForThisKernel, const cl_command_queue* cl_CommandQueueForThisKernel, const cl_kernel* TheKernel, bool& IsSuccesful)
 		{
@@ -1954,6 +2013,34 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error :RunKernel Failed In: cl_KernelMultipleArgumentStruct!\n";
 			}
 
+		}
+
+		void RetreiveDataFromKernel(unsigned int ArgumentNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling RetreiveDataFromKernel Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
+				return;
+			}
+			if (ArgumentNumber < OrderedListOfArugments->TotalNumberOfArugments)
+			{
+				SingleKernelFunctionMultiArgumentsArray[ArgumentNumber]->RetreiveDataFromKernel(ReteivedData, IsSuccesful);
+				if (!IsSuccesful)
+				{
+					std::cout << "\n Error cl_KernelSingleArgumentStruct::RetreiveDataFromKernel() Failed in RetreiveDataFromKernel In: cl_KernelMultipleArgumentStruct!\n";
+				}
+			}
+			else
+			{
+				std::cout << "\n Error ArgumentNumber Exceeds the Total Number Of Kernel Arguments Present in the Kernel '" << OrderedListOfArugments->KernelFunctionName << "'! in RetreiveDataFromKernel In: cl_KernelMultipleArgumentStruct!\n";
+			}
+
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error RetreiveDataFromKernel Failed In: cl_KernelMultipleArgumentStruct!\n";
+			}
 		}
 
 		~cl_KernelMultipleArgumentStruct()
@@ -2765,6 +2852,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (TheKernelMultiArgStruct == nullptr)
 			{
 				std::cout << "\n Error 'TheKernelMultiArgStruct Argument of type cl_KernelMultipleArgumentStruct Is a nullptr in PassAllDataToKernel In: cl_KernelArgumentSendStruct!\n";
+				return;
 			}
 
 			if (TheKernelMultiArgStruct->IsConstructionSuccesful)
@@ -3668,7 +3756,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								PassDataStructToKernel(KernelToRunNumber, DevicesToRunKernel_From, DevicesToRunKernel_To, MultiDeviceSendStructList, IsSuccesful);
 							}
 
-							//PENDING
 							cl_NDRangeStruct* PointerToNDRangeStruct = nullptr;
 							for (int i = DevicesToRunKernel_From; i <= DevicesToRunKernel_To; ++i)
 							{
@@ -3802,14 +3889,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error Calling GetKernelNumberByKernelName Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
 		}
-		cl_KernelFunctionArgumentOrderListStruct* GetKernelInformation(unsigned int KernelNumber, bool& IsSuccesful)
+		void  GetKernelInformation(unsigned int KernelNumber, cl_KernelFunctionArgumentOrderListStruct* OrderedStruct, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 			if (IsConstructionSuccesful)
 			{
 				if (KernelNumber < TotalNumberOfKernelFunctions)
 				{
-					return OrderedKernelArgumentList[KernelNumber];
+					OrderedStruct = OrderedKernelArgumentList[KernelNumber];
 					IsSuccesful = true;
 				}
 				else
@@ -3821,9 +3908,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				std::cout << "\n Error Calling GetKernelInformation Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
-			return nullptr;
+			return;
 		}
-		cl_KernelFunctionArgumentOrderListStruct* GetKernelInformation(std::string NameOfTheKernel, bool& IsSuccesful)
+		void GetKernelInformation(std::string NameOfTheKernel, cl_KernelFunctionArgumentOrderListStruct* OrderedStruct, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -3837,11 +3924,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			GetKernelNumberByKernelName(KernelNumber, NameOfTheKernel, IsSuccesful);
 			if (IsSuccesful)
 			{
-				return GetKernelInformation(KernelNumber, IsSuccesful);
+				GetKernelInformation(KernelNumber, OrderedStruct, IsSuccesful);
 			}
+			return;
 		}
 
-		void* RetreiveDataFromKernel(unsigned int KernelNumber, unsigned int ArgumentNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -3850,9 +3938,41 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error Calling RetreiveDataFromKernel Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				return;
 			}
+			if (KernelNumber < TotalNumberOfKernelFunctions)
+			{
+				if (DeviceNumber < NumberOfDevices)
+				{
+					if (ArgumentNumber < OrderedKernelArgumentList[KernelNumber]->TotalNumberOfArugments)
+					{
+						//PENDING
+						MultiKernelFunction_MultiDevice[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->RetreiveDataFromKernel(ArgumentNumber, ReteivedData, IsSuccesful);
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error cl_KernelMultipleArgumentStruct::RetreiveDataFromKernel() Failed in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+						}
+					}
+					else
+					{
+						std::cout << "\n Error ArgumentNumber Exceeds the Total Number Of Kernel Arguments Present in the Kernel '"<< MultiKernelFunction_MultiDevice[KernelNumber]->KernelFunctionName<<"'! in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					}					
+				}
+				else
+				{
+					std::cout << "\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in RunKernelFunction In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					return;
+				}
+			}
+			else
+			{
+				std::cout << "\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			}
 
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error RetreiveDataFromKernel Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			}
 		}
-		void* RetreiveDataFromKernel(std::string NameOfTheKernel, unsigned int ArgumentNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromKernel(unsigned int DeviceNumber, std::string NameOfTheKernel, unsigned int ArgumentNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -3866,7 +3986,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			GetKernelNumberByKernelName(KernelNumber, NameOfTheKernel, IsSuccesful);
 			if (IsSuccesful)
 			{
-				RetreiveDataFromKernel(KernelNumber, ArgumentNumber, ReteivedData, IsSuccesful);
+				RetreiveDataFromKernel(DeviceNumber, KernelNumber, ArgumentNumber, ReteivedData, IsSuccesful);
 			}
 			return;
 		}
