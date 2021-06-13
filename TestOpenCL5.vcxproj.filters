@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Example1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Example2.cpp">
+    <ClCompile Include="Examples.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,6 +26,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OCLW_P.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Essenbp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -152,13 +152,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Example1.cpp" />
-    <ClCompile Include="Example2.cpp" />
+    <ClCompile Include="Examples.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PunalOpenclFunctionsProgram.cl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Essenbp.h" />
     <ClInclude Include="OCLW_P.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
