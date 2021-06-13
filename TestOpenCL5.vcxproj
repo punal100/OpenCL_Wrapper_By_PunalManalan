@@ -152,7 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="TestOpenCL5.cpp" />
+    <ClCompile Include="Example1.cpp" />
+    <ClCompile Include="Example2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PunalOpenclFunctionsProgram.cl" />
