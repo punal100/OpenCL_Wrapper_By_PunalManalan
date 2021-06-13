@@ -8,7 +8,7 @@ int Test1()
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", IsSuccesful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
-	EntireOpenCLProgram.GetKernelInformation("Add_Integers", OrderedStruct, IsSuccesful);
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, IsSuccesful);
 
 	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
 	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
@@ -109,7 +109,7 @@ int Test2()
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram(FilePath, &Functions_List, 1, &AvailablePlatformVendors, IsSuccesful);
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
-	EntireOpenCLProgram.GetKernelInformation("Add_Integers", OrderedStruct, IsSuccesful);
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, IsSuccesful);
 
 	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
 	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
