@@ -426,7 +426,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsSuccesful = true;
 		}
 
-		//NOTE: ChosenPlatform is always greater than 1 and less than total number of platforms
+		//NOTE: ChosenPlatform is always greater than 1 and less than Number Of Platform + 1
 		void SetChosenPlatform(cl_uint ArgChosenPlatform, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
@@ -513,7 +513,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			DeviceClCommandQueue = clCreateCommandQueue(*TheClContext, SelectedDevice, 0, &ClErrorResult);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				std::cout << "\n Error: Cl Command Queue Creation Failed!\n";
+				std::cout << "\n ClError Code " << ClErrorResult << " : cl_CommandQueue Creation In: ccl_PerDeviceValuesStruct!\n";
 				std::cout << "\n Error Construction Failed cl_PerDeviceValuesStruct!";
 				return;
 			}
@@ -649,6 +649,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsConstructionSuccesful = true;
 		}
 
+		// Deprecated NOTE: No purpose
+		/*
 		//NOTE: This sets everything to 0 which means enqueuendrangekernel should be passed with null for both global and local work sizes
 		void SetNDRange(cl_uint ArgDimensions)
 		{
@@ -670,7 +672,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			WorkSizeOffset[0] = 0;
 			WorkSizeOffset[1] = 0;
 			WorkSizeOffset[2] = 0;
-		}
+		}*/
 
 		//NOTE: 1 Dimension
 		void SetNDRange(size_t GlobalSize1D, size_t LocalSize1D, size_t WorkSizeOffset1D)
@@ -742,7 +744,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		}
 
 		//NOTE: 1 Dimension With Offset 0
-		void SetNDRangeWithOffset(size_t GlobalSize1D, size_t LocalSize1D)
+		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D)
 		{
 			if (!IsConstructionSuccesful)
 			{
@@ -755,17 +757,17 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			GlobalWorkSize[1] = 0;
 			GlobalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = LocalSize1D;
+			LocalWorkSize[0] = 0;
 			LocalWorkSize[1] = 0;
 			LocalWorkSize[2] = 0;
 
-			WorkSizeOffset[0] = 0;
+			WorkSizeOffset[0] = WorkSizeOffset1D;
 			WorkSizeOffset[1] = 0;
 			WorkSizeOffset[2] = 0;
 		}
 
 		//NOTE: 2 Dimension With Offset 0
-		void SetNDRangeWithOffset(size_t GlobalSize1D, size_t LocalSize1D, size_t GlobalSize2D, size_t LocalSize2D)
+		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D, size_t GlobalSize2D, size_t WorkSizeOffset2D)
 		{
 			if (!IsConstructionSuccesful)
 			{
@@ -778,17 +780,17 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			GlobalWorkSize[1] = GlobalSize2D;
 			GlobalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = LocalSize1D;
-			LocalWorkSize[1] = LocalSize2D;
+			LocalWorkSize[0] = 0;
+			LocalWorkSize[1] = 0;
 			LocalWorkSize[2] = 0;
 
-			WorkSizeOffset[0] = 0;
-			WorkSizeOffset[1] = 0;
+			WorkSizeOffset[0] = WorkSizeOffset1D;
+			WorkSizeOffset[1] = WorkSizeOffset2D;
 			WorkSizeOffset[2] = 0;
 		}	
 
 		//NOTE: 3 Dimension With Offset 0
-		void SetNDRangeWithOffset(size_t GlobalSize1D, size_t LocalSize1D, size_t GlobalSize2D, size_t LocalSize2D, size_t GlobalSize3D, size_t LocalSize3D)
+		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D, size_t GlobalSize2D, size_t WorkSizeOffset2D, size_t GlobalSize3D, size_t WorkSizeOffset3D)
 		{
 			if (!IsConstructionSuccesful)
 			{
@@ -801,13 +803,41 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			GlobalWorkSize[1] = GlobalSize2D;
 			GlobalWorkSize[2] = GlobalSize3D;
 
-			LocalWorkSize[0] = LocalSize1D;
-			LocalWorkSize[1] = LocalSize2D;
-			LocalWorkSize[2] = LocalSize3D;
+			LocalWorkSize[0] = 0;
+			LocalWorkSize[1] = 0;
+			LocalWorkSize[2] = 0;
 			
-			WorkSizeOffset[0] = 0;
-			WorkSizeOffset[1] = 0;
-			WorkSizeOffset[2] = 0;
+			WorkSizeOffset[0] = WorkSizeOffset1D;
+			WorkSizeOffset[1] = WorkSizeOffset2D;
+			WorkSizeOffset[2] = WorkSizeOffset3D;
+		}
+
+		void SetNDRange(cl_NDRangeStruct* ArgNDRange, bool& IsSuccesful)
+		{
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				return;
+			}
+
+			cl_uint ArgDimensions = 0;//By default it is 1
+			size_t* ArgGlobalSize;	// Total Number Of Work Items
+			size_t* ArgLocalSize;	// Work Items per Work Group
+			size_t* ArgWorkSizeOffset;	// WorkSize Offset
+
+			GetNDRange(&ArgDimensions, &ArgGlobalSize, &ArgLocalSize, &ArgWorkSizeOffset, IsSuccesful);
+			Dimensions = ArgDimensions;//By default it is 1
+			GlobalWorkSize[0] = ArgGlobalSize[0];
+			GlobalWorkSize[1] = ArgGlobalSize[1];
+			GlobalWorkSize[2] = ArgGlobalSize[2];
+
+			LocalWorkSize[0] = ArgLocalSize[0];
+			LocalWorkSize[1] = ArgLocalSize[1];
+			LocalWorkSize[2] = ArgLocalSize[2];
+
+			WorkSizeOffset[0] = ArgWorkSizeOffset[0];
+			WorkSizeOffset[1] = ArgWorkSizeOffset[1];
+			WorkSizeOffset[2] = ArgWorkSizeOffset[2];
 		}
 
 		void GetNDRange(cl_uint* ArgDimensions, size_t** ArgGlobalSize, size_t** ArgLocalSize, size_t** ArgWorkSizeOffset, bool& IsSuccesful)
@@ -824,27 +854,143 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error Calling GetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
 				return;
 			}
-			if (Dimensions)
+			if (Dimensions == 0)
 			{
 				std::cout << "\n Error Calling GetNDRange Without SettingNDRange First using SetNDRange() In: cl_NDRangeStruct!\n";
 				return;
 			}
 
-			*ArgDimensions = Dimensions;
-			*ArgGlobalSize = GlobalWorkSize;
-			*ArgLocalSize = LocalWorkSize;
-			*ArgWorkSizeOffset = WorkSizeOffset;
+			// Temporarly using this variable for different purpose
+			IsSuccesful =  (LocalWorkSize[0] == 0) || (LocalWorkSize[1] == 0) || (LocalWorkSize[2] == 0);
+
+			if (IsSuccesful)
+			{
+				*ArgDimensions = Dimensions;
+				*ArgGlobalSize = nullptr;
+				*ArgLocalSize = nullptr;
+				*ArgWorkSizeOffset = nullptr;
+			}
+			else
+			{
+				*ArgDimensions = Dimensions;
+				*ArgGlobalSize = GlobalWorkSize;
+				*ArgLocalSize = LocalWorkSize;
+				*ArgWorkSizeOffset = WorkSizeOffset;
+			}
+			
 			IsSuccesful = true;
+		}		
+
+		~cl_NDRangeStruct()
+		{
+			std::cout << "\n Destructing cl_NDRangeStruct!";			
+			IsConstructionSuccesful = false;
 		}
 	};
+
 	// NOTE: Call Constructor Before Using
 	struct cl_MultiDevice_NDRangeStruct
 	{
-		//cl_NDRangeStruct** MultiNDRange = nullptr; //PENDING
+	private:
+		const unsigned int NumberOfDevices;
+		cl_NDRangeStruct** MultiNDRange = nullptr; //PENDING
 
-		cl_MultiDevice_NDRangeStruct()
+	public:
+		bool IsConstructionSuccesful = false;
+		cl_MultiDevice_NDRangeStruct(unsigned int ArgTotalNumberOfDevices, bool& IsSuccesful) : NumberOfDevices(ArgTotalNumberOfDevices)
 		{
+			IsConstructionSuccesful = false;
+			IsSuccesful = false;
 
+			if (NumberOfDevices == 0)
+			{
+				std::cout << "\n Error : ArgTotalNumberOfDevices is 0, should be atleast In: cl_MultiDevice_NDRangeStruct!\n";
+			}
+
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
+			if (!IsSuccesful)
+			{
+				std::cout << "\n Error Allocating :" << NumberOfDevices * sizeof(cl_NDRangeStruct*) << " Byes Of Memory for MultiNDRange In: cl_MultiDevice_NDRangeStruct!\n";
+				return;
+			}
+			else
+			{
+				for (int i = 0; i < NumberOfDevices; ++i)
+				{
+					MultiNDRange[i] = new cl_NDRangeStruct();
+					if (MultiNDRange[i] == nullptr)
+					{
+						std::cout << "\n Error Allocating :" << NumberOfDevices * sizeof(cl_NDRangeStruct) << " Byes Of Memory for MultiNDRange["<<i<<"] In: cl_MultiDevice_NDRangeStruct!\n";
+						for (int j = 0; j < i; ++j)
+						{
+							delete MultiNDRange[j];
+						}
+						free(MultiNDRange);
+						std::cout << "\n Error Construction Failed cl_MultiDevice_NDRangeStruct!";
+						return;
+					}
+				}
+			}
+			IsConstructionSuccesful = true;
+		}
+
+		unsigned int GetNumberOfDevices() { return NumberOfDevices; }
+		cl_NDRangeStruct* GetNDRangeOfDevice(unsigned int DeviceNumber, bool& IsSuccesful) 
+		{
+			IsSuccesful = false;
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling GetNDRangeOfDevice Without Constructing the struct In: cl_MultiDevice_NDRangeStruct!\n";
+			}
+			else
+			{
+				if (DeviceNumber < NumberOfDevices)
+				{
+					std::cout << "\n Error Argument Number + 1' " << DeviceNumber + 1 << "' Is greater than the NumberOfDevices in GetNDRangeOfDevice In: cl_NDRangeStruct!\n";
+				}
+				else
+				{
+					IsSuccesful = true;
+					return MultiNDRange[DeviceNumber];
+				}
+				return nullptr;
+			}
+		}
+
+		void SetNDRangeOfDevice(unsigned int DeviceNumber, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling SetNDRangeOfDevice Without Constructing the struct In: cl_MultiDevice_NDRangeStruct!\n";
+			}
+			else
+			{
+				if (DeviceNumber < NumberOfDevices)
+				{
+					std::cout << "\n Error Argument Number + 1' " << DeviceNumber + 1 << "' Is greater than the NumberOfDevices in SetNDRangeOfDevice In: cl_NDRangeStruct!\n";
+				}
+				else
+				{
+					IsSuccesful = true;
+					return MultiNDRange[DeviceNumber];
+				}
+				return nullptr;
+			}
+		}
+
+		~cl_MultiDevice_NDRangeStruct()
+		{
+			std::cout << "\n Destructing cl_MultiDevice_NDRangeStruct!";
+			if (IsConstructionSuccesful)
+			{
+				for (int i = 0; i < NumberOfDevices; ++i)
+				{
+					delete MultiNDRange[i];
+				}
+				free(MultiNDRange);
+				IsConstructionSuccesful = false;
+			}			
 		}
 	};
 
@@ -900,7 +1046,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_Memory_Type*)) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
 						for (int j = 0; j < i; ++j)
 						{
-							free(KernelArgumentsInOrder[j]);
+							delete KernelArgumentsInOrder[j];
 						}
 						free(KernelArgumentsInOrder);
 						std::cout << "\n Error Construction Failed cl_KernelFunctionArgumentOrderListStruct!";
@@ -961,7 +1107,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_Memory_Type*)) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
 						for (int j = 0; j < i; ++j)
 						{
-							free(KernelArgumentsInOrder[j]);
+							delete KernelArgumentsInOrder[j];
 						}
 						free(KernelArgumentsInOrder);
 						std::cout << "\n Error Construction Failed cl_KernelFunctionArgumentOrderListStruct!";
@@ -998,7 +1144,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						std::cout << "\n Error Allocating " << (TotalNumberOfArugments * sizeof(cl_Memory_Type*)) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
 						for (int j = 0; j < i; ++j)
 						{
-							free(KernelArgumentsInOrder[j]);
+							delete KernelArgumentsInOrder[j];
 						}
 						free(KernelArgumentsInOrder);
 						std::cout << "\n Error Construction Failed cl_KernelFunctionArgumentOrderListStruct!";
@@ -1060,7 +1206,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				std::cout << "\n Error Argument Number + 1' " << ArgumentNumber << "' Is greater than the TotalNumberOfArguments In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+				std::cout << "\n Error Argument Number + 1' " << ArgumentNumber + 1<< "' Is greater than the TotalNumberOfArguments In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
 			}
 		}
 
@@ -1187,7 +1333,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = false;
 				for (int i = 0; i < TotalNumberOfArugments; ++i)
 				{
-					free(KernelArgumentsInOrder[i]);
+					delete KernelArgumentsInOrder[i];
 				}
 				free(KernelArgumentsInOrder);
 			}
@@ -1941,7 +2087,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void RunKernel(cl_NDRangeStruct NDRange , bool& IsSuccesful)
+		void RunKernel(cl_NDRangeStruct* NDRange , bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 			if (!IsConstructionSuccesful)
@@ -1959,23 +2105,44 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 			}
 
-			//PENDING make a struct simmular to ndrange in opencl wrapper by opencl themselves
-			cl_uint Dimensions = 0;//By default it is 1
-			size_t* GlobalWorkSize;	// Total Number Of Work Items
-			size_t* LocalWorkSize;	// Work Items per Work Group
-			size_t* WorkSizeOffset;	// WorkSize Offset
+			if (NDRange == nullptr)
+			{
+				std::cout << "\n Error :The Argument NDRange is nullptr in RunKernel In: cl_KernelMultipleArgumentStruct!\n";
+				IsSuccesful = false;
+			}
+			else
+			{
+				cl_uint Dimensions = 0;//By default it is 1
+				size_t* GlobalWorkSize;	// Total Number Of Work Items
+				size_t* LocalWorkSize;	// Work Items per Work Group
+				size_t* WorkSizeOffset;	// WorkSize Offset
 
-			NDRange.GetNDRange(&Dimensions, &GlobalWorkSize, &LocalWorkSize, &WorkSizeOffset, IsSuccesful);
+				NDRange->GetNDRange(&Dimensions, &GlobalWorkSize, &LocalWorkSize, &WorkSizeOffset, IsSuccesful);
+				if (!IsSuccesful)
+				{
+					std::cout << "\n Error :NDRange->GetNDRange() Failed in RunKernel In: cl_KernelMultipleArgumentStruct!\n";
+					return;
+				}
+				else//Run the Kernel
+				{
+					cl_int ClErrorResult = 0;
+					ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+					if (ClErrorResult == CL_SUCCESS)
+					{
+						IsSuccesful = true;
+					}
+					else
+					{
+						std::cout << "\n CL_Error Code " << ClErrorResult << " : clEnqueueNDRangeKernel in RunKernel In: MemoryAllocationOnDevice In: cl_KernelMultipleArgumentStruct!\n";
+						IsSuccesful = false;
+					}
+				}
+			}
 			if (!IsSuccesful)
 			{
-				std::cout << "\n Error :NDRange.GetNDRange() Failed in RunKernel In: cl_KernelMultipleArgumentStruct!\n";
-				return;
+				std::cout << "\n Error :RunKernel Failed In: cl_KernelMultipleArgumentStruct!\n";
 			}
-			else//Run the Kernel
-			{
-				cl_int ClErrorResult = 0;
-				ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset ,GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
-			}
+					
 		}
 
 		~cl_KernelMultipleArgumentStruct()
@@ -2071,7 +2238,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					return;
 				}
 
-				cl_int ClErrorResult = 0;
 				for (int i = 0; i < NumberOfDevices; ++i)
 				{
 					MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, cl_ContextForThisKernel, &DeviceValuesForOneDevice->DeviceClCommandQueue, BuiltClProgramContainingTheSpecifiedFunctions, IsSuccesful);
@@ -2103,7 +2269,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void RunKernel(unsigned int ArgDeviceNumber, cl_NDRangeStruct NDRange, bool& IsSuccesful)
+		void RunKernel(unsigned int ArgDeviceNumber, cl_NDRangeStruct* NDRange, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 			if (!IsConstructionSuccesful)
@@ -2114,7 +2280,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (ArgDeviceNumber < NumberOfDevices)
 			{
-				MultiDeviceKernelArgumentsArray[ArgDeviceNumber]->RunKernel(NDRange, IsSuccesful);
+				if (NDRange == nullptr)
+				{
+					std::cout << "\n Error :The Argument NDRange is nullptr in RunKernel In: cl_MultiKernelFunction_MultiDeviceStruct!\n";
+					IsSuccesful = false;
+				}
+				else
+				{
+					MultiDeviceKernelArgumentsArray[ArgDeviceNumber]->RunKernel(NDRange, IsSuccesful);					
+				}
 				if (!IsSuccesful)
 				{
 					std::cout << "\n Error :cl_KernelMultipleArgumentStruct::RunKernel Failed in RunKernel In: cl_MultiKernelFunction_MultiDeviceStruct!\n";
@@ -2290,7 +2464,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				std::cout << "\n Error Argument Number + 1' " << ArgumentNumber << "' Is greater than the TotalNumberOfArguments, ";
+				std::cout << "\n Error Argument Number + 1' " << ArgumentNumber + 1 << "' Is greater than the TotalNumberOfArguments, ";
 				if (IsAllFunctionsUsable)
 				{
 					std::cout << "Also all the functions are Fully Usable! In SetMemoryTypeOfArugment In: cl_KernelFunctionsStruct!\n";
@@ -2475,19 +2649,19 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		//NOTE: For READ, WRITE and READ_AND_WRITE Data If ArgData is nullptr and ArgSizeOfData is 0 then previously written memory will be reused
 		//NOTE: 5th argument OverWriteMemory if set to true previous allocated memory location is reused NOTE: ArgSizeOfData should be less than or equal to previous memory! by default it is set to false
 		//NOTE: 5th argument OverWriteMemory if set to true previous allocated memory location is reused NOTE: ArgSizeOfData should be less than or equal to previous memory! by default it is set to false
-		void StoreDataToPassToArgumentForLater(unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful , bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
+		void StoreDataForKernelArgument(unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful , bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
 		{
 			IsSuccesful = false;
 			if (!IsConstructionSuccesful)
 			{
-				std::cout << "\n Error Calling StoreDataToPassToArgumentForLater Without Constructing the struct In: cl_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error Calling StoreDataForKernelArgument Without Constructing the struct In: cl_KernelArgumentSendStruct!\n";
 				return;
 			}
 			else
 			{				
 				if(ArgumentNumber >= ArugmentList->TotalNumberOfArugments)
 				{
-					std::cout << "\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in StoreDataToPassToArgumentForLater In: PassDataStructToKernel!\n";
+					std::cout << "\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in StoreDataForKernelArgument In: PassDataStructToKernel!\n";
 					return;
 				}
 				else
@@ -2496,14 +2670,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						if (OverWriteMemory_NOTForLOCAL_PRIVATE)
 						{
-							std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_LOCALENUM can not be written or overwritten StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+							std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_LOCALENUM can not be written or overwritten StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 							std::cout << "NOTE: For PRIVATE and LOCAL Memory set OverWriteMemory_NOTForLOCAL_PRIVATE to false\n";
 						}
 						else
 						{
 							if (UsePreviouslyAllocatedMemoryOnBuffer)
 							{
-								std::cout << "\n Error UsePreviouslyAllocatedMemoryOnBuffer is set to true, cl_Memory_Type::CL_LOCALENUM can not be accesed from host StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								std::cout << "\n Error UsePreviouslyAllocatedMemoryOnBuffer is set to true, cl_Memory_Type::CL_LOCALENUM can not be accesed from host StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 								std::cout << "NOTE: For LOCAL Memory set UsePreviouslyAllocatedMemoryOnBuffer to false\n";
 							}
 							else
@@ -2513,12 +2687,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArgSizeOfData, IsSuccesful, true);
 									if (!IsSuccesful)
 									{
-										std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+										std::cout << "\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 									}
 								}
 								else
 								{
-									std::cout << "\n Error Trying to Send Data to Local Memory, ArgData should be nullptr in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+									std::cout << "\n Error Trying to Send Data to Local Memory, ArgData should be nullptr in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 								}
 							}
 						}
@@ -2529,7 +2703,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							if (OverWriteMemory_NOTForLOCAL_PRIVATE)
 							{
-								std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_PRIVATE is compatable with OverWriteMemory_NOTForLOCAL_PRIVATE StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+								std::cout << "\n Error OverWriteMemory_NOTForLOCAL_PRIVATE is set to true, cl_Memory_Type::CL_PRIVATE is compatable with OverWriteMemory_NOTForLOCAL_PRIVATE StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 								std::cout << "NOTE: For PRIVATE and LOCAL Memory set OverWriteMemory_NOTForLOCAL_PRIVATE to false\n";
 							}
 							else
@@ -2547,12 +2721,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											}
 											else
 											{
-												std::cout << "\n Error Trying to Reuse previous Data There is no previous Data stored in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+												std::cout << "\n Error Trying to Reuse previous Data There is no previous Data stored in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											}
 										}
 										else
 										{
-											std::cout << "\n Error Trying to Reuse previous Data But ArgSizeOfData is Not Set to 0 in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											std::cout << "\n Error Trying to Reuse previous Data But ArgSizeOfData is Not Set to 0 in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											std::cout << "NOTE: To Reuse Previous Data set ArgData to nullptr, and ArgSizeOfData to 0\n";
 										}
 									}										
@@ -2560,7 +2734,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									{
 										if (ArgSizeOfData != ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
 										{
-											std::cout << "\n Error Trying to Change the Size of cl_Memory_Type::CL_PRIVATE DataType in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											std::cout << "\n Error Trying to Change the Size of cl_Memory_Type::CL_PRIVATE DataType in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											std::cout << "Size of Private Data type can only be set once, because Variable types do not changes their Data type sizes...\n";
 										}
 										else
@@ -2571,7 +2745,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												//ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(nullptr, ArrayOfArgumentData[ArgumentNumber]->GetDataSize(), IsSuccesful, true);// Same as above since ArgSizeOfData == ArrayOfArgumentData[ArgumentNumber]->GetDataSize()
 												if (!IsSuccesful)
 												{
-													std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+													std::cout << "\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 												}
 											}
 											else
@@ -2584,7 +2758,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												}
 												else
 												{
-													std::cout << "\n Error Size of Data for PRIVATE data can not be Less than 1 Bytes in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+													std::cout << "\n Error Size of Data for PRIVATE data can not be Less than 1 Bytes in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 													std::cout << "NOTE: To Reuse Previous Data set ArgData to nullptr, and ArgSizeOfData to 0\n";
 												}
 											}
@@ -2600,12 +2774,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);// For First time use
 											if (!IsSuccesful)
 											{
-												std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+												std::cout << "\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											}
 										}
 										else
 										{
-											std::cout << "\n Error Size of Data for PRIVATE data can not be Less than 1 Bytes in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											std::cout << "\n Error Size of Data for PRIVATE data can not be Less than 1 Bytes in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 										}
 									}
 									else
@@ -2650,7 +2824,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											{
 												if (ArgSizeOfData > ArrayOfArgumentData[ArgumentNumber]->GetDataSize())
 												{
-													std::cout << "\n Error Trying to OverWrite previous Data But ArgSizeOfData " << ArgSizeOfData << " Bytes Is Greater than Previous Data Size " << ArrayOfArgumentData[ArgumentNumber]->GetDataSize() << " Bytes in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+													std::cout << "\n Error Trying to OverWrite previous Data But ArgSizeOfData " << ArgSizeOfData << " Bytes Is Greater than Previous Data Size " << ArrayOfArgumentData[ArgumentNumber]->GetDataSize() << " Bytes in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 												}
 												else
 												{
@@ -2658,18 +2832,18 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 													ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);
 													if (!IsSuccesful)
 													{
-														std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+														std::cout << "\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 													}
 												}
 											}
 											else
 											{
-												std::cout << "\n Error Trying to OverWrite previous Data but There is no previous Data stored in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+												std::cout << "\n Error Trying to OverWrite previous Data but There is no previous Data stored in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											}
 										}
 										else
 										{
-											std::cout << "\n Error Trying to OverWrite previous Data and UsePreviouslyAllocatedMemoryOnBuffer cannot be used at the same time, in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											std::cout << "\n Error Trying to OverWrite previous Data and UsePreviouslyAllocatedMemoryOnBuffer cannot be used at the same time, in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 										}
 									}
 									else
@@ -2677,7 +2851,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccesful, false);
 										if (!IsSuccesful)
 										{
-											std::cout << "\n Error CopyAndStoreData Failed in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+											std::cout << "\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 										}
 									}									
 								}
@@ -2700,13 +2874,13 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											}
 											else
 											{
-												std::cout << "\n Error Trying to Reuse previous Data on the HOST, But There is no previous Data stored in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+												std::cout << "\n Error Trying to Reuse previous Data on the HOST, But There is no previous Data stored in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 											}
 										}										
 									}
 									else
 									{
-										std::cout << "\n Error Trying to Reuse previous Data But ArgSizeOfData is Not Set to 0 in StoreDataToPassToArgumentForLater In: cl_KernelArgumentSendStruct!\n";
+										std::cout << "\n Error Trying to Reuse previous Data But ArgSizeOfData is Not Set to 0 in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n";
 										std::cout << "NOTE: To Reuse Previous Data set ArgData to nullptr, and ArgSizeOfData to 0\n";
 									}
 								}
@@ -2717,7 +2891,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				if (!IsSuccesful)
 				{
-					std::cout << "\n Error StoreDataToPassToArgumentForLater Failed In: cl_KernelArgumentSendStruct!\n";
+					std::cout << "\n Error StoreDataForKernelArgument Failed In: cl_KernelArgumentSendStruct!\n";
 				}
 				else
 				{
@@ -2791,7 +2965,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (DataPassedToKernel)
 			{
 				//std::cout << "\n Error Same Data already passed to kernel in PassAllDataToKernel In: cl_KernelArgumentSendStruct!\n";
-				//std::cout << "NOTE: Change any or all of argument data(or pass the same data) by using StoreDataToPassToArgumentForLater()\n";
+				//std::cout << "NOTE: Change any or all of argument data(or pass the same data) by using StoreDataForKernelArgument()\n";
 				IsSuccesful = true;// Since the Data is already passed and it was already succesful... this entire thing is succesful
 				return;
 			}
@@ -2926,7 +3100,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsSuccesful = true;
 		}
 
-		void StoreDataToPassToArgumentForLater(unsigned int DeviceNumber, unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
+		void StoreDataForKernelArgument(unsigned int DeviceNumber, unsigned int ArgumentNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
 		{
 			IsSuccesful = false;
 			if (!IsConstructionSuccesful)
@@ -2937,16 +3111,16 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (DeviceNumber < NumberOfDevices)
 			{
-				MultiArgumentSendStructList[DeviceNumber]->StoreDataToPassToArgumentForLater(ArgumentNumber, ArgData, ArgSizeOfData, IsSuccesful, OverWriteMemory_NOTForLOCAL_PRIVATE, UsePreviouslyAllocatedMemoryOnBuffer);
+				MultiArgumentSendStructList[DeviceNumber]->StoreDataForKernelArgument(ArgumentNumber, ArgData, ArgSizeOfData, IsSuccesful, OverWriteMemory_NOTForLOCAL_PRIVATE, UsePreviouslyAllocatedMemoryOnBuffer);
 				if (!IsSuccesful)
 				{
-					std::cout << "\n Error cl_KernelArgumentSendStruct::StoreDataToPassToArgumentForLater failed in StoreDataToPassToArgumentForLater In: cl_MultiDevice_KernelArgumentSendStruct!\n";
+					std::cout << "\n Error cl_KernelArgumentSendStruct::StoreDataForKernelArgument failed in StoreDataForKernelArgument In: cl_MultiDevice_KernelArgumentSendStruct!\n";
 					return;
 				}
 			}
 			else
 			{
-				std::cout << "\n Error DeviceNumber + 1 is greater than NumberOfDevices in StoreDataToPassToArgumentForLater In: cl_MultiDevice_KernelArgumentSendStruct!\n";
+				std::cout << "\n Error DeviceNumber + 1 '"<< DeviceNumber + 1 <<"' is greater than NumberOfDevices in StoreDataForKernelArgument In: cl_MultiDevice_KernelArgumentSendStruct!\n";
 				return;
 			}
 		}
@@ -2979,7 +3153,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;								// Initalized and Constructed in  InitializeOpenCLProgram()
 		unsigned int TotalNumberOfKernelFunctions = 0;											// Don't try to manually change this unless you know how to do it properly
 		cl_KernelFunctionArgumentOrderListStruct** OrderedKernelArgumentList = nullptr;			// This Contains All the Kernel Functions information
-		cl_MultiKernelFunction_MultiDeviceStruct** MultiKernelFunction_MultiDevice = nullptr;			// Initialization And Construction functions will take care of it	
+		cl_MultiKernelFunction_MultiDeviceStruct** MultiKernelFunction_MultiDevice = nullptr;	// Initialization And Construction functions will take care of it	
 
 	public:
 		bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
@@ -3656,7 +3830,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void RunKernelFunction(unsigned int KernelToRunNumber, unsigned int DevicesToRunKernel_From, unsigned int DevicesToRunKernel_To, cl_MultiDevice_NDRangeStruct MultiDeviceNDRange, bool& IsSuccesful, cl_MultiDevice_KernelArgumentSendStruct* MultiDeviceSendStructList = nullptr)
+		void RunKernelFunction(unsigned int KernelToRunNumber, unsigned int DevicesToRunKernel_From, unsigned int DevicesToRunKernel_To, cl_MultiDevice_NDRangeStruct* MultiDeviceNDRange, bool& IsSuccesful, cl_MultiDevice_KernelArgumentSendStruct* MultiDeviceSendStructList = nullptr)
 		{
 			IsSuccesful = false;
 
@@ -3684,9 +3858,16 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}
 
 							//PENDING
+							cl_NDRangeStruct* PointerToNDRangeStruct = nullptr;
 							for (int i = DevicesToRunKernel_From; i <= DevicesToRunKernel_To; ++i)
 							{
-								MultiKernelFunction_MultiDevice[KernelToRunNumber]->RunKernel(i, *(MultiDeviceNDRange.MultiNDRange[i]), IsSuccesful);
+								PointerToNDRangeStruct = MultiDeviceNDRange->GetNDRangeOfDevice(i, IsSuccesful);
+								if (!IsSuccesful)
+								{
+									std::cout << "\n Error MultiDeviceNDRange.GetNDRangeOfDevice() for Device '"<< i <<"' Failed in RunKernelFunction In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+									return;
+								}
+								MultiKernelFunction_MultiDevice[KernelToRunNumber]->RunKernel(i, PointerToNDRangeStruct, IsSuccesful);
 							}
 							
 							IsSuccesful = false;
@@ -3706,7 +3887,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void RunKernelFunction(std::string NameOfTheKernelToRun, unsigned int DevicesToRunKernel_From, unsigned int DevicesToRunKernel_To, cl_MultiDevice_NDRangeStruct MultiDeviceNDRange, bool& IsSuccesful, cl_MultiDevice_KernelArgumentSendStruct* MultiDeviceSendStructList = nullptr)
+		void RunKernelFunction(std::string NameOfTheKernelToRun, unsigned int DevicesToRunKernel_From, unsigned int DevicesToRunKernel_To, cl_MultiDevice_NDRangeStruct* MultiDeviceNDRange, bool& IsSuccesful, cl_MultiDevice_KernelArgumentSendStruct* MultiDeviceSendStructList = nullptr)
 		{
 			IsSuccesful = false;
 
@@ -3810,14 +3991,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error Calling GetKernelNumberByKernelName Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
 		}
-		cl_KernelFunctionArgumentOrderListStruct GetKernelInformation(unsigned int KernelNumber, bool& IsSuccesful)
+		cl_KernelFunctionArgumentOrderListStruct* GetKernelInformation(unsigned int KernelNumber, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 			if (IsConstructionSuccesful)
 			{
 				if (KernelNumber < TotalNumberOfKernelFunctions)
 				{
-					return *(OrderedKernelArgumentList[KernelNumber]);
+					return OrderedKernelArgumentList[KernelNumber];
 					IsSuccesful = true;
 				}
 				else
@@ -3829,9 +4010,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				std::cout << "\n Error Calling GetKernelInformation Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
-			return cl_KernelFunctionArgumentOrderListStruct(0, "cl_Invalid");
+			return nullptr;
 		}
-		cl_KernelFunctionArgumentOrderListStruct GetKernelInformation(std::string NameOfTheKernel, bool& IsSuccesful)
+		cl_KernelFunctionArgumentOrderListStruct* GetKernelInformation(std::string NameOfTheKernel, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 			unsigned int KernelNumber = 0;
