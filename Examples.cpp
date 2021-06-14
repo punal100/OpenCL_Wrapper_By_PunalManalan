@@ -24,7 +24,9 @@ int Test1()
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), IsSuccesful);
-	MultiNDRange.GetNDRangeOfDevice(0, IsSuccesful)->SetNDRange(10, 1, 0);
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, IsSuccesful);
+	NDRangeStructPtr->SetNDRange(10, 1, 0);
 
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
 
@@ -125,7 +127,9 @@ int Test2()
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), IsSuccesful);
-	MultiNDRange.GetNDRangeOfDevice(0, IsSuccesful)->SetNDRange(10, 1, 0);
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, IsSuccesful);
+	NDRangeStructPtr->SetNDRange(10, 1, 0);
 
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
 
