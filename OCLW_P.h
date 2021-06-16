@@ -516,21 +516,24 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRange() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
+			else
+			{
+				Dimensions = 1;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = 0;
+				GlobalWorkSize[2] = 0;
 
-			Dimensions = 1;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = 0;
-			GlobalWorkSize[2] = 0;
+				LocalWorkSize[0] = LocalSize1D;
+				LocalWorkSize[1] = 0;
+				LocalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = LocalSize1D;
-			LocalWorkSize[1] = 0;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = 0;
-			WorkSizeOffset[2] = 0;
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = 0;
+				WorkSizeOffset[2] = 0;
+			}
 		}
 
 		//NOTE: 2 Dimension
@@ -539,21 +542,24 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRange() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
+			else
+			{
+				Dimensions = 2;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = GlobalSize2D;
+				GlobalWorkSize[2] = 0;
 
-			Dimensions = 2;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = GlobalSize2D;
-			GlobalWorkSize[2] = 0;
+				LocalWorkSize[0] = LocalSize1D;
+				LocalWorkSize[1] = LocalSize2D;
+				LocalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = LocalSize1D;
-			LocalWorkSize[1] = LocalSize2D;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = WorkSizeOffset2D;
-			WorkSizeOffset[2] = 0;
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = WorkSizeOffset2D;
+				WorkSizeOffset[2] = 0;
+			}
 		}
 
 		//NOTE: 3 Dimension
@@ -562,119 +568,103 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRange() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
+			else
+			{
+				Dimensions = 3;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = GlobalSize2D;
+				GlobalWorkSize[2] = GlobalSize3D;
 
-			Dimensions = 3;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = GlobalSize2D;
-			GlobalWorkSize[2] = GlobalSize3D;
+				LocalWorkSize[0] = LocalSize1D;
+				LocalWorkSize[1] = LocalSize2D;
+				LocalWorkSize[2] = LocalSize3D;
 
-			LocalWorkSize[0] = LocalSize1D;
-			LocalWorkSize[1] = LocalSize2D;
-			LocalWorkSize[2] = LocalSize3D;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = WorkSizeOffset2D;
-			WorkSizeOffset[2] = WorkSizeOffset3D;
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = WorkSizeOffset2D;
+				WorkSizeOffset[2] = WorkSizeOffset3D;
+			}
 		}
 
-		//NOTE: 1 Dimension With Offset 0
+		//NOTE: 1 Dimension With Local 0
 		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D)
 		{
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRangeWithoutLocal() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
+			else
+			{
+				Dimensions = 1;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = 0;
+				GlobalWorkSize[2] = 0;
 
-			Dimensions = 1;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = 0;
-			GlobalWorkSize[2] = 0;
+				LocalWorkSize[0] = 0;
+				LocalWorkSize[1] = 0;
+				LocalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = 0;
-			LocalWorkSize[1] = 0;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = 0;
-			WorkSizeOffset[2] = 0;
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = 0;
+				WorkSizeOffset[2] = 0;
+			}
 		}
 
-		//NOTE: 2 Dimension With Offset 0
+		//NOTE: 2 Dimension With Local 0
 		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D, size_t GlobalSize2D, size_t WorkSizeOffset2D)
 		{
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRangeWithoutLocal() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
+			else
+			{
+				Dimensions = 2;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = GlobalSize2D;
+				GlobalWorkSize[2] = 0;
 
-			Dimensions = 2;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = GlobalSize2D;
-			GlobalWorkSize[2] = 0;
+				LocalWorkSize[0] = 0;
+				LocalWorkSize[1] = 0;
+				LocalWorkSize[2] = 0;
 
-			LocalWorkSize[0] = 0;
-			LocalWorkSize[1] = 0;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = WorkSizeOffset2D;
-			WorkSizeOffset[2] = 0;
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = WorkSizeOffset2D;
+				WorkSizeOffset[2] = 0;
+			}
 		}
 
-		//NOTE: 3 Dimension With Offset 0
+		//NOTE: 3 Dimension With Local 0
 		void SetNDRangeWithoutLocal(size_t GlobalSize1D, size_t WorkSizeOffset1D, size_t GlobalSize2D, size_t WorkSizeOffset2D, size_t GlobalSize3D, size_t WorkSizeOffset3D)
 		{
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+				std::cout << "\n Error SetNDRangeWithoutLocal() Failed in cl_MultiDevice_NDRangeStruct!\n";
 				return;
 			}
-
-			Dimensions = 3;//By default it is 1
-			GlobalWorkSize[0] = GlobalSize1D;
-			GlobalWorkSize[1] = GlobalSize2D;
-			GlobalWorkSize[2] = GlobalSize3D;
-
-			LocalWorkSize[0] = 0;
-			LocalWorkSize[1] = 0;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = WorkSizeOffset1D;
-			WorkSizeOffset[1] = WorkSizeOffset2D;
-			WorkSizeOffset[2] = WorkSizeOffset3D;
-		}
-
-		void CopyNDRange(cl_NDRangeStruct* ArgNDRange, bool& IsSuccesful)
-		{
-			if (!IsConstructionSuccesful)
+			else
 			{
-				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
-				return;
+				Dimensions = 3;//By default it is 1
+				GlobalWorkSize[0] = GlobalSize1D;
+				GlobalWorkSize[1] = GlobalSize2D;
+				GlobalWorkSize[2] = GlobalSize3D;
+
+				LocalWorkSize[0] = 0;
+				LocalWorkSize[1] = 0;
+				LocalWorkSize[2] = 0;
+
+				WorkSizeOffset[0] = WorkSizeOffset1D;
+				WorkSizeOffset[1] = WorkSizeOffset2D;
+				WorkSizeOffset[2] = WorkSizeOffset3D;
 			}
-
-			cl_uint ArgDimensions = 0;//By default it is 1
-			size_t* ArgGlobalSize;	// Total Number Of Work Items
-			size_t* ArgLocalSize;	// Work Items per Work Group
-			size_t* ArgWorkSizeOffset;	// WorkSize Offset
-
-			ArgNDRange->GetNDRange(&ArgDimensions, &ArgGlobalSize, &ArgLocalSize, &ArgWorkSizeOffset, IsSuccesful);
-			Dimensions = ArgDimensions;//By default it is 1
-			GlobalWorkSize[0] = ArgGlobalSize[0];
-			GlobalWorkSize[1] = ArgGlobalSize[1];
-			GlobalWorkSize[2] = ArgGlobalSize[2];
-
-			LocalWorkSize[0] = ArgLocalSize[0];
-			LocalWorkSize[1] = ArgLocalSize[1];
-			LocalWorkSize[2] = ArgLocalSize[2];
-
-			WorkSizeOffset[0] = ArgWorkSizeOffset[0];
-			WorkSizeOffset[1] = ArgWorkSizeOffset[1];
-			WorkSizeOffset[2] = ArgWorkSizeOffset[2];
-		}
+		}	
 
 		void GetNDRange(cl_uint* ArgDimensions, size_t** ArgGlobalSize, size_t** ArgLocalSize, size_t** ArgWorkSizeOffset, bool& IsSuccesful)
 		{
@@ -688,33 +678,77 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (!IsConstructionSuccesful)
 			{
 				std::cout << "\n Error Calling GetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
-				return;
-			}
-			if (Dimensions == 0)
-			{
-				std::cout << "\n Error Calling GetNDRange Without SettingNDRange First using SetNDRange() In: cl_NDRangeStruct!\n";
-				return;
-			}
-
-			// Temporarly using this variable for different purpose
-			IsSuccesful = (LocalWorkSize[0] == 0) || (LocalWorkSize[1] == 0) || (LocalWorkSize[2] == 0);
-
-			if (IsSuccesful)
-			{
-				*ArgDimensions = Dimensions;
-				*ArgGlobalSize = nullptr;
-				*ArgLocalSize = nullptr;
-				*ArgWorkSizeOffset = nullptr;
 			}
 			else
 			{
-				*ArgDimensions = Dimensions;
-				*ArgGlobalSize = GlobalWorkSize;
-				*ArgLocalSize = LocalWorkSize;
-				*ArgWorkSizeOffset = WorkSizeOffset;
+				if (Dimensions == 0)
+				{
+					std::cout << "\n Error Calling GetNDRange Without SettingNDRange First using SetNDRange() In: cl_NDRangeStruct!\n";
+				}
+				else
+				{
+					// Temporarly using this variable for different purpose
+					IsSuccesful = (LocalWorkSize[0] == 0) || (LocalWorkSize[1] == 0) || (LocalWorkSize[2] == 0);
+					*ArgDimensions = Dimensions;
+					*ArgGlobalSize = GlobalWorkSize;
+					if (IsSuccesful)
+					{						
+						*ArgLocalSize = nullptr;
+						*ArgWorkSizeOffset = nullptr;
+					}
+					else
+					{
+						*ArgLocalSize = LocalWorkSize;
+						*ArgWorkSizeOffset = WorkSizeOffset;
+					}
+					IsSuccesful = true;
+				}
 			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error GetNDRangeOfDevice() Failed in cl_MultiDevice_NDRangeStruct!\n";
+			}
+		}
 
-			IsSuccesful = true;
+		void CopyNDRange(cl_NDRangeStruct* ArgNDRange, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n";
+			}
+			else
+			{
+				cl_uint ArgDimensions = 0;//By default it is 1
+				size_t* ArgGlobalSize;	// Total Number Of Work Items
+				size_t* ArgLocalSize;	// Work Items per Work Group
+				size_t* ArgWorkSizeOffset;	// WorkSize Offset
+
+				ArgNDRange->GetNDRange(&ArgDimensions, &ArgGlobalSize, &ArgLocalSize, &ArgWorkSizeOffset, IsSuccesful);
+				if (!IsSuccesful)
+				{
+					std::cout << "\n Error ArgNDRange->GetNDRange in CopyNDRange In: cl_NDRangeStruct!\n";
+				}
+				else
+				{
+					Dimensions = ArgDimensions;//By default it is 1
+					GlobalWorkSize[0] = ArgGlobalSize[0];
+					GlobalWorkSize[1] = ArgGlobalSize[1];
+					GlobalWorkSize[2] = ArgGlobalSize[2];
+
+					LocalWorkSize[0] = ArgLocalSize[0];
+					LocalWorkSize[1] = ArgLocalSize[1];
+					LocalWorkSize[2] = ArgLocalSize[2];
+
+					WorkSizeOffset[0] = ArgWorkSizeOffset[0];
+					WorkSizeOffset[1] = ArgWorkSizeOffset[1];
+					WorkSizeOffset[2] = ArgWorkSizeOffset[2];
+				}
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error CopyNDRange() Failed in cl_MultiDevice_NDRangeStruct!\n";
+			}
 		}
 
 		~cl_NDRangeStruct()
@@ -981,82 +1015,43 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					std::cout << "\n Error The OrderedListOfArugments Is Not Properly Set, So Is Unusable In: cl_MultiKernelFunction_MultiDeviceStruct!\n";
 				}
-			}
-
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
-			if (!IsSuccesful)
-			{
-				std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";
-				return;
-			}
-			else
-			{
-				IsSuccesful = true;// Since the Struct Does not have IsSuccesful parameter
-				for (int i = 0; i < TotalNumberOfArugments; ++i)
-				{
-					KernelArgumentsInOrder[i] = new cl_Memory_Type(*((CopyStruct->KernelArgumentsInOrder)[i]));
-					if (KernelArgumentsInOrder[i] == nullptr)
-					{
-						std::cout << "\n Error Allocating " << sizeof(cl_Memory_Type) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
-						for (int j = 0; j < i; ++j)
-						{
-							delete KernelArgumentsInOrder[j];
-						}
-						free(KernelArgumentsInOrder);
-						IsSuccesful = false;
-						break;
-					}
-				}
-			}
-
-			if (!IsSuccesful)// For the safe of readability
-			{
-				std::cout << "\n Error Construction Failed cl_KernelFunctionArgumentOrderListStruct!";
-			}
-			else
-			{
-				IsConstructionSuccesful = true;
-			}
-		}
-
-		cl_KernelFunctionArgumentOrderListStruct(cl_KernelFunctionArgumentOrderListStruct* CopyStruct, bool& IsSuccesful) : TotalNumberOfArugments(CopyStruct->TotalNumberOfArugments), KernelFunctionName(CopyStruct->KernelFunctionName)
-		{
-			std::cout << "\n Constructing cl_KernelFunctionArgumentOrderListStruct!";
-
-			IsConstructionSuccesful = false;
-			IsSuccesful = false;
-
-			if (CopyStruct == nullptr)
-			{
-				std::cout << "\n Error CopyStruct is nullptr In KernelFunctionArgumentOrderListStruct!\n";
-			}
-			else
-			{
-				Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
-				if (!IsSuccesful)
-				{
-					std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";					
-				}
 				else
 				{
-					IsSuccesful = true;// Since the Struct Does not have IsSuccesful parameter
-					for (int i = 0; i < TotalNumberOfArugments; ++i)
+					Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccesful);
+					if (!IsSuccesful)
 					{
-						KernelArgumentsInOrder[i] = new cl_Memory_Type(*((CopyStruct->KernelArgumentsInOrder)[i]));
-						if (KernelArgumentsInOrder[i] == nullptr)
+						std::cout << "\n Error Allocating :" << TotalNumberOfArugments * sizeof(cl_Memory_Type*) << " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n";						
+					}
+					else
+					{
+						for (int i = 0; i < TotalNumberOfArugments; ++i)
 						{
-							std::cout << "\n Error Allocating " << sizeof(cl_Memory_Type) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
-							for (int j = 0; j < i; ++j)
+							KernelArgumentsInOrder[i] = new cl_Memory_Type(*((CopyStruct->KernelArgumentsInOrder)[i]));
+							if (KernelArgumentsInOrder[i] == nullptr)
 							{
-								delete KernelArgumentsInOrder[j];
+								std::cout << "\n Error Allocating " << sizeof(cl_Memory_Type) << " Byes Of Memory for KernelArgumentsInOrder[" << i << "] In KernelFunctionArgumentOrderListStruct!\n";
+								for (int j = 0; j < i; ++j)
+								{
+									delete KernelArgumentsInOrder[j];
+								}
+								free(KernelArgumentsInOrder);
+								IsSuccesful = false;
+								break;
 							}
-							free(KernelArgumentsInOrder);
-							IsSuccesful = false;
-							break;
 						}
-					}					
+						if (IsSuccesful)// For the safe of readability
+						{
+							IsThisListUsable = CopyStruct->IsThisListUsable;
+							NumberOfArgumentsSet = CopyStruct->NumberOfArgumentsSet;
+							NumberOfReads = CopyStruct->NumberOfReads;
+							NumberOfWrites = CopyStruct->NumberOfWrites;
+							NumberOfRead_And_Writes = CopyStruct->NumberOfRead_And_Writes;
+							NumberOfLocals = CopyStruct->NumberOfLocals;
+							NumberOfPrivates = CopyStruct->NumberOfPrivates;
+						}
+					}
 				}
-			}
+			}			
 
 			if (!IsSuccesful)// For the safe of readability
 			{
@@ -1064,17 +1059,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				IsThisListUsable		=	CopyStruct->IsThisListUsable;
-				NumberOfArgumentsSet	=	CopyStruct->NumberOfArgumentsSet;
-				NumberOfReads			=	CopyStruct->NumberOfReads;
-				NumberOfWrites			=	CopyStruct->NumberOfWrites;
-				NumberOfRead_And_Writes =	CopyStruct->NumberOfRead_And_Writes;
-				NumberOfLocals			=	CopyStruct->NumberOfLocals;
-				NumberOfPrivates		=	CopyStruct->NumberOfPrivates;
-
 				IsConstructionSuccesful = true;
 			}
-		}
+		}		
 
 		void SetMemoryTypeOfArugment(const unsigned int ArgumentNumber, cl_Memory_Type MemoryType, bool& IsSuccesful)
 		{
@@ -1268,7 +1255,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		const cl_kernel* TheKernel;
 		const cl_uint KernelArgumentNumber;
 		const cl_context* cl_ContextForThisArgument;
-		const cl_command_queue* cl_CommandQueueForThisArgument;
+		const cl_command_queue* cl_CommandQueueForThisArgument;//One per device
 		const cl_Memory_Type clMemory_Type_Of_Argument;
 		bool DoesBufferAlreadyExist = false;
 		cl_mem GlobalMemoryInDevice = nullptr;// Local not needed as it is inaccessible by host..
@@ -1289,6 +1276,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							free(COPY_OF_PrivateMemoryType);
 						}
+						DoesBufferAlreadyExist = false;
+						IsSuccesful = true;
 					}
 					else
 					{
@@ -1299,23 +1288,27 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							{
 								std::cout << "\n ClError Code " << ClErrorResult << " : Releasing Memory On device In: cl_MemoryStruct!\n";
 								std::cout << "\n Error clReleaseMemObject failed in FreeBuffer() Returning Early! in cl_MemoryStruct!\n";
-								return;
+							}
+							else
+							{
+								DoesBufferAlreadyExist = false;
+								IsSuccesful = true;
+								MemoryInDeviceTotalSizeInBytes = 0;
+								MemoryInDevice_Occupied_SizeInBytes = 0;
 							}
 						}
-						//else
-						//{
-							//LocalBuffer can not be created from host side... so freeing something that does not exist is impossible
-						//}
-						MemoryInDeviceTotalSizeInBytes = 0;
-						MemoryInDevice_Occupied_SizeInBytes = 0;
-					}
-					DoesBufferAlreadyExist = false;
-					IsSuccesful = true;
+						else
+						{
+							DoesBufferAlreadyExist = false;
+							IsSuccesful = true;
+							MemoryInDeviceTotalSizeInBytes = 0;
+							MemoryInDevice_Occupied_SizeInBytes = 0;
+						}						
+					}					
 				}
 				else
 				{
 					std::cout << "\n Error Trying to Releasing Uninitialized_cl_Memory Memory On device In BufferCreation In: cl_MemoryStruct!\n";
-					return;
 				}
 			}
 			else
@@ -1430,12 +1423,30 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								std::cout << "\n ClError Code " << ClErrorResult << " : Creating Buffer On device In BufferCreation In: cl_MemoryStruct!\n";
 								MemoryInDeviceTotalSizeInBytes = 0;
 								MemoryInDevice_Occupied_SizeInBytes = 0;
-								break;
+								IsSuccesful = false;
 							}
-							MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-							MemoryInDevice_Occupied_SizeInBytes = 0;
-							IsSuccesful = true;
-							DoesBufferAlreadyExist = true;
+							else
+							{
+								ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+								if (ClErrorResult != CL_SUCCESS)
+								{
+									std::cout << "\n CL_Error Code " << ClErrorResult << "  in BufferCreation In: cl_MemoryStruct!\n";
+									FreeBuffer(IsSuccesful);
+									if (!IsSuccesful)
+									{
+										std::cout << "\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n";
+									}
+									IsSuccesful = false;
+								}
+								else
+								{
+									//MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;// Same Value
+									MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+									MemoryInDevice_Occupied_SizeInBytes = 0;									
+									DoesBufferAlreadyExist = true;
+									IsSuccesful = true;									
+								}
+							}
 							break;
 						}
 					}
@@ -1470,7 +1481,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				BufferCreation(1, IsSuccesful);// No Need to use Is Succesful Here
+				BufferCreation(1, IsSuccesful);// No Need to use IsSuccesful Here
 			}
 
 			if (!IsSuccesful)// For the safe of readability
@@ -1480,6 +1491,55 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			else
 			{
 				DoesBufferAlreadyExist = true;
+				IsConstructionSuccesful = true;
+			}
+		}
+
+		//NOTE: THIS is just a copy of The Original cl_Memory_Struct, Meaning Both the copy and original Should not be used at the same time!
+		cl_MemoryStruct(cl_MemoryStruct* CopyStruct, bool AlsoCopyBufferAddressAndSize, bool& IsSuccesful) : clMemory_Type_Of_Argument(CopyStruct->clMemory_Type_Of_Argument), cl_ContextForThisArgument(CopyStruct->cl_ContextForThisArgument), cl_CommandQueueForThisArgument(CopyStruct->cl_CommandQueueForThisArgument), TheKernel(CopyStruct->TheKernel), KernelArgumentNumber(CopyStruct->KernelArgumentNumber)
+		{
+			std::cout << "\n Constructing cl_MemoryStruct!";
+
+			DoesBufferAlreadyExist = false;
+			GlobalMemoryInDevice = NULL;
+			COPY_OF_PrivateMemoryType = nullptr;
+			MemoryInDeviceTotalSizeInBytes = 0;
+			MemoryInDevice_Occupied_SizeInBytes = 0;
+
+			IsConstructionSuccesful = false;
+			IsSuccesful = false;
+
+			if (CopyStruct == nullptr)
+			{
+				std::cout << "\n Error CopyStruct is nullptr In cl_MemoryStruct!\n";
+			}
+			else
+			{
+				if (AlsoCopyBufferAddressAndSize)
+				{
+					DoesBufferAlreadyExist = CopyStruct->DoesBufferAlreadyExist;
+					GlobalMemoryInDevice = CopyStruct->GlobalMemoryInDevice;
+					COPY_OF_PrivateMemoryType = CopyStruct->COPY_OF_PrivateMemoryType;
+					MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
+					MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
+				}
+				else
+				{
+					if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)// Since we are copying the contents, CL_PRIVATE will have fixed size
+					{
+						MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
+						MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
+					}
+				}
+				IsSuccesful = true;
+			}
+
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error Construction Failed cl_MemoryStruct!";
+			}
+			else
+			{
 				IsConstructionSuccesful = true;
 			}
 		}
@@ -1636,22 +1696,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									else
 									{
 										//Put the Buffer in Specified Device(GPU Or CPU)
-										ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
-										if (ClErrorResult != CL_SUCCESS)
-										{
-											std::cout << "\n CL_Error Code " << ClErrorResult << "  in MemoryAllocationOnDevice In: cl_MemoryStruct!\n";
-											FreeBuffer(IsSuccesful);
-											if (!IsSuccesful)
-											{
-												std::cout << "\n Error FreeBuffer() failed in MemoryAllocationOnDevice In: cl_MemoryStruct!\n";
-											}
-										}
-										else
-										{
-											//MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;// Same Value
-											MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-											IsSuccesful = true;
-										}
+										MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
+										IsSuccesful = true;										
 									}
 								}
 							}
@@ -1689,33 +1735,40 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				cl_int ClErrorResult = 0;
-				if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
+				if (!DoesBufferAlreadyExist)
 				{
-					ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), GlobalMemoryInDevice);
+					std::cout << "\n Error :Kernel Argument Number of " << KernelArgumentNumber << " Does not have buffer created. in ReadBuffer In: cl_MemoryStruct!\n";
 				}
 				else
 				{
-					if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_LOCALENUM)
+					cl_int ClErrorResult = 0;
+					if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
 					{
-						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, MemoryInDeviceTotalSizeInBytes, NULL);
+						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), GlobalMemoryInDevice);
 					}
 					else
 					{
-						if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
+						if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_LOCALENUM)
 						{
-							ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, MemoryInDeviceTotalSizeInBytes, COPY_OF_PrivateMemoryType);
+							ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, MemoryInDeviceTotalSizeInBytes, NULL);
 						}
-						//else No need for else, as it is impossible for invalid or other enum type to get past through, unless a glitch occurs which is extremely unlikely...
+						else
+						{
+							if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
+							{
+								ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, MemoryInDeviceTotalSizeInBytes, COPY_OF_PrivateMemoryType);
+							}
+							//else No need for else, as it is impossible for invalid or other enum type to get past through, unless a glitch occurs which is extremely unlikely...
+						}
 					}
-				}
-				if (ClErrorResult != CL_SUCCESS)
-				{
-					std::cout << "\n CL_Error Code " << ClErrorResult << " : Passing Buffer To Kernel In PassBufferToKernel In: cl_MemoryStruct!\n";
-				}
-				else
-				{
-					IsSuccesful = true;
+					if (ClErrorResult != CL_SUCCESS)
+					{
+						std::cout << "\n CL_Error Code " << ClErrorResult << " : Passing Buffer To Kernel In PassBufferToKernel In: cl_MemoryStruct!\n";
+					}
+					else
+					{
+						IsSuccesful = true;
+					}
 				}
 			}
 
@@ -1799,7 +1852,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				if (!DoesBufferAlreadyExist)
 				{
 					std::cout << "\n Error :Kernel Argument Number of " << KernelArgumentNumber << " Does not have buffer created. in ReadBuffer In: cl_MemoryStruct!\n";
-					IsSuccesful = false;
 				}
 				else
 				{
@@ -1850,6 +1902,304 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
+		//NOTE: The newly interchanged Buffers are automatically passed to kernel!
+		void InterchangeBufferWithinSameDevice(cl_MemoryStruct* PointerToBufferPointer, bool& IsSuccesful)//PointerToBufferPointer = MultiBufferOnDevice[i]
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling InterChangeBufferWithinSameDevice Without Constructing the struct In: cl_MemoryStruct!\n";
+			}
+			else
+			{
+				if (cl_CommandQueueForThisArgument != PointerToBufferPointer->cl_CommandQueueForThisArgument)
+				{
+					std::cout << "\n Error :cl_CommandQueueForThisArgument of this Does not match with PointerToBufferPointer->cl_CommandQueueForThisArgument in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+					std::cout << " NOTE: use InterchangeBufferWithinSameDevice when interchanging data with Same device\n";
+					std::cout << " NOTE: use InterchangeBufferWithAnotherDevice when interchanging data with Another device\n";
+				}
+				else
+				{
+					if (clMemory_Type_Of_Argument == PointerToBufferPointer->clMemory_Type_Of_Argument)
+					{
+						cl_MemoryStruct* TEMP_COPY_BufferOne = nullptr;//It Will Hold Buffer Of This and Context of (*PointerToBufferPointer)
+						cl_MemoryStruct* TEMP_COPY_BufferTwo = nullptr;//It Will Hold Buffer Of (*PointerToBufferPointer) and Context of this
+
+						TEMP_COPY_BufferOne = new cl_MemoryStruct(PointerToBufferPointer, true, IsSuccesful);
+						if (TEMP_COPY_BufferOne == nullptr)
+						{
+							IsSuccesful = false;
+						}
+						else
+						{
+							if (!IsSuccesful)
+							{
+								delete TEMP_COPY_BufferOne;
+							}
+							else
+							{
+								TEMP_COPY_BufferOne->DoesBufferAlreadyExist =				DoesBufferAlreadyExist;
+								TEMP_COPY_BufferOne->GlobalMemoryInDevice =					GlobalMemoryInDevice;
+								TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType =			COPY_OF_PrivateMemoryType;
+								TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes =		MemoryInDeviceTotalSizeInBytes;
+								TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes =	MemoryInDevice_Occupied_SizeInBytes;
+							}
+						}
+
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error :Construction of TEMP_COPY_BufferOne failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+						}
+						else
+						{
+							TEMP_COPY_BufferTwo = new cl_MemoryStruct(this, true, IsSuccesful);
+							if (TEMP_COPY_BufferTwo == nullptr)
+							{
+								IsSuccesful = false;
+								TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+								delete TEMP_COPY_BufferOne;
+							}
+							else
+							{
+								if (!IsSuccesful)
+								{
+									delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
+									TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+									delete TEMP_COPY_BufferOne;
+								}
+								else
+								{
+									TEMP_COPY_BufferTwo->DoesBufferAlreadyExist =				PointerToBufferPointer->DoesBufferAlreadyExist;
+									TEMP_COPY_BufferTwo->GlobalMemoryInDevice =					PointerToBufferPointer->GlobalMemoryInDevice;
+									TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType =			PointerToBufferPointer->COPY_OF_PrivateMemoryType;
+									TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes =		PointerToBufferPointer->MemoryInDeviceTotalSizeInBytes;
+									TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes =	PointerToBufferPointer->MemoryInDevice_Occupied_SizeInBytes;
+								}
+							}
+
+							if (!IsSuccesful)
+							{
+								std::cout << "\n Error :Construction of TEMP_COPY_BufferTwo failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+							}
+							else
+							{
+								if (TEMP_COPY_BufferOne->DoesBufferAlreadyExist)
+								{
+									TEMP_COPY_BufferOne->PassBufferToKernel(IsSuccesful);
+									if (!IsSuccesful)
+									{
+										std::cout << "\n Error :TEMP_COPY_BufferOne->PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+									}
+									else
+									{
+										if (TEMP_COPY_BufferTwo->DoesBufferAlreadyExist)
+										{
+											TEMP_COPY_BufferTwo->PassBufferToKernel(IsSuccesful);
+										}
+										if (!IsSuccesful)
+										{
+											std::cout << "\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+										}
+										else//When Everything is Succesfuly done
+										{
+											//Context Of One and Buffer of Two
+											DoesBufferAlreadyExist = TEMP_COPY_BufferTwo->DoesBufferAlreadyExist;
+											GlobalMemoryInDevice = TEMP_COPY_BufferTwo->GlobalMemoryInDevice;
+											COPY_OF_PrivateMemoryType = TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType;
+											MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes;
+											MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes;
+
+											//Context Of Two and Buffer of One
+											PointerToBufferPointer->DoesBufferAlreadyExist = TEMP_COPY_BufferOne->DoesBufferAlreadyExist;
+											PointerToBufferPointer->GlobalMemoryInDevice = TEMP_COPY_BufferOne->GlobalMemoryInDevice;
+											PointerToBufferPointer->COPY_OF_PrivateMemoryType = TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType;
+											PointerToBufferPointer->MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes;
+											PointerToBufferPointer->MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes;
+										}
+										
+										//Freeing Memory
+										TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+										delete TEMP_COPY_BufferOne;
+										TEMP_COPY_BufferTwo->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+										delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
+									}
+								}								
+							}
+						}
+					}
+					else
+					{
+						std::cout << "\n Error :clMemory_Type_Of_Argument of this Does not match with PointerToBufferPointer->clMemory_Type_Of_Argument in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n";
+					}
+				}
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error InterchangeBufferWithinSameDevice() Failed in cl_MemoryStruct!";
+			}
+		}
+
+		//NOTE: The newly interchanged Buffers are automatically passed to kernel!
+		void InterchangeBufferWithAnotherDevice(cl_MemoryStruct* PointerToBufferPointer, bool& IsSuccesful)//PointerToBufferPointer = MultiBufferOnDevice[i]
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling InterchangeBufferWithAnotherDevice Without Constructing the struct In: cl_MemoryStruct!\n";
+			}
+			else
+			{
+				if (cl_CommandQueueForThisArgument == PointerToBufferPointer->cl_CommandQueueForThisArgument)
+				{
+					std::cout << "\n Error :cl_CommandQueueForThisArgument of this Matches with PointerToBufferPointer->cl_CommandQueueForThisArgument in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+					std::cout << " NOTE: use InterchangeBufferWithAnotherDevice when interchanging data with Another device\n";
+					std::cout << " NOTE: use InterchangeBufferWithinSameDevice when interchanging data with Same device\n";
+				}
+				else
+				{
+					if (clMemory_Type_Of_Argument == PointerToBufferPointer->clMemory_Type_Of_Argument)
+					{
+						cl_MemoryStruct* TEMP_COPY_BufferOne = nullptr;
+						cl_MemoryStruct* TEMP_COPY_BufferTwo = nullptr;
+
+						TEMP_COPY_BufferOne = new cl_MemoryStruct(PointerToBufferPointer, true, IsSuccesful);
+						if (TEMP_COPY_BufferOne == nullptr)
+						{
+							IsSuccesful = false;
+						}
+						else
+						{
+							if (!IsSuccesful)
+							{
+								delete TEMP_COPY_BufferOne;
+							}
+							else
+							{
+								TEMP_COPY_BufferOne->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
+								TEMP_COPY_BufferOne->GlobalMemoryInDevice = GlobalMemoryInDevice;
+								TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
+								TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes = MemoryInDeviceTotalSizeInBytes;
+								TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes = MemoryInDevice_Occupied_SizeInBytes;
+							}
+						}
+
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error :Construction of TEMP_COPY_BufferOne failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+						}
+						else
+						{
+							TEMP_COPY_BufferTwo = new cl_MemoryStruct(this, true, IsSuccesful);
+							if (TEMP_COPY_BufferTwo == nullptr)
+							{
+								IsSuccesful = false;
+								TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+								delete TEMP_COPY_BufferOne;
+							}
+							else
+							{
+								if (!IsSuccesful)
+								{
+									TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+									delete TEMP_COPY_BufferOne;
+									delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
+								}
+								else
+								{
+									TEMP_COPY_BufferTwo->DoesBufferAlreadyExist = PointerToBufferPointer->DoesBufferAlreadyExist;
+									TEMP_COPY_BufferTwo->GlobalMemoryInDevice = PointerToBufferPointer->GlobalMemoryInDevice;
+									TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType = PointerToBufferPointer->COPY_OF_PrivateMemoryType;
+									TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes = PointerToBufferPointer->MemoryInDeviceTotalSizeInBytes;
+									TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes = PointerToBufferPointer->MemoryInDevice_Occupied_SizeInBytes;
+								}
+							}
+
+							if (!IsSuccesful)
+							{
+								std::cout << "\n Error :Construction of TEMP_COPY_BufferTwo failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+							}
+							else
+							{
+								if (TEMP_COPY_BufferOne->DoesBufferAlreadyExist)
+								{
+									TEMP_COPY_BufferOne->PassBufferToKernel(IsSuccesful);
+									if (!IsSuccesful)
+									{
+										std::cout << "\n Error :TEMP_COPY_BufferOne->PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+									}
+									else
+									{
+										cl_int ClErrorResult = clEnqueueMigrateMemObjects(*(TEMP_COPY_BufferOne->cl_CommandQueueForThisArgument), 1, &(TEMP_COPY_BufferOne->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+										if (ClErrorResult != CL_SUCCESS)
+										{
+											std::cout << "\n CL_Error Code " << ClErrorResult << "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+											std::cout << "\n Error :clEnqueueMigrateMemObjects on TEMP_COPY_BufferOne failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+											IsSuccesful = false;
+										}
+										else
+										{
+											if (TEMP_COPY_BufferTwo->DoesBufferAlreadyExist)
+											{
+												TEMP_COPY_BufferTwo->PassBufferToKernel(IsSuccesful);
+											}
+											if (!IsSuccesful)
+											{
+												std::cout << "\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+											}
+											else
+											{
+												ClErrorResult = clEnqueueMigrateMemObjects(*(TEMP_COPY_BufferTwo->cl_CommandQueueForThisArgument), 1, &(TEMP_COPY_BufferTwo->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+												if (ClErrorResult != CL_SUCCESS)
+												{
+													std::cout << "\n CL_Error Code " << ClErrorResult << "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+													std::cout << "\n Error :clEnqueueMigrateMemObjects on TEMP_COPY_BufferTwo failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+													IsSuccesful = false;
+
+													//Reseting to original Memory location!
+													clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &(TEMP_COPY_BufferOne->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+												}
+												else//When Everything is Succesfuly done
+												{
+													//Context Of One and Buffer of Two
+													DoesBufferAlreadyExist = TEMP_COPY_BufferTwo->DoesBufferAlreadyExist;
+													GlobalMemoryInDevice = TEMP_COPY_BufferTwo->GlobalMemoryInDevice;
+													COPY_OF_PrivateMemoryType = TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType;
+													MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes;
+													MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes;
+
+													//Context Of Two and Buffer of One
+													PointerToBufferPointer->DoesBufferAlreadyExist = TEMP_COPY_BufferOne->DoesBufferAlreadyExist;
+													PointerToBufferPointer->GlobalMemoryInDevice = TEMP_COPY_BufferOne->GlobalMemoryInDevice;
+													PointerToBufferPointer->COPY_OF_PrivateMemoryType = TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType;
+													PointerToBufferPointer->MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes;
+													PointerToBufferPointer->MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes;
+												}
+											}
+										}
+									}
+									//Freeing Memory
+									TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+									delete TEMP_COPY_BufferOne;
+									TEMP_COPY_BufferTwo->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+									delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
+								}
+							}
+						}
+					}
+					else
+					{
+						std::cout << "\n Error :clMemory_Type_Of_Argument of this Does not match with PointerToBufferPointer->clMemory_Type_Of_Argument in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n";
+					}
+				}
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error InterchangeBufferWithAnotherDevice() Failed in cl_MemoryStruct!";
+			}
+		}
+
 		~cl_MemoryStruct()
 		{
 			std::cout << "\n Destructing cl_MemoryStruct!";
@@ -1860,7 +2210,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					FreeBuffer(IsConstructionSuccesful);//Temprarly using IsConstructionSuccesful boolean here
 					IsConstructionSuccesful = false;
-					if (clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory)
+					if ((clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory) || (clMemory_Type_Of_Argument != cl_Memory_Type::CL_PRIVATE) || (clMemory_Type_Of_Argument != cl_Memory_Type::CL_LOCALENUM))
 					{
 						cl_int ClErrorResult;
 						ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);
@@ -1883,8 +2233,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	struct cl_KernelSingleArgumentStruct
 	{
 	private:		
-		cl_MemoryStruct* BufferOnDevice = nullptr;//Example: Buffer on GPU device	
+		unsigned int TotalNumberOfBuffers = 0;
+		cl_MemoryStruct** MultiBufferOnDevice = nullptr;//Example: Multiple Buffers on GPU device(For each Kernel Argument)
 		//PENDING add Array of BufferOnDevice So Each Kernel Argument Can have More sets of Data
+		//PENDING add Boolean Array and total number of buffers
 
 	public:
 		bool IsConstructionSuccesful = false;// NOTE: Do not change this manualy! unless you know what you are doing
@@ -1894,7 +2246,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		{
 			std::cout << "\n Constructing cl_KernelSingleArgumentStruct!";
 
-			BufferOnDevice = nullptr;
+			TotalNumberOfBuffers = 0;
+			MultiBufferOnDevice = nullptr;
 
 			IsConstructionSuccesful = false;
 			IsSuccesful = false;
@@ -1905,21 +2258,37 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				BufferOnDevice = new cl_MemoryStruct(ArgclMemory_Type_Of_Argument, Argcl_ContextForThisArgument, Argcl_CommandQueueForThisArgument, TheKernel, KernelArgumentNumber, IsSuccesful);
-				if (BufferOnDevice == nullptr)
+				//Intial First Buffer
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiBufferOnDevice, 1, sizeof(cl_Memory_Type*), IsSuccesful);
+				if (!IsSuccesful)
 				{
-					std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for BufferOnDevice In cl_KernelSingleArgumentStruct!\n";
+					std::cout << "\n Error Allocating :" << sizeof(cl_Memory_Type*) << " Byes Of Memory for MultiBufferOnDevice In KernelFunctionArgumentOrderListStruct!\n";
 				}
 				else
 				{
+					MultiBufferOnDevice[0] = new cl_MemoryStruct(ArgclMemory_Type_Of_Argument, Argcl_ContextForThisArgument, Argcl_CommandQueueForThisArgument, TheKernel, KernelArgumentNumber, IsSuccesful);
+					if (MultiBufferOnDevice[0] == nullptr)
+					{
+						IsSuccesful = false;
+					}
+					else
+					{
+						if (!IsSuccesful)
+						{
+							delete MultiBufferOnDevice[0];
+						}
+					}
 					if (!IsSuccesful)
 					{
-						std::cout << "\n Error Construction Failed cl_PerDeviceValuesStruct!";
-						delete BufferOnDevice;
+						std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for MultiBufferOnDevice[0] In cl_KernelSingleArgumentStruct!\n";
+						free(MultiBufferOnDevice);
+					}
+					else
+					{
+						TotalNumberOfBuffers = TotalNumberOfBuffers + 1;;
 					}
 				}
 			}
-
 			if (!IsSuccesful)// For the safe of readability
 			{
 				std::cout << "\n Error Construction Failed cl_KernelSingleArgumentStruct!";
@@ -1930,7 +2299,83 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void AllocateMemoryAndPassToKernel(void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool UsePreviouslyAllocatedMemoryOnBuffer, bool& IsSuccesful)
+		void AddBufferForThisArgument(bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error :Calling AddBufferForThisArgument Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n";
+			}
+			else
+			{
+				cl_MemoryStruct** TEMP_COPY_MultiBufferOnDevice = nullptr;
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_MultiBufferOnDevice, (TotalNumberOfBuffers + 1), sizeof(cl_Memory_Type*), IsSuccesful);
+				if (!IsSuccesful)
+				{
+					std::cout << "\n Error Allocating :" << sizeof(cl_Memory_Type*) << " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice in AddBufferForThisArgument In KernelFunctionArgumentOrderListStruct!\n";
+				}
+				else
+				{
+					for (int i = 0; i < TotalNumberOfBuffers; ++i)
+					{
+						TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[i], true, IsSuccesful);// Copies const variables, buffer location and sizes.
+						if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
+						{
+							IsSuccesful = false;
+						}
+						else
+						{
+							if (!IsSuccesful)
+							{
+								delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
+							}
+						}
+
+						if (!IsSuccesful)
+						{
+							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice["<<i<<"] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n";
+							for (int j = i; j < i; ++j)
+							{
+								TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
+								delete TEMP_COPY_MultiBufferOnDevice[j];
+							}
+							free(TEMP_COPY_MultiBufferOnDevice);
+							break;
+						}
+					}	
+
+					if (IsSuccesful)
+					{
+						TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] = new cl_MemoryStruct(MultiBufferOnDevice[0], false, IsSuccesful);// Copies const variables and size only.
+						if (TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] == nullptr)
+						{
+							IsSuccesful = false;
+						}
+						else
+						{
+							if (!IsSuccesful)
+							{
+								delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
+							}
+						}
+
+						if (IsSuccesful)
+						{
+							TotalNumberOfBuffers = TotalNumberOfBuffers + 1;
+							MultiBufferOnDevice = TEMP_COPY_MultiBufferOnDevice;
+						}
+						free(TEMP_COPY_MultiBufferOnDevice);
+					}
+				}
+			}
+
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error AddBufferForThisArgument() Failed in cl_KernelSingleArgumentStruct!";
+			}
+		}
+
+		void AllocateMemoryAndPassToKernel(unsigned int BufferNumber, void* PointerToMemoryToCopyFrom, size_t SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool OverWriteMemory, bool UsePreviouslyAllocatedMemoryOnBuffer, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -1940,10 +2385,17 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				BufferOnDevice->AllocateMemoryAndPassToKernel(PointerToMemoryToCopyFrom, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, BUFFER_CREATION_ONLY_SizeOfBuffer, OverWriteMemory, UsePreviouslyAllocatedMemoryOnBuffer, IsSuccesful);
-				if (!IsSuccesful)
+				if (BufferNumber < TotalNumberOfBuffers)
 				{
-					std::cout << "\n Error :BufferOnDevice->AllocateMemoryAndPassToKernel Failed in AllocateMemoryAndPassToKernel In: cl_KernelSingleArgumentStruct!\n";
+					MultiBufferOnDevice[BufferNumber]->AllocateMemoryAndPassToKernel(PointerToMemoryToCopyFrom, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, BUFFER_CREATION_ONLY_SizeOfBuffer, OverWriteMemory, UsePreviouslyAllocatedMemoryOnBuffer, IsSuccesful);
+					if (!IsSuccesful)
+					{
+						std::cout << "\n Error :MultiBufferOnDevice[BufferNumber]->AllocateMemoryAndPassToKernel Failed in AllocateMemoryAndPassToKernel In: cl_KernelSingleArgumentStruct!\n";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error :BufferNumber + 1 exceeds the total number of buffers for this argument... in AllocateMemoryAndPassToKernel In: cl_KernelSingleArgumentStruct!\n";
 				}
 			}
 			if (!IsSuccesful)// For the safe of readability
@@ -1952,26 +2404,116 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		bool IsBufferCreatedOnDevice() { return BufferOnDevice->GetDoesBufferAlreadyExist(); }
+		void IsBufferCreatedOnDevice(unsigned int BufferNumber, bool& ReturnBool, bool& IsSuccesful) 
+		{ 
+			IsSuccesful = false;
 
-		void RetreiveDataFromKernel(Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error :Calling AllocateMemoryAndPassToKernel Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n";
+			}
+			else
+			{
+				if (BufferNumber < TotalNumberOfBuffers)
+				{			
+					IsSuccesful = true;
+					ReturnBool = MultiBufferOnDevice[BufferNumber]->GetDoesBufferAlreadyExist();
+				}
+				else
+				{
+					std::cout << "\n Error :BufferNumber + 1 exceeds the total number of buffers for this argument... in IsBufferCreatedOnDevice In: cl_KernelSingleArgumentStruct!\n";
+				}
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error IsBufferCreatedOnDevice() Failed in cl_KernelSingleArgumentStruct!";
+			}
+		}
+
+		void RetreiveDataFromBuffer(unsigned int BufferNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
 			if (!IsConstructionSuccesful)
 			{
-				std::cout << "\n Error Calling RetreiveDataFromKernel Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
+				std::cout << "\n Error Calling RetreiveDataFromBuffer Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
 			}
+			else
 			{
-				BufferOnDevice->ReadBuffer(ReteivedData, IsSuccesful);
-				if (!IsSuccesful)
+				if (BufferNumber < TotalNumberOfBuffers)
 				{
-					std::cout << "\n Error cl_MemoryStruct::ReadBuffer() Failed in RetreiveDataFromKernel In: cl_KernelMultipleArgumentStruct!\n";
+					MultiBufferOnDevice[BufferNumber]->ReadBuffer(ReteivedData, IsSuccesful);
+					if (!IsSuccesful)
+					{
+						std::cout << "\n Error cl_MemoryStruct::ReadBuffer() Failed in RetreiveDataFromBuffer In: cl_KernelMultipleArgumentStruct!\n";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error :BufferNumber + 1 exceeds the total number of buffers for this argument... in InterchangeBufferWithinSameDevice In: cl_KernelSingleArgumentStruct!\n";
+				}				
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error RetreiveDataFromBuffer() Failed in cl_KernelSingleArgumentStruct!";
+			}
+		}
+
+		void InterchangeBufferWithinSameDevice(unsigned int BufferNumber, cl_MemoryStruct* PointerToBufferPointer, bool&IsSuccesful)//PointerToBufferPointer = MultiBufferOnDevice[i]
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling InterChangeBufferWithinSameDevice Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
+			}
+			else
+			{
+				if (BufferNumber < TotalNumberOfBuffers)
+				{
+					MultiBufferOnDevice[BufferNumber]->InterchangeBufferWithinSameDevice(PointerToBufferPointer, IsSuccesful);
+					if (!IsSuccesful)
+					{
+						std::cout << "\n Error cl_MemoryStruct::InterchangeBufferWithinSameDevice() Failed in RInterchangeBufferWithinSameDevice In: cl_KernelMultipleArgumentStruct!\n";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error :BufferNumber + 1 exceeds the total number of buffers for this argument... in InterchangeBufferWithinSameDevice In: cl_KernelSingleArgumentStruct!\n";
 				}
 			}
 			if (!IsSuccesful)// For the safe of readability
 			{
-				std::cout << "\n Error RetreiveDataFromKernel() Failed in cl_KernelSingleArgumentStruct!";
+				std::cout << "\n Error InterchangeBufferWithinSameDevice() Failed in cl_KernelSingleArgumentStruct!";
+			}
+		}
+
+		void InterchangeBufferWithAnotherDevice(unsigned int BufferNumber, cl_MemoryStruct* PointerToBufferPointer, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+
+			if (!IsConstructionSuccesful)
+			{
+				std::cout << "\n Error Calling InterchangeBufferWithAnotherDevice Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n";
+			}
+			else
+			{
+				if (BufferNumber < TotalNumberOfBuffers)
+				{
+					MultiBufferOnDevice[BufferNumber]->InterchangeBufferWithAnotherDevice(PointerToBufferPointer, IsSuccesful);
+					if (!IsSuccesful)
+					{
+						std::cout << "\n Error cl_MemoryStruct::InterchangeBufferWithAnotherDevice() Failed in RInterchangeBufferWithinSameDevice In: cl_KernelMultipleArgumentStruct!\n";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error :BufferNumber + 1 exceeds the total number of buffers for this argument... in InterchangeBufferWithAnotherDevice In: cl_KernelSingleArgumentStruct!\n";
+				}
+			}
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error InterchangeBufferWithAnotherDevice() Failed in cl_KernelSingleArgumentStruct!";
 			}
 		}
 
@@ -2161,9 +2703,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					else
 					{
 						cl_uint Dimensions = 0;//By default it is 1
-						size_t* GlobalWorkSize;	// Total Number Of Work Items
-						size_t* LocalWorkSize;	// Work Items per Work Group
-						size_t* WorkSizeOffset;	// WorkSize Offset
+						size_t* GlobalWorkSize = nullptr;	// Total Number Of Work Items
+						size_t* LocalWorkSize = nullptr;	// Work Items per Work Group
+						size_t* WorkSizeOffset = nullptr;	// WorkSize Offset
 
 						NDRange->GetNDRange(&Dimensions, &GlobalWorkSize, &LocalWorkSize, &WorkSizeOffset, IsSuccesful);
 						if (!IsSuccesful)
