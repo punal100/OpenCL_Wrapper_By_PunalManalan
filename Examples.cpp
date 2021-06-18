@@ -10,17 +10,16 @@ int Test1()
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
 	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, IsSuccesful);
 
-	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
-	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
+	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, IsSuccesful);
 
 	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };//Input
 	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };//Input
 	int IntC[10] = { 0,0,0,0,0,0,0,0,0,0 };//OutPut
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
-	MultiDeviceData.StoreDataForKernelArgument(0, 0, IntA, 10 * sizeof(int), IsSuccesful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 1, IntB, 10 * sizeof(int), IsSuccesful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 2, IntC, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, IntA, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 1, 0, IntB, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 2, 0, IntC, 10 * sizeof(int), IsSuccesful);
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), IsSuccesful);
@@ -31,7 +30,7 @@ int Test1()
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
 
 	Essenbp::UnknownDataAndSize RetreivedData;
-	EntireOpenCLProgram.RetreiveDataFromKernel(0, "Add_Integers", 2, RetreivedData, IsSuccesful);
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, "Add_Integers", 2, 0, RetreivedData, IsSuccesful);
 
 	std::cout << "\n\nRetreived Output Data";
 	for (int i = 0; i < 10; ++i)
@@ -113,17 +112,16 @@ int Test2()
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
 	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, IsSuccesful);
 
-	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(OrderedStruct, IsSuccesful);
-	MultiDeviceData.SetNumberOfDevices(1, IsSuccesful);// We use only 1 GPU right now
+	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, IsSuccesful);
 
 	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };			//Input   Arg 0
 	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };	//Input	  Arg 1
 	int IntC[10] = { 0,0,0,0,0,0,0,0,0,0 };				//OutPut  Arg 2
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
-	MultiDeviceData.StoreDataForKernelArgument(0, 0, IntA, 10 * sizeof(int), IsSuccesful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 1, IntB, 10 * sizeof(int), IsSuccesful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 2, IntC, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, IntA, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 1, 0, IntB, 10 * sizeof(int), IsSuccesful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 2, 0, IntC, 10 * sizeof(int), IsSuccesful);
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), IsSuccesful);
