@@ -129,7 +129,7 @@ int Test2()
 	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, IsSuccesful);
 	NDRangeStructPtr->SetNDRange(10, 1, 0);
 
-	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
+	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful, &MultiDeviceData);
 
 	//std::cout << "\n Before Destruction";
 	//EntireOpenCLProgram.~cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct();// Doing this just to show that the destructor is working properly

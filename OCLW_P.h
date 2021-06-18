@@ -1103,12 +1103,68 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						if (ArgumentNumber >= NumberOfArgumentsSet)
 						{
-							*(KernelArgumentsInOrder[ArgumentNumber]) = MemoryType;
-							NumberOfArgumentsSet = NumberOfArgumentsSet + 1;
+							if (*(KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::Uninitialized_cl_Memory)
+							{
+								*(KernelArgumentsInOrder[ArgumentNumber]) = MemoryType;
+								NumberOfArgumentsSet = NumberOfArgumentsSet + 1;
+							}
 						}
 						else
 						{
+							switch (*(KernelArgumentsInOrder[ArgumentNumber]))
+							{
+							case cl_Memory_Type::CL_LOCALENUM:
+								NumberOfLocals = NumberOfLocals - 1;
+								break;
+
+							case cl_Memory_Type::CL_PRIVATE:
+								NumberOfPrivates = NumberOfPrivates - 1;
+								break;
+
+							case cl_Memory_Type::CL_READ_ONLY:
+								NumberOfReads = NumberOfReads - 1;
+								break;
+
+							case cl_Memory_Type::CL_WRITE_ONLY:
+								NumberOfWrites = NumberOfWrites - 1;
+								break;
+
+							case cl_Memory_Type::CL_READ_AND_WRITE:
+								NumberOfRead_And_Writes = NumberOfRead_And_Writes - 1;
+								break;
+
+							default:
+								std::cout << "\n CRITICAL ERROR UNDEFINED ENUM! In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+								break;
+							}
 							*(KernelArgumentsInOrder[ArgumentNumber]) = MemoryType;
+						}
+
+						switch (MemoryType)
+						{
+							case cl_Memory_Type::CL_LOCALENUM:
+								NumberOfLocals = NumberOfLocals + 1;
+								break;
+
+							case cl_Memory_Type::CL_PRIVATE:
+								NumberOfPrivates = NumberOfPrivates + 1;
+								break;
+
+							case cl_Memory_Type::CL_READ_ONLY:
+								NumberOfReads = NumberOfReads + 1;
+								break;
+
+							case cl_Memory_Type::CL_WRITE_ONLY:
+								NumberOfWrites = NumberOfWrites + 1;
+								break;
+
+							case cl_Memory_Type::CL_READ_AND_WRITE:
+								NumberOfRead_And_Writes = NumberOfRead_And_Writes + 1;
+								break;
+
+							default:
+								std::cout << "\n CRITICAL ERROR UNDEFINED ENUM! In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+								break;
 						}
 
 						if (NumberOfArgumentsSet == TotalNumberOfArugments)
@@ -1761,7 +1817,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					cl_int ClErrorResult = 0;
 					if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
 					{
-						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), GlobalMemoryInDevice);
+						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), &GlobalMemoryInDevice);
 					}
 					else
 					{
@@ -2287,18 +2343,28 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						if (MultiBufferOnDevice[0] == nullptr)
 						{
 							IsSuccesful = false;
+							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for MultiBufferOnDevice[0] In cl_KernelSingleArgumentStruct!\n";
 						}
 						else
 						{
 							if (!IsSuccesful)
 							{
 								delete MultiBufferOnDevice[0];
+								std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for MultiBufferOnDevice[0] In cl_KernelSingleArgumentStruct!\n";
 							}
-						}
-						if (!IsSuccesful)
+						}	
+
+						IsBufferReady[0] = new bool(false);
+						if (IsBufferReady[0] == nullptr)
 						{
-							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for MultiBufferOnDevice[0] In cl_KernelSingleArgumentStruct!\n";
+							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for IsBufferReady[0] In cl_KernelSingleArgumentStruct!\n";
+							IsSuccesful = false;
+						}
+
+						if (!IsSuccesful)
+						{							
 							free(MultiBufferOnDevice);
+							free(IsBufferReady);
 						}
 						else
 						{
@@ -2384,12 +2450,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						if (TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] == nullptr)
 						{
 							IsSuccesful = false;
+							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" << TotalNumberOfBuffers << "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n";
 						}
 						else
 						{
 							if (!IsSuccesful)
 							{
 								delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
+								std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" << TotalNumberOfBuffers << "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n";
 							}
 						}
 
@@ -2398,13 +2466,20 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							IsSuccesful = false;
 						}
+						else
+						{
+							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for TEMP_COPY_IsBufferReady[" << TotalNumberOfBuffers << "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n";
+						}
 
 						if (IsSuccesful)
 						{
 							TotalNumberOfBuffers = TotalNumberOfBuffers + 1;
+							free(MultiBufferOnDevice);
+							free(IsBufferReady);
 							MultiBufferOnDevice = TEMP_COPY_MultiBufferOnDevice;
 							IsBufferReady = TEMP_COPY_IsBufferReady;
 						}
+
 					}
 				}
 			}
@@ -2866,7 +2941,29 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						else//Run the Kernel
 						{
 							cl_int ClErrorResult = 0;
-							ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+							if (WorkSizeOffset == nullptr)
+							{
+								if (LocalWorkSize == nullptr)
+								{
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, NULL, 0, NULL, NULL);
+								}
+								else
+								{
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+								}
+							}
+							else
+							{
+								if (LocalWorkSize == nullptr)
+								{
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, NULL, 0, NULL, NULL);
+								}
+								else
+								{
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+								}
+							}
+							
 							if (ClErrorResult != CL_SUCCESS)
 							{
 								std::cout << "\n CL_Error Code " << ClErrorResult << " : clEnqueueNDRangeKernel in RunKernel In: MemoryAllocationOnDevice In: cl_KernelMultipleArgumentStruct!\n";
@@ -3932,7 +4029,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					if (TheKernelMultiArgStruct->IsConstructionSuccesful)
+					if (!TheKernelMultiArgStruct->IsConstructionSuccesful)
 					{
 						std::cout << "\n Error 'TheKernelMultiArgStruct Argument of type cl_KernelMultipleArgumentStruct Is Not Constructed in PassAllDataToKernel In: cl_KernelArgumentSendStruct!\n";
 					}
@@ -4028,11 +4125,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		bool IsConstructionSuccesful = false;
 		cl_MultiDevice_KernelArgumentSendStruct(unsigned int ArgNumberOfDevices, cl_KernelFunctionArgumentOrderListStruct* ArgArugmentList, bool& IsSuccesful) : NumberOfDevices(ArgNumberOfDevices)
 		{
+			std::cout << "\n Constructing cl_MultiDevice_KernelArgumentSendStruct";
 			MultiArgumentSendStructList = nullptr;
 
 			IsConstructionSuccesful = false;
-			IsSuccesful = false;					
-
+			IsSuccesful = false;
 			
 			if (ArgArugmentList == nullptr)
 			{
@@ -4049,6 +4146,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
+					IsSuccesful = false;
 					for (int i = 0; i < NumberOfDevices; ++i)
 					{
 						MultiArgumentSendStructList[i] = new cl_KernelArgumentSendStruct(ArugmentList, IsSuccesful);
@@ -4828,7 +4926,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					if (MultiDeviceSendStructList->IsConstructionSuccesful)
+					if (!MultiDeviceSendStructList->IsConstructionSuccesful)
 					{
 						std::cout << "\n Error :Passed Argument MultiDeviceSendStructList Is Not Consturcted in PassDataStructToKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 					}
