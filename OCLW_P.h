@@ -89,6 +89,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						std::cout << "\n ClError Code " << ClErrorResult << " : Platform Not set In cl_PlatformVendorStruct!\n";						
 						free(AllAvailablePlatformVendorNames);
+						AllAvailablePlatformVendorNames = nullptr;
 						break;
 					}
 					else
@@ -101,6 +102,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							std::cout << "\n ClError Code " << ClErrorResult << " : Getting Size of CL_PLATFORM_VENDOR in clGetPlatformInfo In cl_PlatformVendorStruct!\n";
 							free(AllAvailablePlatformVendorNames);
+							AllAvailablePlatformVendorNames = nullptr;
 							break;
 						}
 
@@ -109,6 +111,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							std::cout << "\n Error Allocating :" << sizeof(char) * SizeOfReturnValue << " Byes Of Memory for ReturnValue cl_PlatformVendorStruct!\n";
 							free(AllAvailablePlatformVendorNames);
+							AllAvailablePlatformVendorNames = nullptr;
 							break;
 						}
 
@@ -118,6 +121,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							std::cout << "\n ClError Code " << ClErrorResult << " : Getting Value of CL_PLATFORM_VENDOR in clGetPlatformInfo In cl_PlatformVendorStruct!\n";
 							free(ReturnValue);
 							free(AllAvailablePlatformVendorNames);
+							AllAvailablePlatformVendorNames = nullptr;
 							break;
 						}
 						else
@@ -133,6 +137,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									delete AllAvailablePlatformVendorNames[j];
 								}
 								free(AllAvailablePlatformVendorNames);
+								AllAvailablePlatformVendorNames = nullptr;
 								IsSuccesful = false;
 								break;
 							}
@@ -293,6 +298,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					delete AllAvailablePlatformVendorNames[i];
 				}
 				free(AllAvailablePlatformVendorNames);
+				AllAvailablePlatformVendorNames = nullptr;
 				IsPlatformChosen = false;
 				IsConstructionSuccesful = false;
 			}
@@ -724,7 +730,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			if (!IsSuccesful)// For the safe of readability
 			{
-				std::cout << "\n Error GetNDRangeOfDevice() Failed in cl_MultiDevice_NDRangeStruct!\n";
+				std::cout << "\n Error GetNDRange() Failed in cl_MultiDevice_NDRangeStruct!\n";
 			}
 		}
 
@@ -807,40 +813,43 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				std::cout << "\n Error : ArgTotalNumberOfDevices is 0, should be atleast be 1 In: cl_MultiDevice_NDRangeStruct!\n";
 			}
-
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
-			if (!IsSuccesful)
-			{
-				std::cout << "\n Error Allocating :" << NumberOfDevices * sizeof(cl_NDRangeStruct*) << " Byes Of Memory for MultiNDRange In: cl_MultiDevice_NDRangeStruct!\n";
-			}
 			else
 			{
-				for (int i = 0; i < NumberOfDevices; ++i)
+				Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiNDRange, NumberOfDevices, sizeof(cl_NDRangeStruct*), IsSuccesful);
+				if (!IsSuccesful)
 				{
-					MultiNDRange[i] = new cl_NDRangeStruct(IsSuccesful);
-					if (MultiNDRange[i] == nullptr)
+					std::cout << "\n Error Allocating :" << NumberOfDevices * sizeof(cl_NDRangeStruct*) << " Byes Of Memory for MultiNDRange In: cl_MultiDevice_NDRangeStruct!\n";
+				}
+				else
+				{
+					for (int i = 0; i < NumberOfDevices; ++i)
 					{
-						IsSuccesful = false;
-					}
-					else
-					{
+						MultiNDRange[i] = new cl_NDRangeStruct(IsSuccesful);
+						if (MultiNDRange[i] == nullptr)
+						{
+							IsSuccesful = false;
+						}
+						else
+						{
+							if (!IsSuccesful)
+							{
+								delete MultiNDRange[i];
+							}
+						}
 						if (!IsSuccesful)
 						{
-							delete MultiNDRange[i];
+							std::cout << "\n Error Allocating :" << sizeof(cl_NDRangeStruct) << " Byes Of Memory for MultiNDRange[" << i << "] In: cl_MultiDevice_NDRangeStruct!\n";
+							for (int j = 0; j < i; ++j)
+							{
+								delete MultiNDRange[j];
+							}
+							free(MultiNDRange);
+							MultiNDRange = nullptr;
+							break;
 						}
-					}
-					if (!IsSuccesful)
-					{
-						std::cout << "\n Error Allocating :" << sizeof(cl_NDRangeStruct) << " Byes Of Memory for MultiNDRange[" << i << "] In: cl_MultiDevice_NDRangeStruct!\n";
-						for (int j = 0; j < i; ++j)
-						{
-							delete MultiNDRange[j];
-						}
-						free(MultiNDRange);
-						break;
 					}
 				}
-			}
+			}		
 
 			if (!IsSuccesful)// For the safe of readability
 			{
@@ -923,6 +932,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					delete MultiNDRange[i];
 				}
 				free(MultiNDRange);
+				MultiNDRange = nullptr;
 				IsConstructionSuccesful = false;
 			}
 		}
@@ -993,6 +1003,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							delete KernelArgumentsInOrder[j];
 						}
 						free(KernelArgumentsInOrder);
+						KernelArgumentsInOrder = nullptr;
 						break;
 					}
 				}
@@ -1055,6 +1066,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									delete KernelArgumentsInOrder[j];
 								}
 								free(KernelArgumentsInOrder);
+								KernelArgumentsInOrder = nullptr;
 								IsSuccesful = false;
 								break;
 							}
@@ -1345,6 +1357,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						if (COPY_OF_PrivateMemoryType != nullptr)
 						{
 							free(COPY_OF_PrivateMemoryType);
+							COPY_OF_PrivateMemoryType = nullptr;
 						}
 						DoesBufferAlreadyExist = false;
 						IsSuccesful = true;
@@ -1408,8 +1421,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					std::cout << "\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n";
 				}
-
-				if(IsSuccesful)
+				else
 				{
 					cl_int ClErrorResult;
 					IsSuccesful = false;
@@ -1914,7 +1926,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 		bool GetDoesBufferAlreadyExist() { return DoesBufferAlreadyExist; }
 
-		void ReadBuffer(Essenbp::UnknownDataAndSize& RetreivedData, bool& IsSuccesful)
+		void ReadBuffer(Essenbp::UnknownDataAndSizeStruct& RetreivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -1950,15 +1962,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						}
 						else
 						{
-							void** PointerToDataPointer = RetreivedData.FreeAndResizeDataAndReturnPointerToDataPointer(MemoryInDeviceTotalSizeInBytes, IsSuccesful);
-							if (!IsSuccesful || PointerToDataPointer == nullptr)
+							RetreivedData.FreeAndResizeData(MemoryInDeviceTotalSizeInBytes, IsSuccesful);
+							if (!IsSuccesful)
 							{
-								std::cout << "\n Error :Calling RetreivedData.FreeAndResizeDataAndReturnPointerToDataPointer() failed in ReadBuffer In: cl_MemoryStruct!\n";
+								std::cout << "\n Error :Calling RetreivedData.FreeAndResizeData() failed in ReadBuffer In: cl_MemoryStruct!\n";
 							}
 							else
 							{
 								IsSuccesful = false;
-								cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, MemoryInDeviceTotalSizeInBytes, *PointerToDataPointer, 0, NULL, NULL);
+								cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, MemoryInDeviceTotalSizeInBytes, RetreivedData.GetData(), 0, NULL, NULL);
 
 								if (ClErrorResult != CL_SUCCESS)
 								{
@@ -2352,19 +2364,25 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								delete MultiBufferOnDevice[0];
 								std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for MultiBufferOnDevice[0] In cl_KernelSingleArgumentStruct!\n";
 							}
+							else
+							{
+								IsBufferReady[0] = new bool(false);
+								if (IsBufferReady[0] == nullptr)
+								{
+									std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for IsBufferReady[0] In cl_KernelSingleArgumentStruct!\n";
+									IsSuccesful = false;
+								}
+							}
 						}	
 
-						IsBufferReady[0] = new bool(false);
-						if (IsBufferReady[0] == nullptr)
-						{
-							std::cout << "\n Error Allocating :" << sizeof(cl_MemoryStruct) << " Byes Of Memory for IsBufferReady[0] In cl_KernelSingleArgumentStruct!\n";
-							IsSuccesful = false;
-						}
+						
 
 						if (!IsSuccesful)
 						{							
 							free(MultiBufferOnDevice);
+							MultiBufferOnDevice = nullptr;
 							free(IsBufferReady);
+							IsBufferReady = nullptr;
 						}
 						else
 						{
@@ -2524,7 +2542,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 		
-		void RetreiveDataFromBuffer(unsigned int BufferNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromBuffer(unsigned int BufferNumber, Essenbp::UnknownDataAndSizeStruct& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -2820,6 +2838,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												delete SingleKernelFunctionMultiArgumentsArray[j];
 											}
 											free(SingleKernelFunctionMultiArgumentsArray);
+											SingleKernelFunctionMultiArgumentsArray = nullptr;
 											ClErrorResult = clReleaseKernel(ThisKernel);
 											if (ClErrorResult != CL_SUCCESS)
 											{
@@ -2980,7 +2999,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void RetreiveDataFromKernel(unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromKernel(unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSizeStruct& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -3190,9 +3209,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	{
 		const unsigned int NumberOfDevices;
 		const std::string KernelFunctionName;
-		cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray = nullptr;
 		const cl_context* cl_ContextForThisKernel;
 		const cl_PerDeviceValuesStruct* DeviceValuesForOneDevice;
+		cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray = nullptr;
 
 		bool IsConstructionSuccesful = false;// Once again i tell you this If you hate memory leaks, Don't change value. If you Love memory leaks change them!
 
@@ -3258,6 +3277,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											delete MultiDeviceKernelArgumentsArray[j];
 										}
 										free(MultiDeviceKernelArgumentsArray);
+										MultiDeviceKernelArgumentsArray = nullptr;
 										break;
 									}
 								}
@@ -3388,6 +3408,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (TotalNumberOfFunctionsNameAndTotalArgumentSet < TotalNumberOfFuctions)
 				{
+					if (OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] != nullptr)
+					{
+						delete OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet];
+						OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] = nullptr;
+					}
 					OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] = new cl_KernelFunctionArgumentOrderListStruct(TotalNumberOfArgumentsForTheFunction, FunctionName, IsSuccesful);
 
 					if (OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] == nullptr)
@@ -3399,6 +3424,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						if (!IsSuccesful)
 						{
 							delete OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet];
+							OpenCL_KernelFunctions[TotalNumberOfFunctionsNameAndTotalArgumentSet] = nullptr;
 						}
 					}
 					if (!IsSuccesful)
@@ -3513,9 +3539,13 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				for (int i = 0; i < TotalNumberOfFunctionsNameAndTotalArgumentSet; ++i)
 				{
-					delete(OpenCL_KernelFunctions[i]);
+					if (OpenCL_KernelFunctions[i] != nullptr)
+					{
+						delete(OpenCL_KernelFunctions[i]);
+					}					
 				}
 				free(OpenCL_KernelFunctions);
+				OpenCL_KernelFunctions = nullptr;
 				IsConstructionSuccesful = false;
 			}
 		}
@@ -3530,7 +3560,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		bool** ArrayOfOverWriteDataSetBoolean = nullptr;
 		bool** ArrayOfIsArgumentAlreadySetBoolean = nullptr;
 		bool** ArrayOfUsePreviouslyAllocatedMemoryBoolean = nullptr;
-		Essenbp::UnknownDataAndSize** ArrayOfArgumentData = nullptr;
+		Essenbp::UnknownDataAndSizeStruct** ArrayOfArgumentData = nullptr;
 
 	public:
 		bool IsConstructionSuccesful = false;
@@ -3590,10 +3620,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								}
 								else
 								{
-									Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSize*), IsSuccesful);
+									Essenbp::Malloc_PointerToArrayOfPointers((void***)&ArrayOfArgumentData, ArugmentList->TotalNumberOfArugments, sizeof(Essenbp::UnknownDataAndSizeStruct*), IsSuccesful);
 									if (!IsSuccesful)
 									{
-										std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
+										std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSizeStruct*) << " Byes Of Memory for ArrayOfArgumentData In: cl_KernelArgumentSendStruct!\n";
 										free(ArrayOfBufferToUse);
 										free(ArrayOfOverWriteDataSetBoolean);
 										free(ArrayOfIsArgumentAlreadySetBoolean);
@@ -3603,7 +3633,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									{
 										for (int i = 0; i < ArugmentList->TotalNumberOfArugments; ++i)
 										{
-											ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSize();
+											ArrayOfArgumentData[i] = new Essenbp::UnknownDataAndSizeStruct();
 											ArrayOfBufferToUse[i] = new unsigned int(0);
 											ArrayOfOverWriteDataSetBoolean[i] = new bool(false);
 											ArrayOfIsArgumentAlreadySetBoolean[i] = new bool(false);
@@ -3619,7 +3649,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												}
 												else
 												{
-													std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSize) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
+													std::cout << "\n Error Allocating " << ArugmentList->TotalNumberOfArugments * sizeof(Essenbp::UnknownDataAndSizeStruct) << " Byes Of Memory for ArrayOfArgumentData[" << i << "] In: cl_KernelArgumentSendStruct!\n";
 												}
 
 												if (ArrayOfBufferToUse[i] != nullptr)
@@ -4169,6 +4199,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								delete MultiArgumentSendStructList[j];
 							}
 							free(MultiArgumentSendStructList);
+							MultiArgumentSendStructList = nullptr;
 							break;
 						}
 					}
@@ -4219,11 +4250,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			std::cout << "\n Destructing cl_MultiDevice_KernelArgumentSendStruct!";
 			if (IsConstructionSuccesful)
 			{
-				for (int i = 0; i < NumberOfDevices; ++i)
+				if (MultiArgumentSendStructList != nullptr)
 				{
-					delete MultiArgumentSendStructList[i];
+					for (int i = 0; i < NumberOfDevices; ++i)
+					{
+						delete MultiArgumentSendStructList[i];
+					}
+					free(MultiArgumentSendStructList);
+					MultiArgumentSendStructList = nullptr;
 				}
-				free(MultiArgumentSendStructList);
 			}
 			IsConstructionSuccesful = false;
 		}
@@ -4234,9 +4269,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	{
 	private:
 		const std::string ClSourceFilePath;
-		cl_platform_id ChosenPlatform = nullptr;
-		cl_program SingleProgram = nullptr;
-		cl_context SingleContext = nullptr;
+		cl_platform_id ChosenPlatform = NULL;
+		cl_program SingleProgram = NULL;
+		cl_context SingleContext = NULL;
 		unsigned int NumberOfDevices = 0;
 		cl_device_id* ChosenDevices = nullptr;
 		cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;								// Initalized and Constructed in  InitializeOpenCLProgram()
@@ -4248,6 +4283,59 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
 		//Initialization
+
+		void ReleaseAndFreeClData(bool& IsSuccesful)
+		{
+			IsSuccesful = true;
+
+			cl_int ClErrorResult;
+			if (SingleProgram != NULL)
+			{
+				ClErrorResult = clReleaseProgram(SingleProgram);
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					IsSuccesful = false;
+					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_program " << "in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				}
+				else
+				{
+					SingleProgram = NULL;
+				}
+			}
+			if (SingleContext != NULL)
+			{
+				ClErrorResult = clReleaseContext(SingleContext);
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					IsSuccesful = false;
+					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				}
+				else
+				{
+					SingleContext = NULL;
+				}
+			}
+			if (PerDeviceValueStruct != nullptr)
+			{
+				for (int i = 0; i < NumberOfDevices; i++)
+				{
+					delete(PerDeviceValueStruct[i]);
+				}
+				free(PerDeviceValueStruct);
+				PerDeviceValueStruct = nullptr;
+			}
+			if (ChosenDevices != nullptr)
+			{
+				free(ChosenDevices);
+				ChosenDevices = nullptr;
+			}
+
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error ReleaseAndFreeClData() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			}
+		}
+
 		void InitializeOpenCLProgram(bool& IsSuccesful, cl_uint PlatformToUse)//, cl_uint PlatformToUse = 1)
 		{
 			IsSuccesful = false;
@@ -4350,13 +4438,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							delete PerDeviceValueStruct[j];
 						}
-						free(PerDeviceValueStruct);
-						free(ChosenDevices);
-						ClErrorResult = clReleaseContext(SingleContext);
-						if (ClErrorResult != CL_SUCCESS)
-						{
-							std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-						}
+						ReleaseAndFreeClData(IsSuccesful);// Do nothing if Failed
+						IsSuccesful = false;
 						break;
 					}					
 				}
@@ -4365,7 +4448,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					//const char* ClSourceFilePath = "D:\\C++ Test Projects\\TestOpenCL4\\PunalManalanOpenCLKernelFunctions.cl";
 					std::string ClSourceFileInString;
-					Essenbp::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
+					Essenbp::GetTextFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
 					const char* ClSourceFileInChar = ClSourceFileInString.c_str();
 					size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
 					SingleProgram = clCreateProgramWithSource(SingleContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &ClErrorResult);
@@ -4377,13 +4460,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							delete(PerDeviceValueStruct[i]);
 						}
-						free(PerDeviceValueStruct);
-						free(ChosenDevices);
-						ClErrorResult = clReleaseContext(SingleContext);
-						if (ClErrorResult != CL_SUCCESS)
-						{
-							std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-						}
+						ReleaseAndFreeClData(IsSuccesful);// Do nothing if Failed
+						IsSuccesful = false;
 					}
 					else
 					{
@@ -4395,13 +4473,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							{
 								delete(PerDeviceValueStruct[i]);
 							}
-							free(PerDeviceValueStruct);
-							free(ChosenDevices);
-							ClErrorResult = clReleaseContext(SingleContext);
-							if (ClErrorResult != CL_SUCCESS)
-							{
-								std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-							}
+							ReleaseAndFreeClData(IsSuccesful);// Do nothing if Failed
+							IsSuccesful = false;
 						}
 					}
 				}
@@ -4421,49 +4494,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				NumberOfDevices = NumberOfGPUs;
 			}
 		}
-
-		void ReleaseAndFreeClData(bool& IsSuccesful)
-		{
-			IsSuccesful = true;
-
-			cl_int ClErrorResult;
-			if (SingleProgram != NULL)
-			{
-				ClErrorResult = clReleaseProgram(SingleProgram);
-				if (ClErrorResult != CL_SUCCESS)
-				{
-					IsSuccesful = false;
-					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_program " << "in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				}
-			}
-			if (SingleContext != NULL)
-			{
-				ClErrorResult = clReleaseContext(SingleContext);
-				if (ClErrorResult != CL_SUCCESS)
-				{
-					IsSuccesful = false;
-					std::cout << "\n CLError " << ClErrorResult << " : Releasing cl_context in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				}
-			}
-			if (PerDeviceValueStruct != nullptr)
-			{
-				for (int i = 0; i < NumberOfDevices; i++)
-				{
-					delete(PerDeviceValueStruct[i]);
-				}
-				free(PerDeviceValueStruct);
-			}
-			if (ChosenDevices != nullptr)
-			{
-				free(ChosenDevices);
-			}
-			
-			if (!IsSuccesful)// For the safe of readability
-			{
-				std::cout << "\n Error ReleaseAndFreeClData() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-			}
-		}
-
+		
 		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
@@ -4679,7 +4710,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if (IsSuccesful)
 					{
 						std::string ClSourceFileInString;
-						Essenbp::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
+						Essenbp::GetTextFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
 						if (IsSuccesful)
 						{
 							IsSuccesful = false;
@@ -4830,7 +4861,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if (IsSuccesful)
 					{
 						std::string ClSourceFileInString;
-						Essenbp::GetFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
+						Essenbp::GetTextFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccesful);
 						if (IsSuccesful)
 						{
 							IsSuccesful = false;
@@ -5038,6 +5069,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						if (DevicesToRunKernel_To < NumberOfDevices)
 						{
+							IsSuccesful = true;// Yes this is correct
 							if (MultiDeviceSendStructList != nullptr)
 							{
 								PassDataStructToKernel(KernelToRunNumber, DevicesToRunKernel_From, DevicesToRunKernel_To, MultiDeviceSendStructList, IsSuccesful);
@@ -5046,10 +5078,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									std::cout << "\n Error PassDataStructToKernel() failed in RunKernelFunction in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 								}
 							}
-							else
-							{
-								IsSuccesful = true;
-							}
+
 							if (IsSuccesful)
 							{
 								cl_NDRangeStruct* PointerToNDRangeStruct = nullptr;
@@ -5135,39 +5164,149 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			return 0;
 		}
-		void GetBinaryInformationOfProgram(size_t& Binary_Size_Of_CLProgram, std::string& Binary_Of_CLProgram, bool& IsSuccesful)
+		void GetBinaryInformationOfProgram(Essenbp::ArrayOfUnknownDataAndSize& Binary_Program_OfEachDevice, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
 			if (!IsConstructionSuccesful)
 			{
-				std::cout << "\n Error Calling GetBinaryInformationOfProgram Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
+				std::cout << "\n Error Calling GetBinaryInformationOfProgram Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";				
 			}
+			else
+			{
+				cl_int ClErrorResult = 0;		
+				
+				cl_uint NumDevices;
 
-			cl_int ClErrorResult = 0;
-			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, sizeof(size_t), &Binary_Size_Of_CLProgram, NULL);
-			if (ClErrorResult != CL_SUCCESS)
-			{
-				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Size Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
+				ClErrorResult = clGetProgramInfo(SingleProgram, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &NumDevices, NULL);
+				if (ClErrorResult != CL_SUCCESS)
+				{
+					std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get CL_PROGRAM_NUM_DEVICES Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				}
+				else
+				{
+					size_t* BinarySizes = (size_t*)malloc(NumDevices * sizeof(size_t));
+					if (BinarySizes == nullptr)
+					{
+						std::cout << "\n Error Allocating " << (NumDevices * sizeof(size_t)) << " Bytes for BinarySizes in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					}
+					else
+					{
+						ClErrorResult = clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARY_SIZES, NumDevices * sizeof(size_t), BinarySizes, NULL);
+						if (ClErrorResult != CL_SUCCESS)
+						{
+							std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get CL_PROGRAM_BINARY_SIZES Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+							free(BinarySizes);
+						}
+						else
+						{
+							char** Binaries = new char* [NumDevices];								
+							if (Binaries == nullptr)
+							{
+								std::cout << "\n Error Allocating " << (NumDevices * sizeof(char*)) << " Bytes for Binaries in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+								free(BinarySizes);
+							}
+							else
+							{
+								IsSuccesful = true;
+								for (int i = 0; i < NumDevices; i++)
+								{
+									Binaries[i] = new char[BinarySizes[i] + 1];
+									if (Binaries == nullptr)
+									{
+										std::cout << "\n Error Allocating " << (NumDevices * sizeof(char*)) << " Bytes for Binaries in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										for (int j = 0; j < i; j++)
+										{
+											delete (Binaries[i]);
+										}
+										delete[] Binaries;
+										free(BinarySizes);
+										IsSuccesful = false;
+										break;
+									}
+								}
+								if (IsSuccesful)
+								{
+									ClErrorResult = clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARIES, NumDevices * sizeof(size_t), Binaries, NULL);
+									if (ClErrorResult != CL_SUCCESS)
+									{
+										std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get CL_PROGRAM_BINARIES Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										for (int i = 0; i < NumDevices; i++)
+										{
+											delete (Binaries[i]);
+										}
+										delete[] Binaries;
+										free(BinarySizes);
+									}
+									else
+									{
+										IsSuccesful = true;
+										if (Binary_Program_OfEachDevice.GetTotalNumberOfUnknownData() < NumDevices)
+										{
+											for (int i = 0; i < NumDevices - Binary_Program_OfEachDevice.GetTotalNumberOfUnknownData(); ++i)
+											{
+												Binary_Program_OfEachDevice.AddElement(IsSuccesful);
+												if (!IsSuccesful)
+												{
+													std::cout << "\n Error Binary_Program_OfEachDevice.AddElement failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+													for (int i = 0; i < NumDevices; i++)
+													{
+														delete (Binaries[i]);
+													}
+													delete[] Binaries;
+													free(BinarySizes);
+													IsSuccesful = false;
+													break;
+												}
+											}
+										}
+										if (IsSuccesful)
+										{
+											Essenbp::UnknownDataAndSizeStruct* ReturnValue;
+											for (int i = 0; i < NumDevices; i++)
+											{
+												Binaries[i][BinarySizes[i]] = '\0';
+												//std::cout << "Program " << i << ":" << std::endl;
+												//std::cout << Binaries[i];													
+												Binary_Program_OfEachDevice.GetUnknownData(i, &ReturnValue, IsSuccesful);
+												if (!IsSuccesful)
+												{
+													std::cout << "\n Error Binary_Program_OfEachDevice.GetUnknownData failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+													for (int i = 0; i < NumDevices; i++)
+													{
+														delete (Binaries[i]);
+													}
+													delete[] Binaries;
+													free(BinarySizes);
+													IsSuccesful = false;
+													break;
+												}
+												ReturnValue->CopyAndStoreData(Binaries[i], BinarySizes[i], IsSuccesful);
+												if (!IsSuccesful)
+												{
+													std::cout << "\n Error Binary_Program_OfEachDevice.CopyAndStoreData failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+													for (int i = 0; i < NumDevices; i++)
+													{
+														delete (Binaries[i]);
+													}
+													delete[] Binaries;
+													free(BinarySizes);
+													IsSuccesful = false;
+													break;
+												}
+											}
+										}								
+									}
+								}
+							}								
+						}							
+					}						
+				}
 			}
-			char* CharBinary_Of_CLProgram = (char*)malloc(sizeof(char) * Binary_Size_Of_CLProgram);
-			if (CharBinary_Of_CLProgram == nullptr)
+			if (!IsSuccesful)// For the safe of readability
 			{
-				std::cout << "\n Error Allocating " << sizeof(char) << " Byes Of Memory for CharBinary_Of_CLProgram In GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
+				std::cout << "\n Error GetBinaryInformationOfProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 			}
-			clGetProgramInfo(SingleProgram, CL_PROGRAM_BINARIES, Binary_Size_Of_CLProgram, &CharBinary_Of_CLProgram, NULL);
-			if (ClErrorResult != CL_SUCCESS)
-			{
-				std::cout << "\n ClError Code " << ClErrorResult << " : clGetProgramInfo to get Binary Information Failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				free(CharBinary_Of_CLProgram);
-				return;
-			}
-			Binary_Of_CLProgram = CharBinary_Of_CLProgram;
-			free(CharBinary_Of_CLProgram);
-			IsSuccesful = true;
 		}
 		void GetKernelNumberByKernelName(unsigned int& KernelNumber, std::string NameOfTheKernel, bool& IsSuccesful)
 		{
@@ -5217,7 +5356,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				std::cout << "\n Error Calling GetKernelInformation Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
-			return;
 		}
 		void GetKernelInformation(std::string NameOfTheKernel, cl_KernelFunctionArgumentOrderListStruct** OrderedStruct, bool& IsSuccesful)
 		{
@@ -5235,10 +5373,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				GetKernelInformation(KernelNumber, OrderedStruct, IsSuccesful);
 			}
-			return;
 		}
 
-		void RetreiveDataFromKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSizeStruct& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 
@@ -5280,7 +5417,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error RetreiveDataFromKernel() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 			}
 		}
-		void RetreiveDataFromKernel(unsigned int DeviceNumber, std::string NameOfTheKernel, unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSize& ReteivedData, bool& IsSuccesful)
+		void RetreiveDataFromKernel(unsigned int DeviceNumber, std::string NameOfTheKernel, unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSizeStruct& ReteivedData, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
 

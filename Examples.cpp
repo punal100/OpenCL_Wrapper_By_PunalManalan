@@ -29,7 +29,7 @@ int Test1()
 
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful);
 
-	Essenbp::UnknownDataAndSize RetreivedData;
+	Essenbp::UnknownDataAndSizeStruct RetreivedData;
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, "Add_Integers", 2, 0, RetreivedData, IsSuccesful);
 
 	std::cout << "\n\nRetreived Output Data";
@@ -114,9 +114,9 @@ int Test2()
 
 	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, IsSuccesful);
 
-	int IntA[10] = { 1,2,3,4,5,6,7,8,9,10 };			//Input   Arg 0
-	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };	//Input	  Arg 1
-	int IntC[10] = { 0,0,0,0,0,0,0,0,0,0 };				//OutPut  Arg 2
+	int IntA[10] = { 1 , 2, 3, 4, 5, 6, 7, 8, 9,10 };			//Input   Arg 0
+	int IntB[10] = { 11,12,13,14,15,16,17,18,19,20 };			//Input	  Arg 1
+	int IntC[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };			//OutPut  Arg 2
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
 	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, IntA, 10 * sizeof(int), IsSuccesful);
@@ -131,7 +131,37 @@ int Test2()
 
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, IsSuccesful, &MultiDeviceData);
 
-	//std::cout << "\n Before Destruction";
+	Essenbp::UnknownDataAndSizeStruct RetreivedData;
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 0, 0, RetreivedData, IsSuccesful);
+
+	std::cout << "\n Retreived Data of Arg 0:-";
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
+	{
+		std::cout << "\n Data[" << i << "] == " << ((int*)RetreivedData.GetData())[i];
+	}
+
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 1, 0, RetreivedData, IsSuccesful);
+	std::cout << "\n Retreived Data of Arg 1:-";
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
+	{
+		std::cout << "\n Data[" << i << "] == " << ((int*)RetreivedData.GetData())[i];
+	}
+
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 2, 0, RetreivedData, IsSuccesful);	
+	std::cout << "\n Retreived Data of Arg 2:-";
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
+	{
+		std::cout << "\n Data["<<i<<"] == " << ((int*)RetreivedData.GetData())[i];
+	}
+
+	Essenbp::ArrayOfUnknownDataAndSize ArrayOfRetreivedData;
+	EntireOpenCLProgram.GetBinaryInformationOfProgram(ArrayOfRetreivedData, IsSuccesful);
+
+	Essenbp::UnknownDataAndSizeStruct* ReturnValue;
+	ArrayOfRetreivedData.GetUnknownData(0, &ReturnValue, IsSuccesful);
+
+	Essenbp::WriteBytesToFile("D:\\TestFolder\\BinaryReturn.txt", *ReturnValue, IsSuccesful);
+	std::cout << "\n\n Before Destruction";
 	//EntireOpenCLProgram.~cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct();// Doing this just to show that the destructor is working properly
 	//std::cout << "\n After  Destruction";
 
