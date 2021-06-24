@@ -63,16 +63,18 @@ namespace Essenbp//Essential Functions By Punal
 						else
 						{
 							size_t PreviousSize = SizeOfData;//Temp Differnet use
-							SizeOfData = SizeOfData + ArgSizeOfData;
-							for (size_t i = 0; i < PreviousSize; ++i)// Memccpy bad
+							size_t i = 0;
+							for (i = 0; i < PreviousSize; ++i)// Memccpy bad
 							{
 								((char*)AppendDataHelper)[i] = ((char*)Data)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
-							for (size_t i = 0; i < SizeOfData - PreviousSize; ++i)// Memccpy bad
+
+							for (i = i; i < (SizeOfData + ArgSizeOfData); ++i)// Memccpy bad
 							{
-								((char*)AppendDataHelper)[(i + PreviousSize)] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+								((char*)AppendDataHelper)[i] = ((char*)ArgData)[(i - PreviousSize)];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
 							FreeData();
+							SizeOfData = SizeOfData + ArgSizeOfData;
 							Data = AppendDataHelper;
 							IsSuccesful = true;
 						}

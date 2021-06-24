@@ -2385,7 +2385,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						}
 						else
 						{
-							TotalNumberOfBuffers = TotalNumberOfBuffers + 1;;
+							TotalNumberOfBuffers = TotalNumberOfBuffers + 1;
 						}
 					}
 				}
@@ -4494,7 +4494,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 		
-		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
+		//USE THIS ONLY IF THE SYNTAX IS CORRECT
+		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, std::string& ModifiedKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, Essenbp::UnknownDataAndSizeStruct& Storage, bool& IsSuccesful)
 		{
 			ArgTotalNumberOfKernelFunctions = 0;
 
@@ -4521,59 +4522,135 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					else
 					{
 						//First We Delete unwanted Comments
-						std::string ModifiedString = "";
-						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedString);//First Comments are removed
-						ModifiedString.erase(std::remove(ModifiedString.begin(), ModifiedString.end(), '\n'), ModifiedString.end());// Removes '\n' end of lines
-						
-						Essenbp::UnknownDataAndSizeStruct Storage;
+						ModifiedKernelCode = "";
+						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed					
+						//ModifiedKernelCode.erase(std::remove(ModifiedKernelCode.begin(), ModifiedKernelCode.end(), '\n'), ModifiedKernelCode.end());// Removes '\n' end of lines
+									
+						Storage.FreeData();
 						size_t Position = 0;
+						size_t TempPosition = 0;
+
+						IsSuccesful = true;
+						//Then attributes are removed in the while loop below
 						while (true)
 						{
-							Position = ModifiedString.find("kernel ", Position);
+							Position = ModifiedKernelCode.find("__attribute__", Position);
 							if (Position != std::string::npos)
-							{ 
-								ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
-								Position = Position + 5;//PENDING CHECK THIS
-								
-								for (int i = 0; i < 1000; ++i)// Only Searches till 1000 characters
+							{
+								TempPosition = ModifiedKernelCode.find(")", Position);
+								if (TempPosition != std::string::npos)
 								{
-									Position = Position + 1;
-									Position = ModifiedString.find(' ', Position);// BackSpace
-
-									if (ModifiedString[Position] == ' ')
+									TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
+									if (TempPosition != std::string::npos)
 									{
-										if (ModifiedString[Position + 1] != ' ')
+										TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
+										if (TempPosition != std::string::npos)
 										{
-											size_t TempPositon = ModifiedString.find("__attribute__", Position);
-											if (Position != std::string::npos)
-											{
-											}
-											else
-											{
-												if (TempPositon == Position + 1)
-												{
-													Position = ModifiedString.find(")", Position);
-													for (int j = 0; j < 1000; ++j)// Only Searches till 1000 characters
-													{
-														//PENDING
-													}
-												}
-											}
-											break;
+											ModifiedKernelCode.erase(Position, TempPosition);
 										}
 										else
 										{
-											continue;
+											IsSuccesful = false;// Wrong systax results in this...
 										}
 									}
+									else
+									{
+										IsSuccesful = false;
+									}
 								}
-								Position = ModifiedString.find("attribute__", Position);
-								Position = Position + 10;//PENDING CHECK THIS
+								else
+								{
+									IsSuccesful = false;
+								}
 							}
 							else
 							{
 								break;
-							}							
+							}
+						}
+
+						if (IsSuccesful)
+						{
+							Position = 0;
+							TempPosition = 0;
+							while (true)
+							{
+								IsSuccesful = false;
+								Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
+								if (Position != std::string::npos)
+								{
+									// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
+									if (Position != 0)
+									{
+										IsSuccesful = true;
+									}
+									else
+									{
+										if ((ModifiedKernelCode[(Position - 1)] == ' ') || (ModifiedKernelCode[(Position - 1)] == '\n'))
+										{
+											IsSuccesful = true;
+										}
+										//else
+										//{
+										//	// Not a keyword but a function name,
+										//}
+									}
+
+									if (IsSuccesful)
+									{
+										Position = Position + 7;
+										Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
+										if (Position != std::string::npos)
+										{
+											IsSuccesful = false;
+											std::cout << "\n Error: unable to find 'void' keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+											break;
+										}
+										else
+										{
+											Position = Position + 6;
+											TempPosition = ModifiedKernelCode.find("(", Position);// look for void keyword
+											if (TempPosition != std::string::npos)
+											{
+												IsSuccesful = false;
+												std::cout << "\n Error: unable to find '(' breacket. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+												break;
+											}
+											else
+											{
+												ModifiedKernelCode.erase((Position - 1), TempPosition);// this is the exception. since it is " void " not " void"... Notice the lack of whitesapce in the second void
+											}
+										}
+
+										Storage.CopyAndStoreData((void*)Position, sizeof(size_t), IsSuccesful, false, true);
+										if (!IsSuccesful)
+										{
+											std::cout << "\n Error: Essenbp::UnknownDataAndSizeStruct::CopyAndStoreData Failed In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										}
+										else
+										{
+											ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
+											//Position = Position + 6;//PENDING CHECK THIS
+											//Position = Position + 1;//Goes to First character after they "Kernel "// whitespace included
+											Position = Position + 7;
+
+										}
+									}
+								}
+								else
+								{
+									if (Position == 0)
+									{
+										std::cout << "\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										IsSuccesful = false;
+									}
+									break;
+								}
+							}
+						}
+						else
+						{
+							std::cout << "\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 						}
 					}										
 				}
@@ -4583,7 +4660,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, IsSuccesful);
 					if (!IsSuccesful)
 					{
-						std::cout << "\n Error: SetTheNameAndNumberOfArgumentsForNextKernelFunction Failed in ";
+						std::cout << "\n Error: SetTheNameAndNumberOfArgumentsForNextKernelFunction Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 					}
 				}				
 			}
