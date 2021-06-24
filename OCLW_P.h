@@ -2312,7 +2312,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		unsigned int TotalNumberOfBuffers = 0;
 		cl_MemoryStruct** MultiBufferOnDevice = nullptr;//Example: Multiple Buffers on GPU device(For each Kernel Argument)
 		bool** IsBufferReady = nullptr;// This tells whether the buffer is allocated or not
-		//PENDING add Boolean Array and total number of buffers
 
 	public:
 		bool IsConstructionSuccesful = false;// NOTE: Do not change this manualy! unless you know what you are doing
@@ -4497,16 +4496,96 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		
 		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
 		{
+			ArgTotalNumberOfKernelFunctions = 0;
+
 			IsSuccesful = false;
 
 			if (*ArgOrderedKernelArgumentList != nullptr)
 			{
 				std::cout << "\n Error The value of the variable 'ArgOrderedKernelArgumentList' Is not nullptr, It should be empty, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				return;
 			}
 			else
 			{
 				//PENDING
+				OCLW_P::cl_KernelFunctionsStruct Functions_List(1, IsSuccesful);
+				if (!IsSuccesful)
+				{
+					std::cout << "\n Error: Functions_List of Type cl_KernelFunctionsStruct Failed Construction, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				}
+				else
+				{
+					if(*ArgOrderedKernelArgumentList != nullptr)
+					{
+						std::cout << "\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					}
+					else
+					{
+						//First We Delete unwanted Comments
+						std::string ModifiedString = "";
+						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedString);//First Comments are removed
+						ModifiedString.erase(std::remove(ModifiedString.begin(), ModifiedString.end(), '\n'), ModifiedString.end());// Removes '\n' end of lines
+						
+						Essenbp::UnknownDataAndSizeStruct Storage;
+						size_t Position = 0;
+						while (true)
+						{
+							Position = ModifiedString.find("kernel ", Position);
+							if (Position != std::string::npos)
+							{ 
+								ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
+								Position = Position + 5;//PENDING CHECK THIS
+								
+								for (int i = 0; i < 1000; ++i)// Only Searches till 1000 characters
+								{
+									Position = Position + 1;
+									Position = ModifiedString.find(' ', Position);// BackSpace
+
+									if (ModifiedString[Position] == ' ')
+									{
+										if (ModifiedString[Position + 1] != ' ')
+										{
+											size_t TempPositon = ModifiedString.find("__attribute__", Position);
+											if (Position != std::string::npos)
+											{
+											}
+											else
+											{
+												if (TempPositon == Position + 1)
+												{
+													Position = ModifiedString.find(")", Position);
+													for (int j = 0; j < 1000; ++j)// Only Searches till 1000 characters
+													{
+														//PENDING
+													}
+												}
+											}
+											break;
+										}
+										else
+										{
+											continue;
+										}
+									}
+								}
+								Position = ModifiedString.find("attribute__", Position);
+								Position = Position + 10;//PENDING CHECK THIS
+							}
+							else
+							{
+								break;
+							}							
+						}
+					}										
+				}
+
+				if (IsSuccesful)
+				{
+					Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, IsSuccesful);
+					if (!IsSuccesful)
+					{
+						std::cout << "\n Error: SetTheNameAndNumberOfArgumentsForNextKernelFunction Failed in ";
+					}
+				}				
 			}
 
 			if (!IsSuccesful)// For the safe of readability
@@ -5268,10 +5347,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												Binaries[i][BinarySizes[i]] = '\0';
 												//std::cout << "Program " << i << ":" << std::endl;
 												//std::cout << Binaries[i];													
-												Binary_Program_OfEachDevice.GetUnknownData(i, &ReturnValue, IsSuccesful);
+												Binary_Program_OfEachDevice.GetData(i, &ReturnValue, IsSuccesful);
 												if (!IsSuccesful)
 												{
-													std::cout << "\n Error Binary_Program_OfEachDevice.GetUnknownData failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+													std::cout << "\n Error Binary_Program_OfEachDevice.GetData failed in GetBinaryInformationOfProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 													for (int i = 0; i < NumDevices; i++)
 													{
 														delete (Binaries[i]);

@@ -158,9 +158,9 @@ int Test2()
 	EntireOpenCLProgram.GetBinaryInformationOfProgram(ArrayOfRetreivedData, IsSuccesful);
 
 	Essenbp::UnknownDataAndSizeStruct* ReturnValue;
-	ArrayOfRetreivedData.GetUnknownData(0, &ReturnValue, IsSuccesful);
+	ArrayOfRetreivedData.GetData(0, &ReturnValue, IsSuccesful);
 
-	Essenbp::WriteBytesToFile("D:\\TestFolder\\BinaryReturn.txt", *ReturnValue, IsSuccesful);
+	Essenbp::WriteBytesToFile("D:\\TestFolder\\BinaryReturn", "txt", *ReturnValue, IsSuccesful);
 	std::cout << "\n\n Before Destruction";
 	//EntireOpenCLProgram.~cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct();// Doing this just to show that the destructor is working properly
 	//std::cout << "\n After  Destruction";

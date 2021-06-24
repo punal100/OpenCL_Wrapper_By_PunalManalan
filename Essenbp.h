@@ -32,7 +32,7 @@ namespace Essenbp//Essential Functions By Punal
 		}
 
 		//NOTE DoADummyCopy stores only the Size but not the data
-		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool DoADummyCopy = false)
+		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool DoADummyCopy = false, bool AppendData = false)
 		{
 			IsSuccesful = false;
 
@@ -42,29 +42,67 @@ namespace Essenbp//Essential Functions By Punal
 				{
 					std::cout << "\n Error nullptr for ArgData in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
 					std::cout << "If Dummy Value is to be passed set DoADummyCopy(4th argument) to false, and set ArgData = nullptr!\n";
-					return;
-				}
-				SizeOfData = ArgSizeOfData;
-				if (SizeOfData == 0)
-				{
-					std::cout << "\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
-					return;
-				}
-				FreeData();
-				Data = malloc(SizeOfData);
-				if (Data == nullptr)
-				{
-					std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
-					return;
 				}
 				else
 				{
-					for (int i = 0; i < SizeOfData; ++i)// Memccpy bad
+					if (AppendData)
 					{
-						((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+						if (ArgSizeOfData == 0)
+						{
+							std::cout << "\n Error Size Of ArgSizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							return;
+						}
+						
+						void* AppendDataHelper = malloc((SizeOfData + ArgSizeOfData));// Setting Current
+						if (AppendDataHelper == nullptr)
+						{
+							SizeOfData = SizeOfData - ArgSizeOfData;
+							std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							return;
+						}
+						else
+						{
+							size_t PreviousSize = SizeOfData;//Temp Differnet use
+							SizeOfData = SizeOfData + ArgSizeOfData;
+							for (size_t i = 0; i < PreviousSize; ++i)// Memccpy bad
+							{
+								((char*)AppendDataHelper)[i] = ((char*)Data)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+							}
+							for (size_t i = 0; i < SizeOfData - PreviousSize; ++i)// Memccpy bad
+							{
+								((char*)AppendDataHelper)[(i + PreviousSize)] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+							}
+							FreeData();
+							Data = AppendDataHelper;
+							IsSuccesful = true;
+						}
 					}
-					IsSuccesful = true;
-				}
+					else
+					{
+						SizeOfData = ArgSizeOfData;
+						if (SizeOfData == 0)
+						{
+							std::cout << "\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							return;
+						}
+						FreeData();
+						Data = malloc(SizeOfData);
+						if (Data == nullptr)
+						{
+							SizeOfData = 0;
+							std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							return;
+						}
+						else
+						{
+							for (size_t i = 0; i < SizeOfData; ++i)// Memccpy bad
+							{
+								((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+							}
+							IsSuccesful = true;
+						}
+					}
+				}				
 			}
 			else
 			{
@@ -295,11 +333,11 @@ namespace Essenbp//Essential Functions By Punal
 			return TotalNumberOfUnknownData;
 		}
 
-		void GetUnknownData(unsigned int ElementNumber, UnknownDataAndSizeStruct** ReturnUnknownDataAndSize, bool& IsSuccesful)
+		void GetData(unsigned int ElementNumber, UnknownDataAndSizeStruct** ReturnUnknownDataAndSize, bool& IsSuccesful)
 		{
 			if (ElementNumber > TotalNumberOfUnknownData)
 			{
-				std::cout << "\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetUnknownData in AddElement In: ArrayOfUnknownDataAndSize!\n";
+				std::cout << "\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetData in AddElement In: ArrayOfUnknownDataAndSize!\n";
 			}
 			else
 			{
@@ -385,7 +423,66 @@ namespace Essenbp//Essential Functions By Punal
 		printf(", %f )", Pointz);
 	}
 
+	void RemoveCommentsFromCppSource(std::string ProgramSource, std::string& OutPutString)
+	{
+		int TotalLength = ProgramSource.length();
+
+		OutPutString = "";//Rest
+
+		//These Boolean tells whether specific comment started or not
+		bool IsSingeLineStarted = false;//SingleLine
+		bool IsMultiLineStarted = false;//MultiLine
+
+		for (int i = 0; i < TotalLength; i++)
+		{
+			//Checks for End'\n' of Single Line comment If IsSingeLineStarted is set to true
+			if (IsSingeLineStarted == true && ProgramSource[i] == '\n')
+			{
+				IsSingeLineStarted = false;
+			}						
+			else
+			{
+				if (IsMultiLineStarted == true && ProgramSource[i] == '*' && ProgramSource[i + 1] == '/')
+				{
+					IsMultiLineStarted = false, i++;//Checks for End"*/" of Multi Line comment If IsMultiLineStarted is set to true
+				}
+				else
+				{
+					if (IsSingeLineStarted || IsMultiLineStarted)
+					{
+						continue;//Ignore If the Character is inside a comment
+					}
+					else
+					{
+						// This checks if the Single Line Comment Started
+						if (ProgramSource[i] == '/' && ProgramSource[i + 1] == '/')
+						{
+							IsSingeLineStarted = true;
+							i = i + 1;// Since Single line comment starts with 2 characters, i + 1 is skipped
+						}
+						else
+						{
+							// This checks if the Multi Line Comment Started
+							if (ProgramSource[i] == '/' && ProgramSource[i + 1] == '*')
+							{
+								IsMultiLineStarted = true;
+								i = i + 1;// Since Multi line comment starts with 2 characters, i + 1 is skipped
+							}
+							else
+							{
+								//When everything is false, if Not a comment nor inside a comment
+								//Meaning This Non-Comment character is added to the output
+								OutPutString = OutPutString + ProgramSource[i];
+							}
+						}	
+					}
+				}
+			}
+		}
+	}
+
 #ifdef _WIN32
+	//Add .txt extension too
 	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
@@ -409,31 +506,39 @@ namespace Essenbp//Essential Functions By Punal
 		}
 	}
 
-	void WriteToTextFile(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	//Just add the path without the .txt extension
+	//NOTE: '\0' added at End of the total size of the bytes
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
 		FILE* TheFile;
+		Path = Path + ".txt";
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
 
 		if (FileError != 0)
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
 			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open File in GetTextFileContent In: Essenbp,\n File Path: " << Path << "\n";
+			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
 		}
 		else
 		{
-			std::fseek(TheFile, 0, SEEK_SET);
+			std::fseek(TheFile, 0, SEEK_CUR);
 			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
 			std::fclose(TheFile);
 			IsSuccesful = true;
 		}
 	}
 	
-	void GetFileContent(const std::string Path, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	//Extension required for example .bin
+	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
 		FILE* TheFile;
+		Path = Path + "." + ExtensionWithoutTheDot;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
 
 		if (FileError != 0)
@@ -461,10 +566,12 @@ namespace Essenbp//Essential Functions By Punal
 		}
 	}
 
-	void WriteBytesToFile(const std::string Path, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	//Put "Path" argument Without the extension
+	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
 		FILE* TheFile;
+		Path = Path + "." + ExtensionWithoutTheDot;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "w");// IfFile does not Exist then it creates it
 
 		if (FileError != 0)
@@ -481,8 +588,10 @@ namespace Essenbp//Essential Functions By Punal
 			IsSuccesful = true;
 		}
 	}
+
 #else
 	//Linux
+	//Add .txt extension too
 	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
@@ -503,9 +612,37 @@ namespace Essenbp//Essential Functions By Punal
 		}
 	}
 
-	void GetFileContent(const std::string Path, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	//Just add the path without the .txt extension
+	//NOTE: '\0' added at End of the total size of the bytes
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+		FILE* TheFile;
+		Path = Path + ".txt";
+		FILE* TheFile = fopen(Path.c_str(), "w");
+
+		if (TheFile != nullptr)
+		{
+			std::cout << "\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
+		}
+		else
+		{
+			std::fseek(TheFile, 0, SEEK_SET);
+			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
+			std::fclose(TheFile);
+			IsSuccesful = true;
+		}
+	}
+
+	//Extension required for example .bin
+	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	{
+		IsSuccesful = false;
+		FILE* TheFile;
+		Path = Path + "." + ExtensionWithoutTheDot;
 		FILE* TheFile = fopen(Path.c_str(), "r");
 
 		if (TheFile != nullptr)
@@ -524,40 +661,24 @@ namespace Essenbp//Essential Functions By Punal
 			}
 			else
 			{
-				std::cout << "\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: GetFileContent!\n";
+				std::cout << "\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: WriteToFile!\n";
 				DataStorage.FreeData();
-			}		
+			}
 			std::fclose(TheFile);
 		}
 	}
 
-	void WriteToFile(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	//Put "Path" argument Without the extension
+	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
 	{
 		IsSuccesful = false;
+		FILE* TheFile;
+		Path = Path + "." + ExtensionWithoutTheDot;
 		FILE* TheFile = fopen(Path.c_str(), "w");
 
 		if (TheFile != nullptr)
 		{
-			std::cout << "\nError : Unable to Create/Open File in WriteToFile In: Essenbp,\n File Path: " << Path << "\n";
-		}
-		else
-		{
-			std::fseek(TheFile, 0, SEEK_SET);
-			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
-			std::fclose(TheFile);	
-			IsSuccesful = true;
-		}
-	}
-
-	void WriteBytesToFile(const std::string Path, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
-	{
-		IsSuccesful = false;
-		FILE* TheFile;
-		FILE* TheFile = fopen(Path.c_str(), "w");;// IfFile does not Exist then it creates it
-
-		if (TheFile != nullptr)
-		{
-			std::cout << "\nError : Unable to Create/Open File in WriteBytesToFile In: Essenbp,\n File Path: " << Path << "\n";
+			std::cout << "\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
 		}
 		else
 		{
