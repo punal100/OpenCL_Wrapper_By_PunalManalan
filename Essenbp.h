@@ -62,19 +62,20 @@ namespace Essenbp//Essential Functions By Punal
 						}
 						else
 						{
-							size_t PreviousSize = SizeOfData;//Temp Differnet use
-							size_t i = 0;
-							for (i = 0; i < PreviousSize; ++i)// Memccpy bad
+							size_t PreviousSize = SizeOfData;
+							SizeOfData = SizeOfData + ArgSizeOfData;// Current Size
+
+							for (size_t i = 0; i < PreviousSize; ++i)// Memccpy bad
 							{
 								((char*)AppendDataHelper)[i] = ((char*)Data)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
 
-							for (i = i; i < (SizeOfData + ArgSizeOfData); ++i)// Memccpy bad
+							for (size_t i = 0; i < ArgSizeOfData; ++i)// Memccpy bad
 							{
-								((char*)AppendDataHelper)[i] = ((char*)ArgData)[(i - PreviousSize)];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+								((char*)AppendDataHelper)[(i + PreviousSize)] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
+
 							FreeData();
-							SizeOfData = SizeOfData + ArgSizeOfData;
 							Data = AppendDataHelper;
 							IsSuccesful = true;
 						}
@@ -481,6 +482,52 @@ namespace Essenbp//Essential Functions By Punal
 				}
 			}
 		}
+	}
+
+	void ReplaceEveryOccuranceWithGivenString(std::string& Source, const std::string From, const std::string To)
+	{
+		std::string newString;
+		newString.reserve(Source.length());  // avoids a few memory allocations
+
+		std::string::size_type lastPos = 0;
+		std::string::size_type findPos;
+
+		while (std::string::npos != (findPos = Source.find(From, lastPos)))
+		{
+			newString.append(Source, lastPos, findPos - lastPos);
+			newString += To;
+			lastPos = findPos + From.length();
+		}
+
+		// Care for the rest after last occurrence
+		newString.append(Source, lastPos, Source.length() - lastPos);
+
+		Source.swap(newString);
+	}
+
+	void RemoveConsecutiveDulplicateChar(std::string& String, char DuplicateToRemove)
+	{
+		int n = String.length();
+
+		if (n < 2)
+		{
+			return;
+		}
+		int j = 0;
+
+		for (int i = 1; i < n; i++)
+		{
+			if (DuplicateToRemove == String[j])
+			{
+				if (String[j] == String[i])
+				{
+					continue;
+				}
+			}
+			j++;
+			String[j] = String[i];
+		}
+		String.resize(j);
 	}
 
 #ifdef _WIN32
