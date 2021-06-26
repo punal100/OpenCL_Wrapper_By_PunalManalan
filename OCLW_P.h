@@ -4278,6 +4278,100 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		cl_KernelFunctionArgumentOrderListStruct** OrderedKernelArgumentList = nullptr;			// This Contains All the Kernel Functions information
 		cl_MultiKernelFunction_MultiDeviceStruct** MultiKernelFunction_MultiDevice = nullptr;	// Initialization And Construction functions will take care of it	
 
+		//NOTE: This function Assumes the programkernelcode that was passed has correct syntax
+		//NOTE: The ProgramKernelCode should not contain Comments, new line, and backspace in consequtive sequence. To Avoid That Run Essenbp::RemoveCommentsFromCppSource(Original, Modified), Essenbp::ReplaceEveryOccuranceWithGivenString(Modified, "\n", " ") And Essenbp::RemoveConsecutiveDulplicateChar(Modified, ' ')
+		void FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(std::string ProgramKernelCode, std::string FunctionName, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, bool& IsSuccesful)
+		{
+			IsSuccesful = false;
+
+			//PENDING
+			if (*ArgOrderedKernelArgumentList != nullptr)
+			{
+				std::cout << "\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			}
+			else
+			{
+				Essenbp::UnknownDataAndSizeStruct Storage;
+				size_t TotalNumberOfArgs = 0;
+				size_t Position = 0;
+				size_t TempPosition = 0;
+				size_t VarPosition = 0;
+				size_t PreVarPosition = 0;
+
+				if (FunctionName[0] != ' ')
+				{
+					FunctionName = " " + FunctionName;
+				}
+				if (FunctionName.back() != '(')
+				{
+					FunctionName = FunctionName + "(";
+				}
+				
+				IsSuccesful = true;
+				Position = ProgramKernelCode.find(FunctionName);
+				if (Position != std::string::npos)
+				{
+					Position = Position + (FunctionName.length() - 1);
+					TempPosition = ProgramKernelCode.find(")", Position);
+					if (TempPosition != std::string::npos)
+					{
+						VarPosition = ProgramKernelCode.find(",");
+						if (VarPosition != std::string::npos)
+						{
+							VarPosition = VarPosition - 1;// BackTracking for looping purpose
+							PreVarPosition = Position;
+							while (true)
+							{
+								VarPosition = ProgramKernelCode.find(",");
+								if (VarPosition != std::string::npos)
+								{
+									if (VarPosition > TempPosition)// If the Argument Goes out bound(Parameter)
+									{
+										break;
+									}
+									else
+									{
+										//PENDING
+
+
+
+										PreVarPosition = VarPosition;
+									}
+								}
+								else
+								{
+									
+								}
+							}
+						}
+						else//Could Mean there is only one Argument or nothing at all(Which is impossible)...
+						{
+							VarPosition = TempPosition;// '('
+							PreVarPosition = Position;// ')'
+						}	
+
+						//PENDING
+						//Last Arugment 
+					}
+					else
+					{
+						//Unlikely to happen
+						IsSuccesful = false;
+						std::cout << "\n Error ')' Was not Found in the given Program Code in FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error "<< FunctionName <<" Was not Found in the given Program Code in FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+				}
+			}
+
+			if (!IsSuccesful)// For the safe of readability
+			{
+				std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			}
+		}
+
 	public:
 		bool IsConstructionSuccesful = false;// Same as before, Manual changes = memory leaks, Automatic(constructor) Only changes will Obliterate the chances of possible memory leaks
 
@@ -4494,8 +4588,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 		
-		//USE THIS ONLY IF THE SYNTAX IS CORRECT
-		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, std::string& ModifiedKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, Essenbp::UnknownDataAndSizeStruct& Storage, bool& IsSuccesful)
+		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, std::string& ModifiedKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
 		{
 			ArgTotalNumberOfKernelFunctions = 0;
 
@@ -4508,7 +4601,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			else
 			{
 				//PENDING
-				OCLW_P::cl_KernelFunctionsStruct Functions_List(1, IsSuccesful);
 				if (!IsSuccesful)
 				{
 					std::cout << "\n Error: Functions_List of Type cl_KernelFunctionsStruct Failed Construction, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
@@ -4523,14 +4615,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						//First We Delete unwanted Comments
 						ModifiedKernelCode = "";
-						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed					
-						//ModifiedKernelCode.erase(std::remove(ModifiedKernelCode.begin(), ModifiedKernelCode.end(), '\n'), ModifiedKernelCode.end());// Removes '\n' end of lines
+						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed	
+						Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\n", " ");// new line replaced with back space
+						Essenbp::RemoveConsecutiveDulplicateChar(ModifiedKernelCode, ' ');// Consecutive Duplicates removed
 									
-						Storage.FreeData();
+						//Essenbp::UnknownDataAndSizeStruct Storage;						
 						size_t Position = 0;
 						size_t TempPosition = 0;
-
-						IsSuccesful = true;
+												
 						//Then attributes are removed in the while loop below
 						while (true)
 						{
@@ -4565,6 +4657,22 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}
 							else
 							{
+								cl_int ClErrorResult = 0;
+								cl_context CheckingContext;
+								const char* ClSourceFileInChar = ProgramKernelCode.c_str();//Not Using Modified
+								size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
+								SingleProgram = clCreateProgramWithSource(CheckingContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &ClErrorResult);
+
+								if (ClErrorResult != CL_SUCCESS)
+								{
+									std::cout << "\n ClError Code " << ClErrorResult << " : Cl Program Not Created with Source!\n";
+									IsSuccesful = false;
+								}
+								else
+								{
+									clReleaseContext(CheckingContext);
+									IsSuccesful = true;
+								}								
 								break;
 							}
 						}
@@ -4573,6 +4681,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							Position = 0;
 							TempPosition = 0;
+
 							while (true)
 							{
 								IsSuccesful = false;
@@ -4586,54 +4695,39 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									}
 									else
 									{
-										if ((ModifiedKernelCode[(Position - 1)] == ' ') || (ModifiedKernelCode[(Position - 1)] == '\n'))
+										if (ModifiedKernelCode[(Position - 1)] == ' ')
 										{
 											IsSuccesful = true;
 										}
-										//else
-										//{
-										//	// Not a keyword but a function name,
-										//}
+										else
+										{
+											// Not a keyword but a function name,
+											Position = Position + 7;
+										}
 									}
 
 									if (IsSuccesful)
 									{
-										Position = Position + 7;
+										Position = Position + 6;
 										Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
 										if (Position != std::string::npos)
 										{
 											IsSuccesful = false;
-											std::cout << "\n Error: unable to find 'void' keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+											std::cout << "\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 											break;
 										}
 										else
 										{
-											Position = Position + 6;
-											TempPosition = ModifiedKernelCode.find("(", Position);// look for void keyword
-											if (TempPosition != std::string::npos)
+											Position = Position + 6;//First Character Of Function Name
+
+											TempPosition = 0;
+											TempPosition = ModifiedKernelCode.find("(", Position);
+
+											if (TempPosition == Position)
 											{
 												IsSuccesful = false;
-												std::cout << "\n Error: unable to find '(' breacket. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-												break;
+												std::cout << "\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 											}
-											else
-											{
-												ModifiedKernelCode.erase((Position - 1), TempPosition);// this is the exception. since it is " void " not " void"... Notice the lack of whitesapce in the second void
-											}
-										}
-
-										Storage.CopyAndStoreData((void*)Position, sizeof(size_t), IsSuccesful, false, true);
-										if (!IsSuccesful)
-										{
-											std::cout << "\n Error: Essenbp::UnknownDataAndSizeStruct::CopyAndStoreData Failed In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-										}
-										else
-										{
-											ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
-											//Position = Position + 6;//PENDING CHECK THIS
-											//Position = Position + 1;//Goes to First character after they "Kernel "// whitespace included
-											Position = Position + 7;
-
 										}
 									}
 								}
@@ -4644,13 +4738,41 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										std::cout << "\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 										IsSuccesful = false;
 									}
+									else
+									{
+										IsSuccesful = true;
+									}
 									break;
 								}
 							}
+
+							for ()//Loop through function names
+							{
+							}
+							//PENDING
+							//Put that function variable finding funciton here
 						}
 						else
 						{
 							std::cout << "\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+						}
+
+						//FINAL CONTINUE
+						if (IsSuccesful)
+						{
+							Essenbp::Malloc_PointerToArrayOfPointers((void***)ArgOrderedKernelArgumentList, ArgTotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccesful);
+							if (!IsSuccesful)
+							{
+								std::cout << "\n Error Allocating " << (ArgTotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for ArgTotalNumberOfKernelFunctions in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+							}
+							else
+							{
+								//CONTINUE
+								for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+								{
+									ArgOrderedKernelArgumentList[i] = new cl_KernelFunctionArgumentOrderListStruct(, IsSuccesful);
+								}
+							}							
 						}
 					}										
 				}
@@ -4670,18 +4792,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				std::cout << "\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 			}
 		}
-
-		void FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(std::string ProgramKernelCode, std::string FunctionName, cl_KernelFunctionArgumentOrderListStruct& ArgOrderedKernelArgumentList, bool& IsSuccesful)
-		{
-			IsSuccesful = false;
-
-			//PENDING
-			if (!IsSuccesful)// For the safe of readability
-			{
-				std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-			}
-		}
-
+		
 		void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions, bool& IsSuccesful)
 		{
 			IsSuccesful = false;
