@@ -32,9 +32,9 @@ namespace Essenbp//Essential Functions By Punal
 		}
 
 		//NOTE DoADummyCopy stores only the Size but not the data
-		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& IsSuccesful, bool DoADummyCopy = false, bool AppendData = false)
+		void CopyAndStoreData(void* ArgData, size_t ArgSizeOfData, bool& Issuccessful, bool DoADummyCopy = false, bool AppendData = false)
 		{
-			IsSuccesful = false;
+			Issuccessful = false;
 
 			if (!DoADummyCopy)
 			{
@@ -77,7 +77,7 @@ namespace Essenbp//Essential Functions By Punal
 
 							FreeData();
 							Data = AppendDataHelper;
-							IsSuccesful = true;
+							Issuccessful = true;
 						}
 					}
 					else
@@ -102,7 +102,7 @@ namespace Essenbp//Essential Functions By Punal
 							{
 								((char*)Data)[i] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
-							IsSuccesful = true;
+							Issuccessful = true;
 						}
 					}
 				}				
@@ -119,7 +119,7 @@ namespace Essenbp//Essential Functions By Punal
 				{
 					FreeData();
 					SizeOfData = ArgSizeOfData;
-					IsSuccesful = true;
+					Issuccessful = true;
 				}
 			}
 		}
@@ -129,9 +129,9 @@ namespace Essenbp//Essential Functions By Punal
 
 		//NOTE:Use this if Direct access to data is required
 		//NOTE: by using this
-		void FreeAndResizeData(size_t ArgSizeOfData, bool& IsSuccesful)
+		void FreeAndResizeData(size_t ArgSizeOfData, bool& Issuccessful)
 		{
-			IsSuccesful = false;
+			Issuccessful = false;
 			FreeData();
 
 			SizeOfData = ArgSizeOfData;
@@ -146,7 +146,7 @@ namespace Essenbp//Essential Functions By Punal
 				std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n";
 				return;
 			}
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 		
 		//NOTE: The Data Is Returned But, not released, SO USE THIS WITH CAUTION, if being careless then there is a HUGE chance of memory leak
@@ -173,9 +173,9 @@ namespace Essenbp//Essential Functions By Punal
 
 	//NOTE: By PointerToArrayOfPointers it means Example : int** Array, Array[n] == int*, Basicaly an Array of Array of size [1][n]
 	//NOTE: Pass first parameter using (void***)&
-	void Malloc_PointerToArrayOfPointers(void*** PointerTo_PointerToArrayOfPointers, unsigned int NumOfPointerToAdd, unsigned int SizeOfEachPointer, bool& IsSuccesful)
+	void Malloc_PointerToArrayOfPointers(void*** PointerTo_PointerToArrayOfPointers, unsigned int NumOfPointerToAdd, unsigned int SizeOfEachPointer, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 
 		if (PointerTo_PointerToArrayOfPointers == nullptr)
 		{
@@ -206,7 +206,7 @@ namespace Essenbp//Essential Functions By Punal
 				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
 				return;
 			}
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 
@@ -216,19 +216,19 @@ namespace Essenbp//Essential Functions By Punal
 		unsigned int TotalNumberOfUnknownData = 0;
 		UnknownDataAndSizeStruct** ArrayOfUnknownData = nullptr;
 
-		void ResizeArray(unsigned int TotalNumber, bool& IsSuccesful)
+		void ResizeArray(unsigned int TotalNumber, bool& Issuccessful)
 		{
-			IsSuccesful = false;
+			Issuccessful = false;
 
 			UnknownDataAndSizeStruct** TempUnknownData = nullptr;
-			Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, TotalNumber, sizeof(UnknownDataAndSizeStruct*), IsSuccesful);
-			if (!IsSuccesful)
+			Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, TotalNumber, sizeof(UnknownDataAndSizeStruct*), Issuccessful);
+			if (!Issuccessful)
 			{
 				std::cout << "\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n";
 			}
 			else
 			{
-				IsSuccesful = true;
+				Issuccessful = true;
 				int MaxLimit = (TotalNumber < TotalNumberOfUnknownData) ? TotalNumber : TotalNumberOfUnknownData;
 
 				for (int i = 0; i < MaxLimit; ++i)
@@ -248,7 +248,7 @@ namespace Essenbp//Essential Functions By Punal
 								delete TempUnknownData[j];
 							}
 							free(TempUnknownData);
-							IsSuccesful = false;
+							Issuccessful = false;
 							break;
 						}
 					}
@@ -261,7 +261,7 @@ namespace Essenbp//Essential Functions By Punal
 					}
 				}
 
-				if (!IsSuccesful)
+				if (!Issuccessful)
 				{
 					std::cout << "\n Error ResizeArray failed In: ArrayOfUnknownDataAndSize!\n";
 				}
@@ -279,19 +279,19 @@ namespace Essenbp//Essential Functions By Punal
 			std::cout << "\n Constructing ArrayOfUnknownDataAndSize!";
 		}
 
-		void AddElement(bool& IsSuccesful)
+		void AddElement(bool& Issuccessful)
 		{
-			IsSuccesful = false;
-			ResizeArray(TotalNumberOfUnknownData + 1, IsSuccesful);
-			if(!IsSuccesful)
+			Issuccessful = false;
+			ResizeArray(TotalNumberOfUnknownData + 1, Issuccessful);
+			if(!Issuccessful)
 			{
 				std::cout << "\n Error ResizeArray failed in AddElement In: ArrayOfUnknownDataAndSize!\n";
 			}
 		}
 
-		void RemoveElement(unsigned int ElementNumber, bool& IsSuccesful)
+		void RemoveElement(unsigned int ElementNumber, bool& Issuccessful)
 		{
-			IsSuccesful = false;
+			Issuccessful = false;
 			if (ElementNumber > TotalNumberOfUnknownData)
 			{
 				std::cout << "\n Error ElementNumber Exceeds the total number of Unknown Data Present! in RemoveElement in AddElement In: ArrayOfUnknownDataAndSize!\n";
@@ -321,8 +321,8 @@ namespace Essenbp//Essential Functions By Punal
 					}
 					ArrayOfUnknownData[TotalNumberOfUnknownData - 1] = TempChangeptr;
 
-					ResizeArray(TotalNumberOfUnknownData - 1, IsSuccesful);
-					if (!IsSuccesful)
+					ResizeArray(TotalNumberOfUnknownData - 1, Issuccessful);
+					if (!Issuccessful)
 					{
 						std::cout << "\n Error ResizeArray failed in RemoveElement In: ArrayOfUnknownDataAndSize!\n";
 					}
@@ -336,7 +336,7 @@ namespace Essenbp//Essential Functions By Punal
 			return TotalNumberOfUnknownData;
 		}
 
-		void GetData(unsigned int ElementNumber, UnknownDataAndSizeStruct** ReturnUnknownDataAndSize, bool& IsSuccesful)
+		void GetData(unsigned int ElementNumber, UnknownDataAndSizeStruct** ReturnUnknownDataAndSize, bool& Issuccessful)
 		{
 			if (ElementNumber > TotalNumberOfUnknownData)
 			{
@@ -530,11 +530,31 @@ namespace Essenbp//Essential Functions By Punal
 		String.resize(j);
 	}
 
+	void FindStartOfSubStringInString(std::string SourceString, std::string SubStringToFind, size_t StartPosition, size_t EndPosition, size_t& ReturnStartOfSubString, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		ReturnStartOfSubString = SourceString.find(SubStringToFind, StartPosition);
+		if (ReturnStartOfSubString == std::string::npos)
+		{
+			ReturnStartOfSubString = EndPosition + 1;// So False
+		}
+
+		if (!(ReturnStartOfSubString > EndPosition))
+		{
+			Issuccessful = true;
+			//true
+		}
+		//else
+		//{
+		//	//false
+		//}
+	}
+
 #ifdef _WIN32
 	//Add .txt extension too
-	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
 
@@ -551,15 +571,15 @@ namespace Essenbp//Essential Functions By Punal
 			std::rewind(TheFile);
 			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 
 	//Just add the path without the .txt extension
 	//NOTE: '\0' added at End of the total size of the bytes
-	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + ".txt";
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
@@ -578,14 +598,14 @@ namespace Essenbp//Essential Functions By Punal
 			const char LastChar = '\0';
 			std::fwrite(&LastChar, 1, 1, TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 	
 	//Extension required for example .bin
-	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + "." + ExtensionWithoutTheDot;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
@@ -599,12 +619,12 @@ namespace Essenbp//Essential Functions By Punal
 		else
 		{
 			std::fseek(TheFile, 0, SEEK_END);
-			DataStorage.FreeAndResizeData(std::ftell(TheFile), IsSuccesful);
-			if (IsSuccesful)
+			DataStorage.FreeAndResizeData(std::ftell(TheFile), Issuccessful);
+			if (Issuccessful)
 			{
 				std::rewind(TheFile);
 				std::fread(DataStorage.GetData(), 1, DataStorage.GetDataSize(), TheFile);
-				IsSuccesful = true;
+				Issuccessful = true;
 			}
 			else
 			{
@@ -616,9 +636,9 @@ namespace Essenbp//Essential Functions By Punal
 	}
 
 	//Put "Path" argument Without the extension
-	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + "." + ExtensionWithoutTheDot;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "w");// IfFile does not Exist then it creates it
@@ -634,16 +654,16 @@ namespace Essenbp//Essential Functions By Punal
 			std::fseek(TheFile, 0, SEEK_SET);
 			std::fwrite(DataStorage.GetData(), 1, DataStorage.GetDataSize(), TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 
 #else
 	//Linux
 	//Add .txt extension too
-	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile = fopen(Path.c_str(), "r");
 
 		if (TheFile != nullptr)
@@ -657,15 +677,15 @@ namespace Essenbp//Essential Functions By Punal
 			std::rewind(TheFile);
 			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 
 	//Just add the path without the .txt extension
 	//NOTE: '\0' added at End of the total size of the bytes
-	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& IsSuccesful)
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + ".txt";
 		FILE* TheFile = fopen(Path.c_str(), "w");
@@ -682,14 +702,14 @@ namespace Essenbp//Essential Functions By Punal
 			const char LastChar = '\0';
 			std::fwrite(&LastChar, 1, 1, TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 
 	//Extension required for example .bin
-	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + "." + ExtensionWithoutTheDot;
 		FILE* TheFile = fopen(Path.c_str(), "r");
@@ -701,12 +721,12 @@ namespace Essenbp//Essential Functions By Punal
 		else
 		{
 			std::fseek(TheFile, 0, SEEK_END);
-			DataStorage.FreeAndResizeData(std::ftell(TheFile), IsSuccesful);
-			if (IsSuccesful)
+			DataStorage.FreeAndResizeData(std::ftell(TheFile), Issuccessful);
+			if (Issuccessful)
 			{
 				std::rewind(TheFile);
 				std::fread(DataStorage.GetData(), 1, DataStorage.GetDataSize(), TheFile);
-				IsSuccesful = true;
+				Issuccessful = true;
 			}
 			else
 			{
@@ -718,9 +738,9 @@ namespace Essenbp//Essential Functions By Punal
 	}
 
 	//Put "Path" argument Without the extension
-	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& IsSuccesful)
+	void WriteBytesToFile(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
-		IsSuccesful = false;
+		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + "." + ExtensionWithoutTheDot;
 		FILE* TheFile = fopen(Path.c_str(), "w");
@@ -734,7 +754,7 @@ namespace Essenbp//Essential Functions By Punal
 			std::fseek(TheFile, 0, SEEK_SET);
 			std::fwrite(DataStorage.GetData(), 1, DataStorage.GetDataSize(), TheFile);
 			std::fclose(TheFile);
-			IsSuccesful = true;
+			Issuccessful = true;
 		}
 	}
 #endif
