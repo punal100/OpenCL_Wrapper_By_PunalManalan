@@ -4371,15 +4371,21 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							VarPosition = TempPosition;// ')'
 						}
 						TotalNumberOfArgs = TotalNumberOfArgs + 1;
-					}
+					}					
 
-					
+					if (Issuccessful)
+					{
+						*ArgOrderedKernelArgumentList = new cl_KernelFunctionArgumentOrderListStruct(TotalNumberOfArgs, FunctionName.substr(1, (FunctionName.length() - 2)), Issuccessful);
+					}
 
 					if (Issuccessful)
 					{
 						//Finds all argument and its type inside the function
 						VarPosition = Position;// Go to the Last Character FunctionName.back() which is '('
 						PreVarPosition = Position;
+
+						unsigned int CurrentArg = 0;
+
 						while (true)
 						{
 							if (VarPosition == TempPosition)
@@ -4443,130 +4449,116 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											//Check if it is read or write
 
 											//Check On Left
-											if (ProgramKernelCode[(CheckPosition - 1)] == ' ')
-											{
-												i = 2;
-											}
-											else
-											{
-												i = 1;
-											}
+											i = (ProgramKernelCode[(CheckPosition - 1)] == ' ') ? 2 : 1;
 											switch (ProgramKernelCode[(CheckPosition - i)])
 											{
-												//case ' ':// Impossible for this to happen since the above is alreayd done
+													//case ' ':// Impossible for this to happen since the above is alreayd done
+													//{
+													//	break;
+													//}
+												case ','://Could mean this variable is used as parameter for a user/inbuilt function
+												{
+													break;//PENDING
+												}
+												case '('://Could mean this variable is used as parameter for a user/inbuilt function
+												{
+													break;//PENDING
+												}
+												//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
+												//{
+												//	break;//Not here
+												//}
+												case '=':// Check if it is Assignment(=) or Comparison(==) operator 
+												{
+													if (ProgramKernelCode[((CheckPosition - 1) - i)] == '=')
+													{
+														//Comparison(==) operator confirmed
+														IsReadOnly = true;
+													}
+													else
+													{
+														//Assignment(=) operator confirmed
+														IsWriteOnly = true;
+													}
+													break;
+												}
+												//case '.':// It means this is not the variable but instead a member of some other variable type Example: "OtherType.ArgumentName"
 												//{
 												//	break;
 												//}
-											case ','://Could mean this variable is used as parameter for a user/inbuilt function
-											{
-												break;//PENDING
-											}
-											case '('://Could mean this variable is used as parameter for a user/inbuilt function
-											{
-												break;//PENDING
-											}
-											//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
-											//{
-											//	break;//Not here
-											//}
-											case '=':// Check if it is Assignment(=) or Comparison(==) operator 
-											{
-												if (ProgramKernelCode[((CheckPosition - 1) - i)] == '=')
+												//case ';':
+												//{
+												//	break;
+												//}
+												//case '{':
+												//{
+												//	break;
+												//}
+												//case '}':
+												//{
+												//	break;
+												//}
+												default: // code to be executed if n doesn't match any cases
 												{
-													//Comparison(==) operator confirmed
-													IsReadOnly = true;
-												}
-												else
-												{
-													//Assignment(=) operator confirmed
-													IsWriteOnly = true;
-												}
-												break;
-											}
-											//case '.':// It means this is not the variable but instead a member of some other variable type Example: "OtherType.ArgumentName"
-											//{
-											//	break;
-											//}
-											//case ';':
-											//{
-											//	break;
-											//}
-											//case '{':
-											//{
-											//	break;
-											//}
-											//case '}':
-											//{
-											//	break;
-											//}
-											default: // code to be executed if n doesn't match any cases
-											{
 
-												break;
-											}
+													break;
+												}
 											}
 
 											//Check On Right
-											if (ProgramKernelCode[(CheckPosition + 1)] == ' ')
-											{
-												i = 2;
-											}
-											else
-											{
-												i = 1;
-											}
+											i = (ProgramKernelCode[(CheckPosition + 1)] == ' ') ? 2 : 1;
 											switch (ProgramKernelCode[(CheckPosition + i)])
 											{
 												//case ' ':// Impossible for this to happen since the above is alreayd done
 												//{
 												//	break;
 												//}
-											case ','://Could mean this variable is used as parameter for a user/inbuilt function
-											{
-												break;//PENDING
-											}
-											case '('://Could mean this variable is used as parameter for a user/inbuilt function
-											{
-												break;//PENDING
-											}
-											//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
-											//{
-											//	break;//Not here
-											//}
-											case '=':// Check if it is Assignment(=) or Comparison(==) operator 
-											{
-												if (ProgramKernelCode[((CheckPosition + 1) + i)] == '=')
+												case ','://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													//Comparison(==) operator confirmed
-													IsReadOnly = true;
+													break;//PENDING
 												}
-												else
+												case '('://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													//Assignment(=) operator confirmed
-													IsWriteOnly = true;
+													break;//PENDING
 												}
-												break;
-											}
-											//case '.':// It means this is not the variable but instead a member of some other variable type Example: "OtherType.ArgumentName"
-											//{
-											//	break;
-											//}
-											//case ';':
-											//{
-											//	break;
-											//}
-											//case '{':
-											//{
-											//	break;
-											//}
-											//case '}':
-											//{
-											//	break;
-											//}
-											default: // code to be executed if n doesn't match any cases
-											{
-												break;
-											}
+												//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
+												//{
+												//	break;//Not here
+												//}
+												case '=':// Check if it is Assignment(=) or Comparison(==) operator 
+												{
+													if (ProgramKernelCode[((CheckPosition + 1) + i)] == '=')
+													{
+														//Comparison(==) operator confirmed
+														IsReadOnly = true;
+													}
+													else
+													{
+														//Assignment(=) operator confirmed
+														IsWriteOnly = true;
+													}
+													break;
+												}
+												//case '.':// It means this is not the variable but instead a member of some other variable type Example: "OtherType.ArgumentName"
+												//{
+												//	break;
+												//}
+												//case ';':
+												//{
+												//	break;
+												//}
+												//case '{':
+												//{
+												//	break;
+												//}
+												//case '}':
+												//{
+												//	break;
+												//}
+												default: // code to be executed if n doesn't match any cases
+												{
+													break;
+												}
 											}
 
 											if (IsReadOnly && IsWriteOnly)
@@ -4586,24 +4578,44 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									IsReadOnly = true;//When The memory type is not being written on or being read, it is set to read only by default
 								}
 
+								if (IsReadOnly)
+								{
+									if (IsWriteOnly)
+									{
+										(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
+									}
+									else
+									{
+										(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_READ_ONLY, Issuccessful);
+									}									
+								}
+								else
+								{
+									(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
+								}
+
+								if (!Issuccessful)
+								{
+									break;
+								}
 							}
 							else
 							{
 								Essenbp::FindStartOfSubStringInString(ProgramKernelCode, "local", PreVarPosition, VarPosition, CheckPosition, Issuccessful);
 								if (Issuccessful)
 								{
-									//Local
+									(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_LOCALENUM, Issuccessful);
 								}
 								else
 								{
 									Essenbp::FindStartOfSubStringInString(ProgramKernelCode, "constant", PreVarPosition, VarPosition, CheckPosition, Issuccessful);
 									if (Issuccessful)
 									{
-										//ReadOnly global
+										(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_READ_ONLY, Issuccessful);
 									}
 									else
 									{
-										// Private
+										(*ArgOrderedKernelArgumentList)->SetMemoryTypeOfArugment(CurrentArg, cl_Memory_Type::CL_PRIVATE, Issuccessful);
 									}
 								}
 							}
@@ -4611,16 +4623,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							PreVarPosition = VarPosition;
 						}
 					}
-					//if (TempPosition != std::string::npos)
-					//{
-					//	
-					//}
-					//else
-					//{
-					//	//Unlikely to happen
-					//	Issuccessful = false;
-					//	std::cout << "\n Error ')' Was not Found in the given Program Code in FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-					//}
+					else
+					{
+						std::cout << "\n Error Allocating " << sizeof(cl_KernelFunctionArgumentOrderListStruct*) << " Byes Of Memory for *ArgOrderedKernelArgumentList in FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					}
 				}
 				else
 				{
@@ -4850,8 +4856,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 		
-		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, std::string& ModifiedKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& Issuccessful)
+		void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& Issuccessful)
 		{
+			std::string ModifiedKernelCode;
 			ArgTotalNumberOfKernelFunctions = 0;
 
 			Issuccessful = false;
@@ -4999,25 +5006,28 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												if (!Issuccessful)
 												{
 													std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-													//PENDING
-													//DELETE Data in STORAGE one by one
+													for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+													{
+														delete ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
+													}													
 												}
 												else
 												{
 													Storage.CopyAndStoreData(OrderedListCopyPointer, sizeof(cl_KernelFunctionArgumentOrderListStruct*), Issuccessful, false, true);
 													if (!Issuccessful)
 													{
-														std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-														//PENDING
-														//DELETE Data in STORAGE one by one
+														std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";														
+														for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+														{
+															delete ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
+														}
 													}
 													else
 													{
+														delete OrderedListCopyPointer;
 														ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
 													}
 												}
-												//PENDING
-												//Put that function variable finding funciton here
 											}
 										}
 									}
@@ -5055,21 +5065,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								//CONTINUE
 								for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
 								{
-									FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ModifiedKernelCode, )
-									ArgOrderedKernelArgumentList[i] = new cl_KernelFunctionArgumentOrderListStruct(, Issuccessful);
+									(*ArgOrderedKernelArgumentList)[i] = ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
 								}
 							}							
 						}
 					}										
-				}
-
-				if (Issuccessful)
-				{
-					Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, Issuccessful);
-					if (!Issuccessful)
-					{
-						std::cout << "\n Error: SetTheNameAndNumberOfArgumentsForNextKernelFunction Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-					}
 				}				
 			}
 
@@ -5274,41 +5274,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}
 							else
 							{
-								for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+								cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, Issuccessful);
+								if (!Issuccessful)
 								{
-									if (OrderedKernelArgumentList[i]->IsConstructionSuccesful)
-									{
-										if (OrderedKernelArgumentList[i]->IsThisListUsable)
-										{
-											FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ClSourceFileInString, OrderedKernelArgumentList[i]->KernelFunctionName, *(OrderedKernelArgumentList[i]), Issuccessful);											
-											if (!Issuccessful)
-											{
-												std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-												break;
-											}
-										}
-										else
-										{											
-											std::cout << "\n Error FOrderedKernelArgumentList["<< i <<"]->IsThisListUsable Is Set to false In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-											Issuccessful = false;
-											break;
-										}
-									}
-									else
-									{
-										std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-										Issuccessful = false;
-										break;										
-									}
-								}
-
-								if (Issuccessful)
-								{
-									cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, Issuccessful);
-									if (!Issuccessful)
-									{
-										std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";																				
-									}
+									std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 								}
 							}
 						}
@@ -5425,41 +5394,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}
 							else
 							{
-								for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
+								cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, Issuccessful);
+								if (!Issuccessful)
 								{
-									if (OrderedKernelArgumentList[i]->IsConstructionSuccesful)
-									{
-										if (OrderedKernelArgumentList[i]->IsThisListUsable)
-										{
-											FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ClSourceFileInString, OrderedKernelArgumentList[i]->KernelFunctionName, *(OrderedKernelArgumentList[i]), Issuccessful);
-											if (!Issuccessful)
-											{
-												std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-												break;
-											}
-										}
-										else
-										{
-											std::cout << "\n Error FOrderedKernelArgumentList[" << i << "]->IsThisListUsable Is Set to false In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-											Issuccessful = false;
-											break;
-										}
-									}
-									else
-									{
-										std::cout << "\n Error FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-										Issuccessful = false;
-										break;
-									}
-								}
-
-								if (Issuccessful)
-								{
-									cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, Issuccessful);
-									if (!Issuccessful)
-									{
-										std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-									}
+									std::cout << "\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 								}
 							}
 						}
