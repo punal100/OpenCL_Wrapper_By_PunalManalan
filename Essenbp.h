@@ -9,6 +9,7 @@
 
 namespace Essenbp//Essential Functions By Punal
 {
+	//NOTE:Only Copy Data, Do no copy raw address... if the said copied raw address is tried to read, it will not be read at all
 	struct UnknownDataAndSizeStruct
 	{
 	private:
@@ -56,12 +57,12 @@ namespace Essenbp//Essential Functions By Punal
 						void* AppendDataHelper = malloc((SizeOfData + ArgSizeOfData));// Setting Current
 						if (AppendDataHelper == nullptr)
 						{
-							SizeOfData = SizeOfData - ArgSizeOfData;
-							std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							std::cout << "\n Error Allocating : " << (SizeOfData + ArgSizeOfData) << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
 							return;
 						}
 						else
 						{
+							//PENDING CHECK FOR ERROR
 							size_t PreviousSize = SizeOfData;
 							SizeOfData = SizeOfData + ArgSizeOfData;// Current Size
 

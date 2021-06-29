@@ -278,7 +278,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						std::cout << "\n Error: Function Unsuccesful In: cl_PlatformVendorStruct!\n";
 						break;
 					}
-					std::cout << "\n Platform Vendor Nunber: '" << i + 1 << "', Platform Vendor Name: '" << PlatformVendorName << "'\n";
+					std::cout << "\n Platform Vendor Number: '" << i + 1 << "', Platform Vendor Name: '" << PlatformVendorName << "'\n";
 				}
 			}
 			
@@ -1125,33 +1125,37 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							switch (*(KernelArgumentsInOrder[ArgumentNumber]))
 							{
-							case cl_Memory_Type::CL_LOCALENUM:
-								NumberOfLocals = NumberOfLocals - 1;
-								break;
+								case cl_Memory_Type::CL_LOCALENUM:
+									NumberOfLocals = NumberOfLocals - 1;
+									break;
 
-							case cl_Memory_Type::CL_PRIVATE:
-								NumberOfPrivates = NumberOfPrivates - 1;
-								break;
+								case cl_Memory_Type::CL_PRIVATE:
+									NumberOfPrivates = NumberOfPrivates - 1;
+									break;
 
-							case cl_Memory_Type::CL_READ_ONLY:
-								NumberOfReads = NumberOfReads - 1;
-								break;
+								case cl_Memory_Type::CL_READ_ONLY:
+									NumberOfReads = NumberOfReads - 1;
+									break;
 
-							case cl_Memory_Type::CL_WRITE_ONLY:
-								NumberOfWrites = NumberOfWrites - 1;
-								break;
+								case cl_Memory_Type::CL_WRITE_ONLY:
+									NumberOfWrites = NumberOfWrites - 1;
+									break;
 
-							case cl_Memory_Type::CL_READ_AND_WRITE:
-								NumberOfRead_And_Writes = NumberOfRead_And_Writes - 1;
-								break;
+								case cl_Memory_Type::CL_READ_AND_WRITE:
+									NumberOfRead_And_Writes = NumberOfRead_And_Writes - 1;
+									break;
 
-							default:
-								std::cout << "\n CRITICAL ERROR UNDEFINED ENUM! In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
-								break;
+								case cl_Memory_Type::Uninitialized_cl_Memory:
+									break;
+
+								default:
+									std::cout << "\n CRITICAL ERROR UNDEFINED ENUM! In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+									break;
 							}
 							*(KernelArgumentsInOrder[ArgumentNumber]) = MemoryType;
 						}
 
+						Issuccessful = true;
 						switch (MemoryType)
 						{
 							case cl_Memory_Type::CL_LOCALENUM:
@@ -1174,16 +1178,21 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								NumberOfRead_And_Writes = NumberOfRead_And_Writes + 1;
 								break;
 
+							//Impossible as the above if statement already checked for this
+							//case cl_Memory_Type::Uninitialized_cl_Memory:
+							//	std::cout << "\n cl_Memory_Type::Uninitialized_cl_Memory Passed as argument In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+							//	break;
+
 							default:
 								std::cout << "\n CRITICAL ERROR UNDEFINED ENUM! In SetMemoryTypeOfArugment In: cl_KernelFunctionArgumentOrderListStruct!\n";
+								Issuccessful = false;
 								break;
 						}
 
 						if (NumberOfArgumentsSet == TotalNumberOfArugments)
 						{
 							IsThisListUsable = true;
-						}
-						Issuccessful = true;
+						}						
 					}
 					else
 					{
@@ -1321,7 +1330,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsThisListUsable = false;
 				for (int i = 0; i < TotalNumberOfArugments; ++i)
 				{
-					delete KernelArgumentsInOrder[i];
+					if (KernelArgumentsInOrder[i] != nullptr)
+					{
+						delete KernelArgumentsInOrder[i];
+						KernelArgumentsInOrder[i] = nullptr;
+					}
 				}
 				free(KernelArgumentsInOrder);
 				IsConstructionSuccesful = false;
@@ -4266,6 +4279,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 	{
 	private:
 		const std::string ClSourceFilePath;
+		cl_uint ChosenPlatformNumber = 0;
 		cl_platform_id ChosenPlatform = NULL;
 		cl_program SingleProgram = NULL;
 		cl_context SingleContext = NULL;
@@ -4330,7 +4344,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							while(true)
 							{
 								CheckPosition = ProgramKernelCode.find("{", CheckPosition + 1);
-								if (Position != std::string::npos)
+								if (CheckPosition != std::string::npos)
 								{
 									if (CheckPosition < EndOfFunction)
 									{
@@ -4411,7 +4425,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 								bool IsReadOnly = false;
 								bool IsWriteOnly = false;
-								size_t i = VarPosition;// Var Position could be ',' or ')'(Last Argument/Only One Argument) Depending on the loop
+								size_t i = VarPosition;// This will be the Last Chracter Var Position could be ',' or ')'(Last Argument/Only One Argument) Depending on the loop
 								if (ProgramKernelCode[(VarPosition - 1)] == ' ')
 								{
 									i = i - 2;// Goes to the Last Character of the Arugment Name(Assuming that there is only 1 BackSpace between ","/")" and the last character of the Arugment Name)
@@ -4420,17 +4434,18 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								{
 									i = i - 1;// If not then This is the Last Character Of the Arugment Name
 								}
-								for (i = i; i > PreVarPosition; --i)
+								size_t j = i;// This will be the Last Chracter
+								for (j = j; j > PreVarPosition; --j)
 								{
-									if (ProgramKernelCode[i] == ' ')// From Last Character to First character we Loop, If a BackSpace is Found then it means the First Charcter is (i + 1)
+									if (ProgramKernelCode[j] == ' ')// From Last Character to First character we Loop, If a BackSpace is Found then it means the First Charcter is (i + 1)
 									{
-										i = i + 1;
+										j = j + 1;// First Chracter
 										break;
 									}
 								}
 
 								//PENDING check the variable type
-								std::string ArgumentName = " " + ProgramKernelCode.substr(i, ((VarPosition + 1) - i));// " ArgumentName" Find this in the loop
+								std::string ArgumentName = " " + ProgramKernelCode.substr(j, ((i + 1) - j) );// " ArgumentName" Find this in the loop
 								CheckPosition = StartOfFunction;
 
 								//Find Every Occurance of the ArgumentName
@@ -4452,10 +4467,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											i = (ProgramKernelCode[(CheckPosition - 1)] == ' ') ? 2 : 1;
 											switch (ProgramKernelCode[(CheckPosition - i)])
 											{
-													//case ' ':// Impossible for this to happen since the above is alreayd done
-													//{
-													//	break;
-													//}
+												//case ' ':// Impossible for this to happen since the above is alreayd done
+												//{
+												//	break;
+												//}
 												case ','://Could mean this variable is used as parameter for a user/inbuilt function
 												{
 													break;//PENDING
@@ -4619,7 +4634,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									}
 								}
 							}
-
+							CurrentArg = CurrentArg + 1;
 							PreVarPosition = VarPosition;
 						}
 					}
@@ -4701,27 +4716,27 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		{
 			Issuccessful = false;
 
-			cl_uint NumOfPlatforms;						//the NO. of platforms
+			//cl_uint NumOfPlatforms;						//the NO. of platforms
 			//ChosenPlatform = nullptr;					////the chosen platform Will only be choosing one platform which will be the first one
 			cl_uint	NumberOfGPUs = 0;					//cl_uint	NumberOfGPUorCPU = 0;// We will Only be using GPU here
 
 			bool ReturnResult = true;
-			cl_int ClErrorResult = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
-			if (ClErrorResult != CL_SUCCESS)
-			{
-				std::cout << "\n ClError Code " << ClErrorResult << " : Getting platforms in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				std::cout << "\n Error InitializeOpenCLProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-				return;
-			}
+			//cl_int ClErrorResult = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
+			//if (ClErrorResult != CL_SUCCESS)
+			//{
+			//	std::cout << "\n ClError Code " << ClErrorResult << " : Getting platforms in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+			//	std::cout << "\n Error InitializeOpenCLProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
+			//	return;
+			//}
 
-			ClErrorResult = clGetPlatformIDs(PlatformToUse, &ChosenPlatform, NULL);// for the first platform //Single Line code
+			cl_int ClErrorResult = clGetPlatformIDs(PlatformToUse, &ChosenPlatform, NULL);// for the first platform //Single Line code
 			if (ClErrorResult != CL_SUCCESS)
 			{
 				std::cout << "\n ClError Code " << ClErrorResult << " : Platform Not set in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				std::cout << "\n Error InitializeOpenCLProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 				return;
 			}
-
+			ChosenPlatformNumber = PlatformToUse;
 			ClErrorResult = clGetDeviceIDs(ChosenPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &NumberOfGPUs);
 			if (ClErrorResult != CL_SUCCESS)
 			{
@@ -4758,6 +4773,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			if (ClErrorResult != CL_SUCCESS)
 			{
 				free(ChosenDevices);
+				ChosenDevices = nullptr;
 				std::cout << "\n ClError Code " << ClErrorResult << " : Context Not Created in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				std::cout << "\n Error InitializeOpenCLProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 				return;
@@ -4768,6 +4784,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				std::cout << "\n Error Allocating " << (NumberOfGPUs * sizeof(cl_PerDeviceValuesStruct*)) << " Byes Of Memory for PerDeviceValueStruct In InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 				free(ChosenDevices);
+				ChosenDevices = nullptr;
 				ClErrorResult = clReleaseContext(SingleContext);
 				if (ClErrorResult != CL_SUCCESS)
 				{
@@ -4816,7 +4833,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 					if (ClErrorResult != CL_SUCCESS)
 					{
-						std::cout << "\n ClError Code " << ClErrorResult << " : Cl Program Not Created with Source!\n";
+						std::cout << "\n ClError Code " << ClErrorResult << " : Cl Program Not Created with Source! in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 						for (int i = 0; i < NumberOfGPUs; i++)
 						{
 							delete(PerDeviceValueStruct[i]);
@@ -4861,109 +4878,224 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			std::string ModifiedKernelCode;
 			ArgTotalNumberOfKernelFunctions = 0;
 
-			Issuccessful = false;
-
+			Issuccessful = false;			
 			if (*ArgOrderedKernelArgumentList != nullptr)
 			{
-				std::cout << "\n Error The value of the variable 'ArgOrderedKernelArgumentList' Is not nullptr, It should be empty, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				std::cout << "\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 			}
 			else
 			{
-				//PENDING
-				if (!Issuccessful)
+				//First We Delete unwanted Comments
+				ModifiedKernelCode = "";
+				Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed	
+				Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\n", " ");// new line replaced with back space
+				Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\t", " ");// tab replaced with back space
+				Essenbp::RemoveConsecutiveDulplicateChar(ModifiedKernelCode, ' ');// Consecutive Duplicates removed
+				
+				size_t Position = 0;
+				size_t TempPosition = 0;
+
+				//Then attributes are removed in the while loop below
+				while (true)
 				{
-					std::cout << "\n Error: Functions_List of Type cl_KernelFunctionsStruct Failed Construction, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-				}
-				else
-				{
-					if(*ArgOrderedKernelArgumentList != nullptr)
+					Position = ModifiedKernelCode.find("__attribute__", Position);
+					if (Position != std::string::npos)
 					{
-						std::cout << "\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+						TempPosition = ModifiedKernelCode.find(")", Position);
+						if (TempPosition != std::string::npos)
+						{
+							TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
+							if (TempPosition != std::string::npos)
+							{
+								TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
+								if (TempPosition != std::string::npos)
+								{
+									ModifiedKernelCode.erase(Position, TempPosition);
+								}
+								//else
+								//{
+								//	Issuccessful = false;// Wrong systax results in this...
+								//}
+							}
+							//else
+							//{
+							//	Issuccessful = false;
+							//}
+						}
+						//else
+						//{
+						//	Issuccessful = false;
+						//}
 					}
 					else
 					{
-						//First We Delete unwanted Comments
-						ModifiedKernelCode = "";
-						Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed	
-						Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\n", " ");// new line replaced with back space
-						Essenbp::RemoveConsecutiveDulplicateChar(ModifiedKernelCode, ' ');// Consecutive Duplicates removed
-									
-						Essenbp::UnknownDataAndSizeStruct Storage;//Stoare the pointer to orderdlist here					
-						size_t Position = 0;
-						size_t TempPosition = 0;
-												
-						//Then attributes are removed in the while loop below
-						while (true)
+						cl_int ClErrorResult = 0;
+						cl_platform_id CheckingPlatform = NULL;
+						cl_device_id CheckingDevice = NULL;
+						cl_context CheckingContext = NULL;
+						cl_program CheckingProgram = NULL;						
+
+						ClErrorResult = clGetPlatformIDs(ChosenPlatformNumber, &CheckingPlatform, NULL);// Checking using platform 1
+						if (ClErrorResult != CL_SUCCESS)
 						{
-							Position = ModifiedKernelCode.find("__attribute__", Position);
-							if (Position != std::string::npos)
+							std::cout << "\n ClError Code " << ClErrorResult << " : Platform Not set In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+						}
+						else
+						{
+							ClErrorResult = clGetDeviceIDs(CheckingPlatform, CL_DEVICE_TYPE_GPU, 1, &CheckingDevice, NULL);// Same line for code for Multi-GPU
+							if (ClErrorResult != CL_SUCCESS)
 							{
-								TempPosition = ModifiedKernelCode.find(")", Position);
-								if (TempPosition != std::string::npos)
-								{
-									TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
-									if (TempPosition != std::string::npos)
-									{
-										TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
-										if (TempPosition != std::string::npos)
-										{
-											ModifiedKernelCode.erase(Position, TempPosition);
-										}
-										else
-										{
-											Issuccessful = false;// Wrong systax results in this...
-										}
-									}
-									else
-									{
-										Issuccessful = false;
-									}
-								}
-								else
-								{
-									Issuccessful = false;
-								}
+								std::cout << "\n ClError Code " << ClErrorResult << " : GPUs Not set In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 							}
 							else
 							{
-								cl_int ClErrorResult = 0;
-								cl_context CheckingContext = NULL;
-								const char* ClSourceFileInChar = ProgramKernelCode.c_str();//Not Using Modified
-								size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
-								SingleProgram = clCreateProgramWithSource(CheckingContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &ClErrorResult);
-
+								CheckingContext = clCreateContext(NULL, 1, &CheckingDevice, NULL, NULL, &ClErrorResult);
 								if (ClErrorResult != CL_SUCCESS)
 								{
-									std::cout << "\n ClError Code " << ClErrorResult << " : Cl Program Not Created with Source!\n";
-									Issuccessful = false;
+									std::cout << "\n ClError Code " << ClErrorResult << " : Context Not Created In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 								}
 								else
 								{
+									const char* ClSourceFileInChar = ProgramKernelCode.c_str();//Not Using Modified
+									size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
+									CheckingProgram = clCreateProgramWithSource(CheckingContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &ClErrorResult);
+									if (ClErrorResult != CL_SUCCESS)
+									{
+										std::cout << "\n ClError Code " << ClErrorResult << " : Cl Program Not Created with Source! In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										Issuccessful = false;
+									}
+									else
+									{
+										clReleaseProgram(CheckingProgram);
+										Issuccessful = true;
+									}									
 									clReleaseContext(CheckingContext);
-									Issuccessful = true;
-								}								
-								break;
+								}
 							}
-						}
+						}						
+						break;
+					}
+				}
 
-						if (Issuccessful)
+				if (Issuccessful)
+				{				
+					//First The Total Number of Kernel FUnctions is found
+					Position = 0;
+					TempPosition = 0;
+					while (true)
+					{
+						Issuccessful = false;
+						//std::cout << "\n\n\n" << ModifiedKernelCode << "\n\n\n";
+						Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
+						if (Position != std::string::npos)
 						{
-							cl_KernelFunctionArgumentOrderListStruct* OrderedListCopyPointer = nullptr;
-							Position = 0;
-							TempPosition = 0;
-
-							while (true)
+							// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
+							if (Position == 0)
 							{
-								Issuccessful = false;
-								OrderedListCopyPointer = nullptr;
-
-								Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
-								if (Position != std::string::npos)
+								Issuccessful = true;
+							}
+							else
+							{
+								if (ModifiedKernelCode[(Position - 1)] == '_')
 								{
-									// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
-									if (Position != 0)
+									if (ModifiedKernelCode[(Position - 2)] == '_')
+									{
+										if (ModifiedKernelCode[(Position - 3)] == ' ')
+										{
+											Issuccessful = true;
+										}
+									}
+								}
+								else
+								{
+									if (ModifiedKernelCode[(Position - 1)] == ' ')
 									{
 										Issuccessful = true;
+									}
+								}
+								if (!Issuccessful)
+								{
+									// Not a keyword but a function name,
+									Position = Position + 1;
+								}
+							}
+
+							if (Issuccessful)
+							{
+								Position = Position + 6;
+								Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
+								if (Position == std::string::npos)
+								{
+									Issuccessful = false;
+									std::cout << "\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+									break;
+								}
+								else
+								{
+									Position = Position + 6;//First Character Of Function Name
+
+									TempPosition = 0;
+									TempPosition = ModifiedKernelCode.find("(", Position);
+
+									if (TempPosition == Position)
+									{
+										Issuccessful = false;
+										std::cout << "\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+									}
+									else
+									{
+										ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
+									}
+								}
+							}
+						}
+						else
+						{
+							if (TempPosition == 0)
+							{
+								std::cout << "\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+								Issuccessful = false;
+							}
+							else
+							{
+								Essenbp::Malloc_PointerToArrayOfPointers((void***)ArgOrderedKernelArgumentList, ArgTotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), Issuccessful);
+								if (!Issuccessful)
+								{
+									std::cout << "\n Error Allocating " << (ArgTotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for ArgTotalNumberOfKernelFunctions in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+								}
+							}
+							break;
+						}
+					}
+
+					if (Issuccessful)
+					{
+						Position = 0;
+						TempPosition = 0;
+						unsigned int CurrentKernelNumber = 0;
+						while (true)
+						{
+							Issuccessful = false;
+							//std::cout << "\n\n\n" << ModifiedKernelCode << "\n\n\n";
+							Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
+							if (Position != std::string::npos)
+							{
+								// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
+								if (Position == 0)
+								{
+									Issuccessful = true;
+								}
+								else
+								{
+									if (ModifiedKernelCode[(Position - 1)] == '_')
+									{
+										if (ModifiedKernelCode[(Position - 2)] == '_')
+										{
+											if (ModifiedKernelCode[(Position - 3)] == ' ')
+											{
+												Issuccessful = true;
+											}
+										}
 									}
 									else
 									{
@@ -4971,106 +5103,79 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										{
 											Issuccessful = true;
 										}
-										else
-										{
-											// Not a keyword but a function name,
-											Position = Position + 7;
-										}
 									}
-
-									if (Issuccessful)
+									if (!Issuccessful)
 									{
-										Position = Position + 6;
-										Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
-										if (Position != std::string::npos)
-										{
-											Issuccessful = false;
-											std::cout << "\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-											break;
-										}
-										else
-										{
-											Position = Position + 6;//First Character Of Function Name
-
-											TempPosition = 0;
-											TempPosition = ModifiedKernelCode.find("(", Position);
-
-											if (TempPosition == Position)
-											{
-												Issuccessful = false;
-												std::cout << "\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-											}
-											else
-											{
-												FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ModifiedKernelCode, ModifiedKernelCode.substr(Position, ((TempPosition + 1) - Position)), &OrderedListCopyPointer, Issuccessful);
-												if (!Issuccessful)
-												{
-													std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-													for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
-													{
-														delete ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
-													}													
-												}
-												else
-												{
-													Storage.CopyAndStoreData(OrderedListCopyPointer, sizeof(cl_KernelFunctionArgumentOrderListStruct*), Issuccessful, false, true);
-													if (!Issuccessful)
-													{
-														std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";														
-														for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
-														{
-															delete ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
-														}
-													}
-													else
-													{
-														delete OrderedListCopyPointer;
-														ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
-													}
-												}
-											}
-										}
+										// Not a keyword but a function name,
+										Position = Position + 1;
 									}
 								}
-								else
+
+								if (Issuccessful)
 								{
-									if (Position == 0)
+									Position = Position + 6;
+									Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
+									if (Position == std::string::npos)
 									{
-										std::cout << "\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
 										Issuccessful = false;
+										std::cout << "\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										break;
 									}
 									else
 									{
-										Issuccessful = true;
-									}
-									break;
-								}
-							}
-						}
-						else
-						{
-							std::cout << "\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
-						}
+										Position = Position + 6;//First Character Of Function Name
 
-						//FINAL CONTINUE
-						if (Issuccessful)
-						{
-							Essenbp::Malloc_PointerToArrayOfPointers((void***)ArgOrderedKernelArgumentList, ArgTotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), Issuccessful);
-							if (!Issuccessful)
-							{
-								std::cout << "\n Error Allocating " << (ArgTotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) << " Byes Of Memory for ArgTotalNumberOfKernelFunctions in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										TempPosition = 0;
+										TempPosition = ModifiedKernelCode.find("(", Position);
+
+										if (TempPosition == Position)
+										{
+											Issuccessful = false;
+											std::cout << "\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+										}
+										else
+										{
+											FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ModifiedKernelCode, ModifiedKernelCode.substr(Position, ((TempPosition + 1) - Position)), ((*ArgOrderedKernelArgumentList) + CurrentKernelNumber), Issuccessful);
+											if (!Issuccessful)
+											{
+												std::cout << "\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+												for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+												{
+													delete (*ArgOrderedKernelArgumentList)[i];
+												}
+											}
+											else
+											{
+												CurrentKernelNumber = CurrentKernelNumber + 1;
+											}
+										}
+									}
+								}
 							}
 							else
 							{
-								//CONTINUE
-								for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
+								if (TempPosition == 0)
 								{
-									(*ArgOrderedKernelArgumentList)[i] = ((cl_KernelFunctionArgumentOrderListStruct*)(Storage.GetData()) + i);
+									std::cout << "\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+									Issuccessful = false;
 								}
-							}							
+								else
+								{
+									Issuccessful = true;
+								}
+								break;
+							}
 						}
-					}										
-				}				
+					}
+					else
+					{
+						std::cout << "\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+					}
+				}
+				else
+				{
+					std::cout << "\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
+				}
 			}
 
 			if (!Issuccessful)// For the safe of readability
@@ -5366,20 +5471,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					std::cout << "\n Error PlatformToUse->GetChosenPlatform() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
 				}
-
-				// Single Program Is First Initialized	
-				InitializeOpenCLProgram(Issuccessful, PlatformNumberToUse);
-
-				PlatformToUse.GetChosenPlatform(PlatformNumberToUse, Issuccessful);
-				if (!Issuccessful)
-				{
-					std::cout << "\n Error PlatformToUse->GetChosenPlatform() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!";
-				}
 				else
 				{
 					// Single Program Is First Initialized	
 					InitializeOpenCLProgram(Issuccessful, PlatformNumberToUse);
-
 					if (Issuccessful)
 					{
 						std::string ClSourceFileInString;
