@@ -4296,7 +4296,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		{
 			Issuccessful = false;
 
-			//PENDING
 			if (*ArgOrderedKernelArgumentList != nullptr)
 			{
 				std::cout << "\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n";
@@ -4414,7 +4413,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								VarPosition = TempPosition;// ')'
 							}
 
-							//PENDING
 							Essenbp::FindStartOfSubStringInString(ProgramKernelCode, "global", PreVarPosition, VarPosition, CheckPosition, Issuccessful);
 							if (Issuccessful)
 							{
@@ -4444,7 +4442,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									}
 								}
 
-								//PENDING check the variable type
 								std::string ArgumentName = " " + ProgramKernelCode.substr(j, ((i + 1) - j) );// " ArgumentName" Find this in the loop
 								CheckPosition = StartOfFunction;
 
@@ -4473,16 +4470,14 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												//}
 												case ','://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													break;//PENDING
+													IsReadOnly = true;
+													break;
 												}
 												case '('://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													break;//PENDING
+													IsReadOnly = true;
+													break;
 												}
-												//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
-												//{
-												//	break;//Not here
-												//}
 												case '=':// Check if it is Assignment(=) or Comparison(==) operator 
 												{
 													if (ProgramKernelCode[((CheckPosition - 1) - i)] == '=')
@@ -4530,11 +4525,13 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 												//}
 												case ','://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													break;//PENDING
+													IsReadOnly = true;
+													break;
 												}
-												case '('://Could mean this variable is used as parameter for a user/inbuilt function
+												case ')'://Could mean this variable is used as parameter for a user/inbuilt function
 												{
-													break;//PENDING
+													IsReadOnly = true;
+													break;
 												}
 												//case ')'://Could mean this variable is used as parameter for a user/inbuilt function
 												//{
@@ -4907,11 +4904,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
 							if (TempPosition != std::string::npos)
 							{
-								TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
-								if (TempPosition != std::string::npos)
+								if (ModifiedKernelCode[(TempPosition + 1)] == ' ')
 								{
-									ModifiedKernelCode.erase(Position, TempPosition);
+									TempPosition = TempPosition + 1;
 								}
+								if (ModifiedKernelCode[(TempPosition + 1)] == ')')
+								{
+									TempPosition + 1;
+								}
+								ModifiedKernelCode.erase(Position, TempPosition);
 								//else
 								//{
 								//	Issuccessful = false;// Wrong systax results in this...
