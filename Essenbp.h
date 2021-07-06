@@ -58,7 +58,6 @@ namespace Essenbp//Essential Functions By Punal
 		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + ".txt";
-		Path = Path;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "w");
 
 		if (FileError != 0)
@@ -84,7 +83,6 @@ namespace Essenbp//Essential Functions By Punal
 		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + ".txt";
-		Path = Path;
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "a");
 
 		if (FileError != 0)
