@@ -2777,7 +2777,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 	// NOTE: Call Constructor Before Using
 	struct cl_KernelMultipleArgumentStruct
-	{
+	{//One Device One Kernel
 	private:
 		cl_KernelSingleArgumentStruct** SingleKernelFunctionMultiArgumentsArray = nullptr;// Arguments stored here
 		const cl_KernelFunctionArgumentOrderListStruct* OrderedListOfArugments;
@@ -3219,11 +3219,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 	// NOTE: Call Constructor Before Using
 	struct cl_MultiKernelFunction_MultiDeviceStruct
-	{
+	{//Single Kernel Multiple Device
 		const unsigned int NumberOfDevices;
 		const std::string KernelFunctionName;
 		const cl_context* cl_ContextForThisKernel;
-		const cl_PerDeviceValuesStruct* DeviceValuesForOneDevice;
+		cl_PerDeviceValuesStruct** DeviceValuesForMultiDevice = nullptr;
 		cl_KernelMultipleArgumentStruct** MultiDeviceKernelArgumentsArray = nullptr;
 
 		bool IsConstructionSuccesful = false;// Once again i tell you this If you hate memory leaks, Don't change value. If you Love memory leaks change them!
@@ -3231,8 +3231,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		//NOTE: Kernel Arguments are Ordered from left to right, Read only memory in left, write only in right, Local in middle of them
 		//NOTE: any memory which is plain int, float etc etc those which are NOT cl_mem, Will NOT BE INCLUDED HERE instead they will be given as parameters in kernel Host function
 		cl_MultiKernelFunction_MultiDeviceStruct(const unsigned int ArgNumberOfDevices, const cl_KernelFunctionArgumentOrderListStruct* ArgOrderedListOfArugments,
-			const cl_context* Argcl_ContextForThisKernel, const cl_PerDeviceValuesStruct* ArgDeviceValuesForOneDevice,
-			cl_program* BuiltClProgramContainingTheSpecifiedFunctions, bool& Issuccessful) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgOrderedListOfArugments->KernelFunctionName), cl_ContextForThisKernel(Argcl_ContextForThisKernel), DeviceValuesForOneDevice(ArgDeviceValuesForOneDevice)
+			const cl_context* Argcl_ContextForThisKernel, cl_PerDeviceValuesStruct*** ArgDeviceValuesForOneDevice,
+			cl_program* BuiltClProgramContainingTheSpecifiedFunctions, bool& Issuccessful) : NumberOfDevices(ArgNumberOfDevices), KernelFunctionName(ArgOrderedListOfArugments->KernelFunctionName), cl_ContextForThisKernel(Argcl_ContextForThisKernel), DeviceValuesForMultiDevice(*ArgDeviceValuesForOneDevice)
 		{
 			Essenbp::WriteLogToFile("\n Constructing cl_MultiKernelFunction_MultiDeviceStruct!");
 
@@ -3241,7 +3241,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsConstructionSuccesful = false;
 			Issuccessful = false;
 
-			if ((ArgOrderedListOfArugments == nullptr) || (cl_ContextForThisKernel == nullptr) || (DeviceValuesForOneDevice == nullptr) || (BuiltClProgramContainingTheSpecifiedFunctions == nullptr))
+			if ((ArgOrderedListOfArugments == nullptr) || (cl_ContextForThisKernel == nullptr) || (DeviceValuesForMultiDevice == nullptr) || (BuiltClProgramContainingTheSpecifiedFunctions == nullptr))
 			{
 				Essenbp::WriteLogToFile("\n Error nullptr Passed as value for const variables In: cl_MultiKernelFunction_MultiDeviceStruct!");
 			}
@@ -3270,7 +3270,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							{
 								for (int i = 0; i < NumberOfDevices; ++i)
 								{
-									MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, cl_ContextForThisKernel, &DeviceValuesForOneDevice->DeviceClCommandQueue, BuiltClProgramContainingTheSpecifiedFunctions, Issuccessful);
+									MultiDeviceKernelArgumentsArray[i] = new cl_KernelMultipleArgumentStruct(ArgOrderedListOfArugments, cl_ContextForThisKernel, &(DeviceValuesForMultiDevice[i]->DeviceClCommandQueue), BuiltClProgramContainingTheSpecifiedFunctions, Issuccessful);
 									if (MultiDeviceKernelArgumentsArray[i] == nullptr)
 									{
 										Issuccessful = false;
@@ -4291,7 +4291,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		cl_PerDeviceValuesStruct** PerDeviceValueStruct = nullptr;								// Initalized and Constructed in  InitializeOpenCLProgram()
 		unsigned int TotalNumberOfKernelFunctions = 0;											// Don't try to manually change this unless you know how to do it properly
 		cl_KernelFunctionArgumentOrderListStruct** OrderedKernelArgumentList = nullptr;			// This Contains All the Kernel Functions information
-		cl_MultiKernelFunction_MultiDeviceStruct** MultiKernelFunction_MultiDevice = nullptr;	// Initialization And Construction functions will take care of it	
+		cl_MultiKernelFunction_MultiDeviceStruct** MultiDeviceMultiKernel = nullptr;			// Initialization And Construction functions will take care of it	
 
 		//NOTE: This function Assumes the programkernelcode that was passed has correct syntax
 		//NOTE: The ProgramKernelCode should not contain Comments, new line, and backspace in consequtive sequence. To Avoid That Run in this order -> Essenbp::RemoveCommentsFromCppSource(Original, Modified), Essenbp::ReplaceEveryOccuranceWithGivenString(Modified, "\n", " ") And Essenbp::RemoveConsecutiveDulplicateChar(Modified, ' ')
@@ -5191,19 +5191,18 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions, bool& Issuccessful)
 		{
 			Issuccessful = false;
-
-			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiKernelFunction_MultiDevice, TotalNumberOfKernelFunctions, sizeof(cl_MultiKernelFunction_MultiDeviceStruct*), Issuccessful);
+			Essenbp::Malloc_PointerToArrayOfPointers((void***)&MultiDeviceMultiKernel, TotalNumberOfKernelFunctions, sizeof(cl_MultiKernelFunction_MultiDeviceStruct*), Issuccessful);
 			if (!Issuccessful)
 			{
-				Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(TotalNumberOfKernelFunctions * sizeof(cl_MultiKernelFunction_MultiDeviceStruct*)) + " Byes Of Memory for MultiKernelFunction_MultiDevice In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+				Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(TotalNumberOfKernelFunctions * sizeof(cl_MultiKernelFunction_MultiDeviceStruct*)) + " Byes Of Memory for MultiDeviceMultiKernel In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 			}
 			else
 			{
 				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 				{
-					MultiKernelFunction_MultiDevice[i] = new cl_MultiKernelFunction_MultiDeviceStruct(NumberOfDevices, OrderedKernelArgumentList[i], &SingleContext, PerDeviceValueStruct[i], &SingleProgram, Issuccessful);
+					MultiDeviceMultiKernel[i] = new cl_MultiKernelFunction_MultiDeviceStruct(NumberOfDevices, OrderedKernelArgumentList[i], &SingleContext, &PerDeviceValueStruct, &SingleProgram, Issuccessful);
 					
-					if (MultiKernelFunction_MultiDevice[i] == nullptr)
+					if (MultiDeviceMultiKernel[i] == nullptr)
 					{
 						Issuccessful = false;
 					}
@@ -5211,19 +5210,19 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						if (!Issuccessful)
 						{
-							delete MultiKernelFunction_MultiDevice[i];
+							delete MultiDeviceMultiKernel[i];
 						}
 					}
 					if (!Issuccessful)
 					{
-						Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_MultiKernelFunction_MultiDeviceStruct)) + " Byes Of Memory for MultiKernelFunction_MultiDevice[i] In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_MultiKernelFunction_MultiDeviceStruct)) + " Byes Of Memory for MultiDeviceMultiKernel[i] In cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 						IsConstructionSuccesful = false;
 
 						for (int j = 0; j < i; ++j)
 						{
-							delete MultiKernelFunction_MultiDevice[j];
+							delete MultiDeviceMultiKernel[j];
 						}
-						free(MultiKernelFunction_MultiDevice);
+						free(MultiDeviceMultiKernel);
 					}
 				}
 			}
@@ -5247,7 +5246,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			PerDeviceValueStruct = nullptr;
 			TotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions;
 			OrderedKernelArgumentList = nullptr;
-			MultiKernelFunction_MultiDevice = nullptr;
+			MultiDeviceMultiKernel = nullptr;
 
 			IsConstructionSuccesful = false;
 			Issuccessful = false;
@@ -5347,7 +5346,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			PerDeviceValueStruct = nullptr;
 			TotalNumberOfKernelFunctions = 0;
 			OrderedKernelArgumentList = nullptr;
-			MultiKernelFunction_MultiDevice = nullptr;
+			MultiDeviceMultiKernel = nullptr;
 
 			IsConstructionSuccesful = false;
 			Issuccessful = false;
@@ -5434,7 +5433,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			PerDeviceValueStruct = nullptr;
 			TotalNumberOfKernelFunctions = 0;
 			OrderedKernelArgumentList = nullptr;
-			MultiKernelFunction_MultiDevice = nullptr;
+			MultiDeviceMultiKernel = nullptr;
 
 			IsConstructionSuccesful = false;
 			Issuccessful = false;
@@ -5587,7 +5586,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									{
 										for (int i = DevicesToSendData_From; i <= DevicesToSendData_To; ++i)
 										{
-											MultiDeviceSendStructList->MultiArgumentSendStructList[i]->PassAllDataToKernel(MultiKernelFunction_MultiDevice[KernelToRunNumber]->MultiDeviceKernelArgumentsArray[i], Issuccessful, PossiblePendingArgument);
+											MultiDeviceSendStructList->MultiArgumentSendStructList[i]->PassAllDataToKernel(MultiDeviceMultiKernel[KernelToRunNumber]->MultiDeviceKernelArgumentsArray[i], Issuccessful, PossiblePendingArgument);
 											if (!Issuccessful)
 											{
 												Essenbp::WriteLogToFile("\n Error cl_KernelArgumentSendStruct::PassAllDataToKernel failed in PassDataStructToKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
@@ -5681,10 +5680,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									}
 									else
 									{
-										MultiKernelFunction_MultiDevice[KernelToRunNumber]->RunKernel(i, PointerToNDRangeStruct, Issuccessful);
+										MultiDeviceMultiKernel[KernelToRunNumber]->RunKernel(i, PointerToNDRangeStruct, Issuccessful);
 										if (!Issuccessful)
 										{
-											Essenbp::WriteLogToFile("\n Error MultiKernelFunction_MultiDevice[KernelToRunNumber]->RunKernel(" + std::to_string(i) + ",arg,arg) in RunKernelFunction in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+											Essenbp::WriteLogToFile("\n Error MultiDeviceMultiKernel[KernelToRunNumber]->RunKernel(" + std::to_string(i) + ",arg,arg) in RunKernelFunction in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 										}
 									}
 								}
@@ -5981,7 +5980,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						if (ArgumentNumber < OrderedKernelArgumentList[KernelNumber]->TotalNumberOfArugments)
 						{
-							MultiKernelFunction_MultiDevice[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->RetreiveDataFromKernel(ArgumentNumber, BufferNumber, ReteivedData, Issuccessful);
+							MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->RetreiveDataFromKernel(ArgumentNumber, BufferNumber, ReteivedData, Issuccessful);
 							if (!Issuccessful)
 							{
 								Essenbp::WriteLogToFile("\n Error cl_KernelMultipleArgumentStruct::RetreiveDataFromKernel() Failed in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
@@ -5989,7 +5988,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						}
 						else
 						{
-							Essenbp::WriteLogToFile("\n Error ArgumentNumber Exceeds the Total Number Of Kernel Arguments Present in the Kernel '" + MultiKernelFunction_MultiDevice[KernelNumber]->KernelFunctionName + "'! in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+							Essenbp::WriteLogToFile("\n Error ArgumentNumber Exceeds the Total Number Of Kernel Arguments Present in the Kernel '" + MultiDeviceMultiKernel[KernelNumber]->KernelFunctionName + "'! in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 						}
 					}
 					else
@@ -6040,8 +6039,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if (DeviceNumber < NumberOfDevices)
 					{
 						cl_MemoryStruct* PointerToBuffer;
-						MultiKernelFunction_MultiDevice[TargetKernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetPointerToBufferPointer(TargetArgumentNumber, TargetBufferNumber, &PointerToBuffer, Issuccessful);
-						MultiKernelFunction_MultiDevice[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->InterchangeBufferWithinSameDevice(ArgumentNumber, BufferNumber, PointerToBuffer, Issuccessful);
+						MultiDeviceMultiKernel[TargetKernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetPointerToBufferPointer(TargetArgumentNumber, TargetBufferNumber, &PointerToBuffer, Issuccessful);
+						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->InterchangeBufferWithinSameDevice(ArgumentNumber, BufferNumber, PointerToBuffer, Issuccessful);
 						if (!Issuccessful)
 						{
 							Essenbp::WriteLogToFile("\n Error cl_KernelSingleArgumentStruct::InterchangeBufferWithinSameDevice() Failed in InterchangeBufferWithinSameDevice In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
@@ -6078,8 +6077,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if (DeviceNumber < NumberOfDevices)
 					{
 						cl_MemoryStruct* PointerToBuffer;
-						MultiKernelFunction_MultiDevice[TargetKernelNumber]->MultiDeviceKernelArgumentsArray[TargetDeviceNumber]->GetPointerToBufferPointer(TargetArgumentNumber, TargetBufferNumber, &PointerToBuffer, Issuccessful);
-						MultiKernelFunction_MultiDevice[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->InterchangeBufferWithAnotherDevice(ArgumentNumber, BufferNumber, PointerToBuffer, Issuccessful);
+						MultiDeviceMultiKernel[TargetKernelNumber]->MultiDeviceKernelArgumentsArray[TargetDeviceNumber]->GetPointerToBufferPointer(TargetArgumentNumber, TargetBufferNumber, &PointerToBuffer, Issuccessful);
+						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->InterchangeBufferWithAnotherDevice(ArgumentNumber, BufferNumber, PointerToBuffer, Issuccessful);
 						if (!Issuccessful)
 						{
 							Essenbp::WriteLogToFile("\n Error cl_KernelSingleArgumentStruct::InterchangeBufferWithAnotherDevice() Failed in InterchangeBufferWithAnotherDevice In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
@@ -6116,7 +6115,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					if (DeviceNumber < NumberOfDevices)
 					{
-						MultiKernelFunction_MultiDevice[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetBufferNumberBeingUsed(ArgumentNumber, ArgBufferNumber, Issuccessful);
+						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetBufferNumberBeingUsed(ArgumentNumber, ArgBufferNumber, Issuccessful);
 						if (!Issuccessful)
 						{
 							Essenbp::WriteLogToFile("\n Error cl_KernelSingleArgumentStruct::GetBufferNumberBeingUsed() Failed in SetBufferToUse In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
@@ -6148,10 +6147,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = false;
 				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
 				{
-					delete MultiKernelFunction_MultiDevice[i];
+					delete MultiDeviceMultiKernel[i];
 					delete OrderedKernelArgumentList[i];//Should always be deleted last
 				}
-				free(MultiKernelFunction_MultiDevice);
+				free(MultiDeviceMultiKernel);
 				free(OrderedKernelArgumentList);
 			}
 			IsConstructionSuccesful = false;
