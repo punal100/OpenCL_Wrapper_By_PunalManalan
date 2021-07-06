@@ -7,8 +7,25 @@
 #include <fstream>// For file reading
 #include <chrono>// Mainly For FRAMERATE(FPS) LOCK
 
+#ifdef _WIN32
+#include <direct.h>
+#define GetCurrentDir _getcwd
+#else
+#include <unistd.h>
+#define GetCurrentDir getcwd
+#endif
+
+
 namespace Essenbp//Essential Functions By Punal
 {
+	std::string GetCurrentDirectory()
+	{
+		char FilePathBuffer[FILENAME_MAX];
+		GetCurrentDir(FilePathBuffer, FILENAME_MAX);
+		std::string Working_Dir(FilePathBuffer);
+		return Working_Dir;
+	}
+
 #ifdef _WIN32
 	//Add .txt extension too
 	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
@@ -41,7 +58,8 @@ namespace Essenbp//Essential Functions By Punal
 		Issuccessful = false;
 		FILE* TheFile;
 		Path = Path + ".txt";
-		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
+		Path = Path;
+		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "w");
 
 		if (FileError != 0)
 		{
@@ -51,7 +69,32 @@ namespace Essenbp//Essential Functions By Punal
 		}
 		else
 		{
-			std::fseek(TheFile, 0, SEEK_CUR);
+			std::fseek(TheFile, 0, SEEK_SET);
+			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
+
+	void AppendToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile;
+		Path = Path + ".txt";
+		Path = Path;
+		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "a");
+
+		if (FileError != 0)
+		{
+			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
+			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
+			//WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
 			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
 			std::fseek(TheFile, 1, SEEK_CUR);
 			const char LastChar = '\0';
@@ -108,15 +151,45 @@ namespace Essenbp//Essential Functions By Punal
 			Issuccessful = true;
 		}
 	}
+
+	void AppendToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile;
+		Path = Path + ".txt";
+		FILE* TheFile = fopen(Path.c_str(), "a");
+
+		if (TheFile != nullptr)
+		{
+			WriteLogToFile("\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
+			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
 #endif
 
 	//NOTE: Log is Written To File
-	std::string Log = "";
+	std::string CurrentDirectory = "";
 	void WriteLogToFile(std::string WhatToWrite)
 	{
 		bool TempBool = false;
-		Log += WhatToWrite;
-		WriteToTextFile("Log", Log, TempBool);
+		if (CurrentDirectory == "")
+		{
+			CurrentDirectory = GetCurrentDirectory() + "\\Log";
+			WriteToTextFile(CurrentDirectory, WhatToWrite, TempBool);
+		}
+		else
+		{
+			AppendToTextFile(CurrentDirectory, WhatToWrite, TempBool);
+		}
+		//std::cout << WhatToWrite;
 		/*if(!TempBool)
 		{
 			WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
@@ -495,27 +568,27 @@ namespace Essenbp//Essential Functions By Punal
 	void TimeCalculationInseconds()
 	{
 		WriteLogToFile("\n");
-		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
-		WriteLogToFile("        EndTime :" + TimeSinceEpochInSecond() + '\n');
-		WriteLogToFile("Time Difference :" + TimeSinceEpochInSecond() - ForFunctionStartTime + '\n' + '\n');
+		WriteLogToFile("      StartTime :" + std::to_string(ForFunctionStartTime) + '\n');
+		WriteLogToFile("        EndTime :" + std::to_string(TimeSinceEpochInSecond()) + '\n');
+		WriteLogToFile("Time Difference :" + std::to_string(TimeSinceEpochInSecond() - ForFunctionStartTime) + '\n' + '\n');
 		ForFunctionStartTime = TimeSinceEpochInSecond();
 	}
 
 	void TimeCalculationInMilliseconds()
 	{
 		WriteLogToFile("\n");
-		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
-		WriteLogToFile("        EndTime :" + TimeSinceEpochInMilliSecond() + '\n');
-		WriteLogToFile("Time Difference :" + TimeSinceEpochInMilliSecond() - ForFunctionStartTime + '\n' + '\n');
+		WriteLogToFile("      StartTime :" + std::to_string(ForFunctionStartTime) + '\n');
+		WriteLogToFile("        EndTime :" + std::to_string(TimeSinceEpochInMilliSecond()) + '\n');
+		WriteLogToFile("Time Difference :" + std::to_string(TimeSinceEpochInMilliSecond() - ForFunctionStartTime) + '\n' + '\n');
 		ForFunctionStartTime = TimeSinceEpochInMilliSecond();
 	}
 
 	void TimeCalculationInNanoSeconds()
 	{
 		WriteLogToFile("\n");
-		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
-		WriteLogToFile("        EndTime :" + TimeSinceEpochInNanoSecond() + '\n');
-		WriteLogToFile("Time Difference :" + TimeSinceEpochInNanoSecond() - ForFunctionStartTime + '\n' + '\n');
+		WriteLogToFile("      StartTime :" + std::to_string(ForFunctionStartTime) + '\n');
+		WriteLogToFile("        EndTime :" + std::to_string(TimeSinceEpochInNanoSecond()) + '\n');
+		WriteLogToFile("Time Difference :" + std::to_string(TimeSinceEpochInNanoSecond() - ForFunctionStartTime) + '\n' + '\n');
 		ForFunctionStartTime = TimeSinceEpochInNanoSecond();
 	}
 
