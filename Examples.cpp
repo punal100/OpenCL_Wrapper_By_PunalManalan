@@ -36,10 +36,10 @@ int Test1()
 	Essenbp::UnknownDataAndSizeStruct RetreivedData;
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 2, 0, RetreivedData, Issuccessful);// Retrieved Data of 3rd Argument()
 
-	std::cout << "\n Retreived Data of Arg 0:-";
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 0:-");
 	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
 	{
-		std::cout << "\n Data[" << i << "] == " << ((int*)RetreivedData.GetData())[i];
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
 	return 0;
 }
@@ -51,14 +51,14 @@ int Test2()
 	OCLW_P::cl_KernelFunctionsStruct Functions_List(1, Issuccessful);
 	if (!Issuccessful)
 	{
-		std::cout << "\n Error: Variable construction Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Variable construction Unsuccesful");
 		return 1;
 	}
 
 	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", 3, Issuccessful);
 	if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful");
 		return 1;
 	}
 
@@ -66,26 +66,26 @@ int Test2()
 	Functions_List.SetMemoryTypeOfArugment(0, 0, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 	Functions_List.SetMemoryTypeOfArugment(0, 1, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 	Functions_List.SetMemoryTypeOfArugment(0, 2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 
 	OCLW_P::cl_PlatformVendorStruct AvailablePlatformVendors(Issuccessful);
 	if (!Issuccessful)
 	{
-		std::cout << "\n Error: Variable construction Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Variable construction Unsuccesful");
 		return 1;
 	}
 
@@ -93,19 +93,19 @@ int Test2()
 	AvailablePlatformVendors.GetTotalNumberOfPlatformVendors(TotalNumberOfPlatforms, Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 	/*if (!Issuccessful)
 	{
-		std::cout << "\n Error: Function Unsuccesful";
+		Essenbp::WriteLogToFile("\n Error: Function Unsuccesful";
 		return 1;
 	}*/
 
@@ -137,24 +137,24 @@ int Test2()
 	Essenbp::UnknownDataAndSizeStruct RetreivedData;
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 0, 0, RetreivedData, Issuccessful);
 
-	std::cout << "\n Retreived Data of Arg 0:-";
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 0:-");
 	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
 	{
-		std::cout << "\n Data[" << i << "] == " << ((int*)RetreivedData.GetData())[i];
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
 
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 1, 0, RetreivedData, Issuccessful);
-	std::cout << "\n Retreived Data of Arg 1:-";
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 1:-");
 	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
 	{
-		std::cout << "\n Data[" << i << "] == " << ((int*)RetreivedData.GetData())[i];
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
 
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 2, 0, RetreivedData, Issuccessful);	
-	std::cout << "\n Retreived Data of Arg 2:-";
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 2:-");
 	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(int); ++i)
 	{
-		std::cout << "\n Data["<<i<<"] == " << ((int*)RetreivedData.GetData())[i];
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
 
 	Essenbp::ArrayOfUnknownDataAndSize ArrayOfRetreivedData;
@@ -164,9 +164,9 @@ int Test2()
 	ArrayOfRetreivedData.GetData(0, &ReturnValue, Issuccessful);
 
 	Essenbp::WriteBytesToFile("D:\\TestFolder\\BinaryReturn", "txt", *ReturnValue, Issuccessful);
-	std::cout << "\n\n Before Destruction";
+	Essenbp::WriteLogToFile("\n\n Before Destruction");
 	//EntireOpenCLProgram.~cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct();// Doing this just to show that the destructor is working properly
-	//std::cout << "\n After  Destruction";
+	//Essenbp::WriteLogToFile("\n After  Destruction";
 
 	return 0;
 }

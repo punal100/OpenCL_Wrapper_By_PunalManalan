@@ -9,7 +9,121 @@
 
 namespace Essenbp//Essential Functions By Punal
 {
-	//NOTE:Only Copy Data, Do no copy raw address... if the said copied raw address is tried to read, it will not be read at all
+#ifdef _WIN32
+	//Add .txt extension too
+	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile;
+		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
+
+		if (FileError != 0)
+		{
+			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
+			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
+			//WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open File in GetTextFileContent In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
+			std::fseek(TheFile, 0, SEEK_END);
+			DataStorage.resize(std::ftell(TheFile));
+			std::rewind(TheFile);
+			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
+
+	//Just add the path without the .txt extension
+	//NOTE: '\0' added at End of the total size of the bytes
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile;
+		Path = Path + ".txt";
+		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
+
+		if (FileError != 0)
+		{
+			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
+			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
+			//WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
+			std::fseek(TheFile, 0, SEEK_CUR);
+			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
+
+#else
+	//Linux
+	//Add .txt extension too
+	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile = fopen(Path.c_str(), "r");
+
+		if (TheFile != nullptr)
+		{
+			WriteLogToFile("\nError : Unable to Open File in GetTextFileContent In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
+			std::fseek(TheFile, 0, SEEK_END);
+			DataStorage.resize(std::ftell(TheFile));
+			std::rewind(TheFile);
+			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
+
+	//Just add the path without the .txt extension
+	//NOTE: '\0' added at End of the total size of the bytes
+	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
+	{
+		Issuccessful = false;
+		FILE* TheFile;
+		Path = Path + ".txt";
+		FILE* TheFile = fopen(Path.c_str(), "w");
+
+		if (TheFile != nullptr)
+		{
+			WriteLogToFile("\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
+		}
+		else
+		{
+			std::fseek(TheFile, 0, SEEK_SET);
+			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
+			std::fseek(TheFile, 1, SEEK_CUR);
+			const char LastChar = '\0';
+			std::fwrite(&LastChar, 1, 1, TheFile);
+			std::fclose(TheFile);
+			Issuccessful = true;
+		}
+	}
+#endif
+
+	//NOTE: Log is Written To File
+	std::string Log = "";
+	void WriteLogToFile(std::string WhatToWrite)
+	{
+		bool TempBool = false;
+		Log += WhatToWrite;
+		WriteToTextFile("Log", Log, TempBool);
+		/*if(!TempBool)
+		{
+			WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
+		}*/
+	}
+
+	//NOTE:This is Used to Copy Data(Not Address)
 	struct UnknownDataAndSizeStruct
 	{
 	private:
@@ -19,7 +133,7 @@ namespace Essenbp//Essential Functions By Punal
 	public:
 		UnknownDataAndSizeStruct()
 		{
-			std::cout << "\n Constructing UnknownDataAndSizeStruct!";
+			WriteLogToFile("\n Constructing UnknownDataAndSizeStruct!");
 		}
 
 		void FreeData()
@@ -41,8 +155,8 @@ namespace Essenbp//Essential Functions By Punal
 			{
 				if (ArgData == nullptr)
 				{
-					std::cout << "\n Error nullptr for ArgData in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
-					std::cout << "If Dummy Value is to be passed set DoADummyCopy(4th argument) to false, and set ArgData = nullptr!\n";
+					WriteLogToFile("\n Error nullptr for ArgData in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
+					WriteLogToFile("If Dummy Value is to be passed set DoADummyCopy(4th argument) to false, and set ArgData = nullptr!\n");
 				}
 				else
 				{
@@ -50,14 +164,14 @@ namespace Essenbp//Essential Functions By Punal
 					{
 						if (ArgSizeOfData == 0)
 						{
-							std::cout << "\n Error Size Of ArgSizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							WriteLogToFile("\n Error Size Of ArgSizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
 						
 						void* AppendDataHelper = malloc((SizeOfData + ArgSizeOfData));// Setting Current
 						if (AppendDataHelper == nullptr)
 						{
-							std::cout << "\n Error Allocating : " << (SizeOfData + ArgSizeOfData) << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							WriteLogToFile("\n Error Allocating : " + std::to_string(SizeOfData + ArgSizeOfData) + " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
 						else
@@ -86,7 +200,7 @@ namespace Essenbp//Essential Functions By Punal
 						SizeOfData = ArgSizeOfData;
 						if (SizeOfData == 0)
 						{
-							std::cout << "\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
 						FreeData();
@@ -94,7 +208,7 @@ namespace Essenbp//Essential Functions By Punal
 						if (Data == nullptr)
 						{
 							SizeOfData = 0;
-							std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
+							WriteLogToFile("\n Error Allocating : " + std::to_string(SizeOfData) + " Byes Of Memory for Data in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
 						else
@@ -112,8 +226,8 @@ namespace Essenbp//Essential Functions By Punal
 			{
 				if (ArgData != nullptr)
 				{
-					std::cout << "\n Error ArgData is not set to nullptr in CopyAndStoreData In: UnknownDataAndSizeStruct!\n";
-					std::cout << "If Actual value is to be passed ignore DoADummyCopy(4th argument)!\n";
+					WriteLogToFile("\n Error ArgData is not set to nullptr in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
+					WriteLogToFile("If Actual value is to be passed ignore DoADummyCopy(4th argument)!\n");
 					return;
 				}
 				else
@@ -138,13 +252,13 @@ namespace Essenbp//Essential Functions By Punal
 			SizeOfData = ArgSizeOfData;
 			if (SizeOfData == 0)
 			{
-				std::cout << "\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n";
+				WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
 			Data = malloc(SizeOfData);
 			if (Data == nullptr)
 			{
-				std::cout << "\n Error Allocating : " << SizeOfData << " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n";
+				WriteLogToFile("\n Error Allocating : " + std::to_string(SizeOfData) + " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
 			Issuccessful = true;
@@ -162,7 +276,7 @@ namespace Essenbp//Essential Functions By Punal
 			}
 			else
 			{
-				std::cout << "\n Error Argument ReturnData is nullptr in GetDataAndSizeAndSetDataToNull in UnknownDataAndSizeStruct In: Essenbp!\n";
+				WriteLogToFile("\n Error Argument ReturnData is nullptr in GetDataAndSizeAndSetDataToNull in UnknownDataAndSizeStruct In: Essenbp!\n");
 			}
 		}
 
@@ -170,7 +284,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			FreeData();
 		}
-	};
+	};	
 
 	//NOTE: By PointerToArrayOfPointers it means Example : int** Array, Array[n] == int*, Basicaly an Array of Array of size [1][n]
 	//NOTE: Pass first parameter using (void***)&
@@ -180,31 +294,31 @@ namespace Essenbp//Essential Functions By Punal
 
 		if (PointerTo_PointerToArrayOfPointers == nullptr)
 		{
-			std::cout << "\n Error nullptr Passed for 'PointerTo_PointerToArrayOfPointers'. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
+			WriteLogToFile("\n Error nullptr Passed for 'PointerTo_PointerToArrayOfPointers'. in Malloc_PointerToArrayOfPointers In: Essenbp!\n");
 			return;
 		}
 
 		if (NumOfPointerToAdd == 0)
 		{
-			std::cout << "\n Error NumOfPointerToAdd Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
+			WriteLogToFile("\n Error NumOfPointerToAdd Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n");
 			return;
 		}
 		if (SizeOfEachPointer == 0)
 		{
-			std::cout << "\n Error SizeOfEachPointer Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
+			WriteLogToFile("\n Error SizeOfEachPointer Is 0. in Malloc_PointerToArrayOfPointers In: Essenbp!\n");
 			return;
 		}
 
 		if (*PointerTo_PointerToArrayOfPointers != nullptr)
 		{
-			std::cout << "\n Error Not Null : PointerToArrayOfPointers already pointing to some memory, free the memory First. in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
+			WriteLogToFile("\n Error Not Null : PointerToArrayOfPointers already pointing to some memory, free the memory First. in Malloc_PointerToArrayOfPointers In: Essenbp!\n");
 		}
 		else
 		{
 			*PointerTo_PointerToArrayOfPointers = (void**)calloc(NumOfPointerToAdd, SizeOfEachPointer);// Setting everything to Zero
 			if (*PointerTo_PointerToArrayOfPointers == nullptr)
 			{
-				std::cout << "\n Error Allocating : " << NumOfPointerToAdd * SizeOfEachPointer << " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essenbp!\n";
+				WriteLogToFile("\n Error Allocating : " + std::to_string(NumOfPointerToAdd * SizeOfEachPointer) + " Byes Of Memory for *PointerTo_PointerToArrayOfPointers in Malloc_PointerToArrayOfPointers In: Essenbp!\n");
 				return;
 			}
 			Issuccessful = true;
@@ -225,7 +339,7 @@ namespace Essenbp//Essential Functions By Punal
 			Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, TotalNumber, sizeof(UnknownDataAndSizeStruct*), Issuccessful);
 			if (!Issuccessful)
 			{
-				std::cout << "\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n";
+				WriteLogToFile("\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
 			}
 			else
 			{
@@ -243,7 +357,7 @@ namespace Essenbp//Essential Functions By Punal
 						TempUnknownData[i] = new UnknownDataAndSizeStruct();
 						if (TempUnknownData[i] == nullptr)
 						{
-							std::cout << "\n Error Allocating Bytes of Data for UnknownDataAndSizeStruct[" << i << "] in ResizeArray In: ArrayOfUnknownDataAndSize!\n";
+							WriteLogToFile("\n Error Allocating Bytes of Data for UnknownDataAndSizeStruct[" + std::to_string(i) + "] in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
 							for (int j = 0; j < i; ++j)
 							{
 								delete TempUnknownData[j];
@@ -264,7 +378,7 @@ namespace Essenbp//Essential Functions By Punal
 
 				if (!Issuccessful)
 				{
-					std::cout << "\n Error ResizeArray failed In: ArrayOfUnknownDataAndSize!\n";
+					WriteLogToFile("\n Error ResizeArray failed In: ArrayOfUnknownDataAndSize!\n");
 				}
 				else
 				{
@@ -277,7 +391,7 @@ namespace Essenbp//Essential Functions By Punal
 	public:
 		ArrayOfUnknownDataAndSize()
 		{
-			std::cout << "\n Constructing ArrayOfUnknownDataAndSize!";
+			WriteLogToFile("\n Constructing ArrayOfUnknownDataAndSize!");
 		}
 
 		void AddElement(bool& Issuccessful)
@@ -286,7 +400,7 @@ namespace Essenbp//Essential Functions By Punal
 			ResizeArray(TotalNumberOfUnknownData + 1, Issuccessful);
 			if(!Issuccessful)
 			{
-				std::cout << "\n Error ResizeArray failed in AddElement In: ArrayOfUnknownDataAndSize!\n";
+				WriteLogToFile("\n Error ResizeArray failed in AddElement In: ArrayOfUnknownDataAndSize!\n");
 			}
 		}
 
@@ -295,7 +409,7 @@ namespace Essenbp//Essential Functions By Punal
 			Issuccessful = false;
 			if (ElementNumber > TotalNumberOfUnknownData)
 			{
-				std::cout << "\n Error ElementNumber Exceeds the total number of Unknown Data Present! in RemoveElement in AddElement In: ArrayOfUnknownDataAndSize!\n";
+				WriteLogToFile("\n Error ElementNumber Exceeds the total number of Unknown Data Present! in RemoveElement in AddElement In: ArrayOfUnknownDataAndSize!\n");
 			}
 			else
 			{
@@ -325,7 +439,7 @@ namespace Essenbp//Essential Functions By Punal
 					ResizeArray(TotalNumberOfUnknownData - 1, Issuccessful);
 					if (!Issuccessful)
 					{
-						std::cout << "\n Error ResizeArray failed in RemoveElement In: ArrayOfUnknownDataAndSize!\n";
+						WriteLogToFile("\n Error ResizeArray failed in RemoveElement In: ArrayOfUnknownDataAndSize!\n");
 					}
 				}
 				
@@ -341,7 +455,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			if (ElementNumber > TotalNumberOfUnknownData)
 			{
-				std::cout << "\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetData in AddElement In: ArrayOfUnknownDataAndSize!\n";
+				WriteLogToFile("\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetData in AddElement In: ArrayOfUnknownDataAndSize!\n");
 			}
 			else
 			{
@@ -359,6 +473,12 @@ namespace Essenbp//Essential Functions By Punal
 		}
 	};
 
+	uint64_t TimeSinceEpochInSecond()
+	{
+		using namespace std::chrono;
+		return duration_cast<seconds>(system_clock::now().time_since_epoch()).count();
+	}
+
 	uint64_t TimeSinceEpochInMilliSecond()
 	{
 		using namespace std::chrono;
@@ -372,21 +492,30 @@ namespace Essenbp//Essential Functions By Punal
 	}
 
 	uint64_t ForFunctionStartTime;//Global Variable
+	void TimeCalculationInseconds()
+	{
+		WriteLogToFile("\n");
+		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
+		WriteLogToFile("        EndTime :" + TimeSinceEpochInSecond() + '\n');
+		WriteLogToFile("Time Difference :" + TimeSinceEpochInSecond() - ForFunctionStartTime + '\n' + '\n');
+		ForFunctionStartTime = TimeSinceEpochInSecond();
+	}
+
 	void TimeCalculationInMilliseconds()
 	{
-		std::cout << '\n';
-		std::cout << "      StartTime :" << ForFunctionStartTime << '\n';
-		std::cout << "        EndTime :" << TimeSinceEpochInMilliSecond() << '\n';
-		std::cout << "Time Difference :" << TimeSinceEpochInMilliSecond() - ForFunctionStartTime << '\n' << '\n';
+		WriteLogToFile("\n");
+		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
+		WriteLogToFile("        EndTime :" + TimeSinceEpochInMilliSecond() + '\n');
+		WriteLogToFile("Time Difference :" + TimeSinceEpochInMilliSecond() - ForFunctionStartTime + '\n' + '\n');
 		ForFunctionStartTime = TimeSinceEpochInMilliSecond();
 	}
 
 	void TimeCalculationInNanoSeconds()
 	{
-		std::cout << '\n';
-		std::cout << "      StartTime :" << ForFunctionStartTime << '\n';
-		std::cout << "        EndTime :" << TimeSinceEpochInNanoSecond() << '\n';
-		std::cout << "Time Difference :" << TimeSinceEpochInNanoSecond() - ForFunctionStartTime << '\n' << '\n';
+		WriteLogToFile("\n");
+		WriteLogToFile("      StartTime :" + ForFunctionStartTime + '\n');
+		WriteLogToFile("        EndTime :" + TimeSinceEpochInNanoSecond() + '\n');
+		WriteLogToFile("Time Difference :" + TimeSinceEpochInNanoSecond() - ForFunctionStartTime + '\n' + '\n');
 		ForFunctionStartTime = TimeSinceEpochInNanoSecond();
 	}
 
@@ -401,31 +530,7 @@ namespace Essenbp//Essential Functions By Punal
 			return Min;
 		}
 		return Number;
-	}
-
-	void PrintVector3Dfor(float Pointx, float Pointy, float Pointz, std::string Name, bool InvertXY)
-	{
-		int SpaceBar = 50;
-		SpaceBar = Clamp(SpaceBar - Name.length(), 0, 50);
-		std::cout << "\n" << Name << " =";
-		for (int i = 0; i < SpaceBar; ++i)
-		{
-			std::cout << " ";
-		}
-		std::cout << "(";
-		if (InvertXY)
-		{
-			printf("%f", Pointy);
-			printf(", %f", Pointx);
-		}
-		else
-		{
-			printf("%f", Pointx);
-			printf(", %f", Pointy);
-		}
-
-		printf(", %f )", Pointz);
-	}
+	}	
 
 	void RemoveCommentsFromCppSource(std::string ProgramSource, std::string& OutPutString)
 	{
@@ -552,57 +657,6 @@ namespace Essenbp//Essential Functions By Punal
 	}
 
 #ifdef _WIN32
-	//Add .txt extension too
-	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
-	{
-		Issuccessful = false;
-		FILE* TheFile;
-		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
-
-		if (FileError != 0)
-		{
-			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
-			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open File in GetTextFileContent In: Essenbp,\n File Path: " << Path << "\n";
-		}
-		else
-		{
-			std::fseek(TheFile, 0, SEEK_END);
-			DataStorage.resize(std::ftell(TheFile));
-			std::rewind(TheFile);
-			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
-			std::fclose(TheFile);
-			Issuccessful = true;
-		}
-	}
-
-	//Just add the path without the .txt extension
-	//NOTE: '\0' added at End of the total size of the bytes
-	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
-	{
-		Issuccessful = false;
-		FILE* TheFile;
-		Path = Path + ".txt";
-		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "r");
-
-		if (FileError != 0)
-		{
-			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
-			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
-		}
-		else
-		{
-			std::fseek(TheFile, 0, SEEK_CUR);
-			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
-			std::fseek(TheFile, 1, SEEK_CUR);
-			const char LastChar = '\0';
-			std::fwrite(&LastChar, 1, 1, TheFile);
-			std::fclose(TheFile);
-			Issuccessful = true;
-		}
-	}
-	
 	//Extension required for example .bin
 	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
@@ -615,7 +669,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
 			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Open File in GetFileContent In: Essenbp,\n File Path: " << Path << "\n";
+			WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open File in GetFileContent In: Essenbp,\n File Path: " + Path + "\n");
 		}
 		else
 		{
@@ -629,9 +683,9 @@ namespace Essenbp//Essential Functions By Punal
 			}
 			else
 			{
-				std::cout << "\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: WriteToFile!\n";
+				WriteLogToFile("\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: WriteToFile!\n");
 				DataStorage.FreeData();
-			}		
+			}
 			std::fclose(TheFile);
 		}
 	}
@@ -648,7 +702,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
 			strerror_s(File_ErrorBuffer, sizeof(File_ErrorBuffer), FileError);
-			std::cout << "\nError '" << File_ErrorBuffer << "'\n: Unable to Creat/Open File in WriteBytesToFile In: Essenbp,\n File Path: " << Path << "\n";
+			WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Creat/Open File in WriteBytesToFile In: Essenbp,\n File Path: " + Path + "\n");
 		}
 		else
 		{
@@ -661,52 +715,6 @@ namespace Essenbp//Essential Functions By Punal
 
 #else
 	//Linux
-	//Add .txt extension too
-	void GetTextFileContent(const std::string Path, std::string& DataStorage, bool& Issuccessful)
-	{
-		Issuccessful = false;
-		FILE* TheFile = fopen(Path.c_str(), "r");
-
-		if (TheFile != nullptr)
-		{
-			std::cout << "\nError : Unable to Open File in GetTextFileContent In: Essenbp,\n File Path: " << Path << "\n";
-		}
-		else
-		{
-			std::fseek(TheFile, 0, SEEK_END);
-			DataStorage.resize(std::ftell(TheFile));
-			std::rewind(TheFile);
-			std::fread(&DataStorage[0], 1, DataStorage.size(), TheFile);
-			std::fclose(TheFile);
-			Issuccessful = true;
-		}
-	}
-
-	//Just add the path without the .txt extension
-	//NOTE: '\0' added at End of the total size of the bytes
-	void WriteToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
-	{
-		Issuccessful = false;
-		FILE* TheFile;
-		Path = Path + ".txt";
-		FILE* TheFile = fopen(Path.c_str(), "w");
-
-		if (TheFile != nullptr)
-		{
-			std::cout << "\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
-		}
-		else
-		{
-			std::fseek(TheFile, 0, SEEK_SET);
-			std::fwrite(&DataStorage[0], 1, DataStorage.size(), TheFile);
-			std::fseek(TheFile, 1, SEEK_CUR);
-			const char LastChar = '\0';
-			std::fwrite(&LastChar, 1, 1, TheFile);
-			std::fclose(TheFile);
-			Issuccessful = true;
-		}
-	}
-
 	//Extension required for example .bin
 	void GetFileContent(std::string Path, std::string ExtensionWithoutTheDot, UnknownDataAndSizeStruct& DataStorage, bool& Issuccessful)
 	{
@@ -717,7 +725,7 @@ namespace Essenbp//Essential Functions By Punal
 
 		if (TheFile != nullptr)
 		{
-			std::cout << "\nError : Unable to Open File in GetFileContent In: Essenbp,\n File Path: " << Path << "\n";
+			WriteLogToFile("\nError : Unable to Open File in GetFileContent In: Essenbp,\n File Path: " + Path + "\n");
 		}
 		else
 		{
@@ -731,7 +739,7 @@ namespace Essenbp//Essential Functions By Punal
 			}
 			else
 			{
-				std::cout << "\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: WriteToFile!\n";
+				WriteLogToFile("\n Error Essenbp::UnknownDataAndSizeStruct.FreeAndResizeDataAndReturnPointerToDataPointer() Failed In: WriteToFile!\n");
 				DataStorage.FreeData();
 			}
 			std::fclose(TheFile);
@@ -748,7 +756,7 @@ namespace Essenbp//Essential Functions By Punal
 
 		if (TheFile != nullptr)
 		{
-			std::cout << "\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " << Path << "\n";
+			WriteLogToFile("\nError : Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
 		}
 		else
 		{
@@ -760,5 +768,4 @@ namespace Essenbp//Essential Functions By Punal
 	}
 #endif
 };
-
 #endif
