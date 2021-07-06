@@ -84,7 +84,7 @@ namespace Essenbp//Essential Functions By Punal
 		FILE* TheFile;
 		Path = Path + ".txt";
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "a");
-
+    
 		if (FileError != 0)
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
@@ -149,7 +149,7 @@ namespace Essenbp//Essential Functions By Punal
 			Issuccessful = true;
 		}
 	}
-
+  
 	void AppendToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
 		Issuccessful = false;
