@@ -174,5 +174,5 @@ int Test2()
 int main()
 {
 	Test1();
-	//Test2();
+	Test2();
 }

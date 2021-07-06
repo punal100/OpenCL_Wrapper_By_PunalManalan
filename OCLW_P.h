@@ -350,8 +350,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				else
 				{
 					MaxComputeUnitPerGPU = (int)Temp1;
-					Essenbp::WriteLogToFile("\nMaxComputeUnitPerGPU:\n");
-					Essenbp::WriteLogToFile(MaxComputeUnitPerGPU + "\n");
+					Essenbp::WriteLogToFile("\nMaxComputeUnitPerGPU: ");
+					Essenbp::WriteLogToFile(std::to_string(MaxComputeUnitPerGPU) + "\n");
 
 					ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &Temp2, NULL);
 					if (ClErrorResult != CL_SUCCESS)
@@ -361,8 +361,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					else
 					{
 						MaxWorkItemPerGroup = (int)Temp2;
-						Essenbp::WriteLogToFile("\nMaxWorkItemPerGroup:\n");
-						Essenbp::WriteLogToFile(MaxWorkItemPerGroup + "\n");
+						Essenbp::WriteLogToFile("\nMaxWorkItemPerGroup: ");
+						Essenbp::WriteLogToFile(std::to_string(MaxWorkItemPerGroup) + "\n");
+
 
 						ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 						if (ClErrorResult != CL_SUCCESS)
@@ -372,8 +373,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						else
 						{
 							MaxGlobalMemoryOfDevice = Temp3;
-							Essenbp::WriteLogToFile("\nMaxGlobalMemoryOfDevice:\n");// Total GPU VRAM 
-							Essenbp::WriteLogToFile(MaxGlobalMemoryOfDevice + "\n");
+							Essenbp::WriteLogToFile("\nMaxGlobalMemoryOfDevice: ");// Total GPU VRAM 
+							Essenbp::WriteLogToFile(std::to_string(MaxGlobalMemoryOfDevice) + "\n");
+
 
 							ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 							if (ClErrorResult != CL_SUCCESS)
@@ -383,8 +385,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							else
 							{
 								MaxPrivateMemoryBytesPerWorkGroup = (int)Temp3;
-								Essenbp::WriteLogToFile("\nMaxPrivateMemoryBytesPerWorkGroup:\n");// Per Work Item
-								Essenbp::WriteLogToFile(MaxPrivateMemoryBytesPerWorkGroup + "\n");
+								Essenbp::WriteLogToFile("\nMaxPrivateMemoryBytesPerWorkGroup: ");// Per Work Item
+								Essenbp::WriteLogToFile(std::to_string(MaxPrivateMemoryBytesPerWorkGroup) + "\n");
 
 								ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 								if (ClErrorResult != CL_SUCCESS)
@@ -394,8 +396,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								else
 								{
 									MaxLocalMemoryBytesPerWorkGroup = (int)Temp3;
-									Essenbp::WriteLogToFile("\nMaxLocalMemoryBytesPerWorkGroup:\n");// Per Work Group
-									Essenbp::WriteLogToFile(MaxLocalMemoryBytesPerWorkGroup + "\n\n");
+									Essenbp::WriteLogToFile("\nMaxLocalMemoryBytesPerWorkGroup: ");// Per Work Group
+									Essenbp::WriteLogToFile(std::to_string(MaxLocalMemoryBytesPerWorkGroup) + "\n\n");
+                  
 									Issuccessful = true;
 								}
 							}
