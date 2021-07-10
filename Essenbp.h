@@ -258,6 +258,8 @@ namespace Essenbp//Essential Functions By Punal
 
 							for (size_t i = 0; i < ArgSizeOfData; ++i)// Memccpy bad
 							{
+								//Visual Studio 2019 Is saying Buffer Overrun by 2 bytes for AppendDatHelper, the writable size is only (SizeOfData + ArgSizeOfData)
+								//But Evrything is Correct here? Buffer overrun is impossible!
 								((char*)AppendDataHelper)[(i + PreviousSize)] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
 
