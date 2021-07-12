@@ -269,14 +269,14 @@ namespace Essenbp//Essential Functions By Punal
 						}
 					}
 					else
-					{
-						SizeOfData = ArgSizeOfData;
-						if (SizeOfData == 0)
+					{						
+						if (ArgSizeOfData == 0)
 						{
 							WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
 						FreeData();
+						SizeOfData = ArgSizeOfData;
 						Data = malloc(SizeOfData);
 						if (Data == nullptr)
 						{

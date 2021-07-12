@@ -1360,7 +1360,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		const cl_command_queue* cl_CommandQueueForThisArgument;//One per device
 		const cl_Memory_Type clMemory_Type_Of_Argument;		
 		bool DoesBufferAlreadyExist = false;
-		cl_mem GlobalMemoryInDevice = nullptr;// Local not needed as it is inaccessible by host..
+		cl_mem* GlobalMemoryInDevice = nullptr;// Local not needed as it is inaccessible by host..
 		void* COPY_OF_PrivateMemoryType = nullptr;
 		size_t MemoryInDeviceTotalSizeInBytes = 0;//NOTE: for private pass the sizeof(variable_type)
 		size_t MemoryInDevice_Occupied_SizeInBytes = 0;//NOTE: Actually 'MemoryInDeviceTotalSizeInBytes' occupies full space... but by 'MemoryInDevice_Occupied_SizeInBytes' I mean the memory YOU "use". I know this might sound confusing, but here is a simple example; Say you have a box that which can hold 20 pieces of bottles, but we only put in 10 pieces, meaning we used only 10 slot instead fully using 20 slots. 
@@ -1368,30 +1368,39 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		void FreeBuffer(bool& IsSuccessful)
 		{
 			IsSuccessful = false;
-
-			if (DoesBufferAlreadyExist)
+			if (PointerToShareGiverBuffer == nullptr)
 			{
-				if (clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory)
+				if (DoesBufferAlreadyExist)
 				{
-					if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
+					if (clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory)
 					{
-						if (COPY_OF_PrivateMemoryType != nullptr)
+						if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
 						{
-							free(COPY_OF_PrivateMemoryType);
-							COPY_OF_PrivateMemoryType = nullptr;
-						}
-						DoesBufferAlreadyExist = false;
-						IsSuccessful = true;
-					}
-					else
-					{
-						if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_LOCALENUM)
-						{
-							cl_uint ClErrorResult = clReleaseMemObject(GlobalMemoryInDevice);// releasing Memory object every time this function is called	
-							if (ClErrorResult != CL_SUCCESS)
+							if (COPY_OF_PrivateMemoryType != nullptr)
 							{
-								Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Releasing Memory On device In: cl_MemoryStruct!\n");
-								Essenbp::WriteLogToFile("\n Error clReleaseMemObject failed in FreeBuffer() Returning Early! in cl_MemoryStruct!\n");
+								free(COPY_OF_PrivateMemoryType);
+								COPY_OF_PrivateMemoryType = nullptr;
+							}
+							DoesBufferAlreadyExist = false;
+							IsSuccessful = true;
+						}
+						else
+						{
+							if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_LOCALENUM)
+							{
+								cl_uint ClErrorResult = clReleaseMemObject(*GlobalMemoryInDevice);// releasing Memory object every time this function is called	
+								if (ClErrorResult != CL_SUCCESS)
+								{
+									Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Releasing Memory On device In: cl_MemoryStruct!\n");
+									Essenbp::WriteLogToFile("\n Error clReleaseMemObject failed in FreeBuffer() Returning Early! in cl_MemoryStruct!\n");
+								}
+								else
+								{
+									DoesBufferAlreadyExist = false;
+									IsSuccessful = true;
+									MemoryInDeviceTotalSizeInBytes = 0;
+									MemoryInDevice_Occupied_SizeInBytes = 0;
+								}
 							}
 							else
 							{
@@ -1401,25 +1410,29 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								MemoryInDevice_Occupied_SizeInBytes = 0;
 							}
 						}
-						else
-						{
-							DoesBufferAlreadyExist = false;
-							IsSuccessful = true;
-							MemoryInDeviceTotalSizeInBytes = 0;
-							MemoryInDevice_Occupied_SizeInBytes = 0;
-						}						
-					}					
+					}
+					else
+					{
+						Essenbp::WriteLogToFile("\n Error Trying to Releasing Uninitialized_cl_Memory Memory On device In BufferCreation In: cl_MemoryStruct!\n");
+					}
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error Trying to Releasing Uninitialized_cl_Memory Memory On device In BufferCreation In: cl_MemoryStruct!\n");
+					//Essenbp::WriteLogToFile("\n Error Buffer does not exist, unable to free buffer" + ": BufferCreation In: cl_MemoryStruct!\n");
+					IsSuccessful = true;
 				}
 			}
 			else
 			{
-				//Essenbp::WriteLogToFile("\n Error Buffer does not exist, unable to free buffer" + ": BufferCreation In: cl_MemoryStruct!\n");
 				IsSuccessful = true;
+				DoesBufferAlreadyExist = false;
+				GlobalMemoryInDevice = nullptr;
+				COPY_OF_PrivateMemoryType = nullptr;
+				MemoryInDeviceTotalSizeInBytes = 0;
+				MemoryInDevice_Occupied_SizeInBytes = 0;
+				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In AllocateMemoryAndPassToKernel In: cl_MemoryStruct!\n");
 			}
+			
 
 			if (!IsSuccessful)// For the safe of readability
 			{
@@ -1430,25 +1443,26 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		void BufferCreation(size_t BUFFER_CREATION_ONLY_SizeOfBuffer, bool& IsSuccessful)
 		{
 			IsSuccessful = false;
-
-			if (BUFFER_CREATION_ONLY_SizeOfBuffer < 1)
+			if (PointerToShareGiverBuffer == nullptr)
 			{
-				Essenbp::WriteLogToFile("\n Error Supplied Size of " + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer) + " Bytes Is Less than 1 Bytes, Pass atleast 1 byte of Data for Buffer Creation" + ": BufferCreation In: cl_MemoryStruct!\n");
-			}
-			else
-			{
-				FreeBuffer(IsSuccessful);
-				if (!IsSuccessful)
+				if (BUFFER_CREATION_ONLY_SizeOfBuffer < 1)
 				{
-					Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n");
+					Essenbp::WriteLogToFile("\n Error Supplied Size of " + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer) + " Bytes Is Less than 1 Bytes, Pass atleast 1 byte of Data for Buffer Creation" + ": BufferCreation In: cl_MemoryStruct!\n");
 				}
 				else
 				{
-					cl_int ClErrorResult;
-					IsSuccessful = false;
-
-					switch (clMemory_Type_Of_Argument)
+					FreeBuffer(IsSuccessful);
+					if (!IsSuccessful)
 					{
+						Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n");
+					}
+					else
+					{
+						cl_int ClErrorResult;
+						IsSuccessful = false;
+
+						switch (clMemory_Type_Of_Argument)
+						{
 						case cl_Memory_Type::CL_LOCALENUM:
 						{
 							//No Need for Buffer creation as this is a local memory...
@@ -1499,19 +1513,19 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY)
 							{
-								GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+								*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 							}
 							else
 							{
 								if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY)
 								{
-									GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_WRITE_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+									*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_WRITE_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 								}
 								else
 								{
 									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE)
 									{
-										GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_WRITE, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+										*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_WRITE, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 									}
 									else
 									{
@@ -1531,10 +1545,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							else
 							{
 								DoesBufferAlreadyExist = true;// Buffer Created so it exists
-								ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+								ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
 								if (ClErrorResult != CL_SUCCESS)
 								{
-									Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in BufferCreation In: cl_MemoryStruct!\n");									
+									Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in BufferCreation In: cl_MemoryStruct!\n");
 									FreeBuffer(IsSuccessful);
 									if (!IsSuccessful)
 									{
@@ -1546,15 +1560,20 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								{
 									//MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;// Same Value
 									MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-									MemoryInDevice_Occupied_SizeInBytes = 0;									
+									MemoryInDevice_Occupied_SizeInBytes = 0;
 									DoesBufferAlreadyExist = true;
-									IsSuccessful = true;									
+									IsSuccessful = true;
 								}
 							}
 							break;
 						}
+						}
 					}
 				}
+			}
+			else
+			{
+				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In AllocateMemoryAndPassToKernel In: cl_MemoryStruct!\n");
 			}
 
 			if (!IsSuccessful)// For the safe of readability
@@ -1573,7 +1592,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			PointerToShareReceiveBuffers = nullptr;
 			TotalNumberOfchildBuffers = 0;
 			DoesBufferAlreadyExist = false;
-			GlobalMemoryInDevice = NULL;
+			GlobalMemoryInDevice = nullptr;
 			COPY_OF_PrivateMemoryType = nullptr;
 			MemoryInDeviceTotalSizeInBytes = 0;
 			MemoryInDevice_Occupied_SizeInBytes = 0;			
@@ -1587,6 +1606,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
+				GlobalMemoryInDevice = (cl_mem*)malloc(sizeof(cl_mem));
+				if (GlobalMemoryInDevice == nullptr)
+				{
+					Essenbp::WriteLogToFile("\n Error Allocating:" + std::to_string(sizeof(cl_mem)) + "GlobalMemoryInDevice In: cl_MemoryStruct!\n");
+				}
 				BufferCreation(1, IsSuccessful);// No Need to use IsSuccessful Here
 			}
 
@@ -1602,7 +1626,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		}
 
 		//NOTE: THIS is just a copy of The Original cl_Memory_Struct, Meaning Both the copy and original Should not be used at the same time!
-		cl_MemoryStruct(cl_MemoryStruct* CopyStruct, bool AlsoCopyBufferAddressAndSize, bool& IsSuccessful, bool DummyCopy = false) : clMemory_Type_Of_Argument(CopyStruct->clMemory_Type_Of_Argument), cl_ContextForThisArgument(CopyStruct->cl_ContextForThisArgument), cl_CommandQueueForThisArgument(CopyStruct->cl_CommandQueueForThisArgument), TheKernel(CopyStruct->TheKernel), KernelArgumentNumber(CopyStruct->KernelArgumentNumber)
+		cl_MemoryStruct(cl_MemoryStruct* CopyStruct, bool& IsSuccessful, bool AlsoCopyBufferAddressAndSize = false) : clMemory_Type_Of_Argument(CopyStruct->clMemory_Type_Of_Argument), cl_ContextForThisArgument(CopyStruct->cl_ContextForThisArgument), cl_CommandQueueForThisArgument(CopyStruct->cl_CommandQueueForThisArgument), TheKernel(CopyStruct->TheKernel), KernelArgumentNumber(CopyStruct->KernelArgumentNumber)
 		{
 			Essenbp::WriteLogToFile("\n Constructing cl_MemoryStruct!");
 
@@ -1624,25 +1648,34 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				if (!DummyCopy)
+				//if (!DummyCopy)
+				//{
+				if (AlsoCopyBufferAddressAndSize)
 				{
-					if (AlsoCopyBufferAddressAndSize)
-					{
-						DoesBufferAlreadyExist = CopyStruct->DoesBufferAlreadyExist;
-						GlobalMemoryInDevice = CopyStruct->GlobalMemoryInDevice;
-						COPY_OF_PrivateMemoryType = CopyStruct->COPY_OF_PrivateMemoryType;
-						MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
-						MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
-					}
-					else
-					{
-						//if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)// Since we are copying the contents, CL_PRIVATE will have fixed size
-						//{
-						//	MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
-						//	MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
-						//}
-					}
+					DoesBufferAlreadyExist = CopyStruct->DoesBufferAlreadyExist;
+					GlobalMemoryInDevice = CopyStruct->GlobalMemoryInDevice;//PENDING
+					COPY_OF_PrivateMemoryType = CopyStruct->COPY_OF_PrivateMemoryType;
+					MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
+					MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
 				}
+				else
+				{
+					GlobalMemoryInDevice = (cl_mem*)malloc(sizeof(cl_mem));
+					if (GlobalMemoryInDevice == nullptr)
+					{
+						Essenbp::WriteLogToFile("\n Error Allocating:" + std::to_string(sizeof(cl_mem)) + "GlobalMemoryInDevice In: cl_MemoryStruct!\n");
+					}
+					BufferCreation(1, IsSuccessful);// No Need to use IsSuccessful Here
+				}
+				//else
+				//{
+				//	//if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)// Since we are copying the contents, CL_PRIVATE will have fixed size
+				//	//{
+				//	//	MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
+				//	//	MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
+				//	//}
+				//}
+				//}
 				IsSuccessful = true;
 			}
 
@@ -1730,7 +1763,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 														((char*)TempDataCarryHelper)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 													}
 
-													ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, TempDataCarryHelper, 0, NULL, NULL);
+													ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, TempDataCarryHelper, 0, NULL, NULL);
 													free(TempDataCarryHelper);// Free the Data
 
 													if (ClErrorResult != CL_SUCCESS)
@@ -1795,7 +1828,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								{
 									if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type > 0)
 									{
-										ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, PointerToMemoryToCopyFrom, 0, NULL, NULL);
+										ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, PointerToMemoryToCopyFrom, 0, NULL, NULL);
 										if (ClErrorResult != CL_SUCCESS)
 										{
 											Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
@@ -1844,20 +1877,20 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling PassBufferToKernel Without Constructing the struct In: cl_MemoryStruct!\n");
+				Essenbp::WriteLogToFile("\n Error Calling PassBufferToKernel Without Constructing the struct In: cl_MemoryStruct!\n");
 			}
 			else
 			{
 				if (!DoesBufferAlreadyExist)
 				{
-					Essenbp::WriteLogToFile("\n Error :Kernel Argument Number of " + std::to_string(KernelArgumentNumber) + " Does not have buffer created. in ReadBuffer In: cl_MemoryStruct!\n");
+					Essenbp::WriteLogToFile("\n Error Kernel Argument Number of " + std::to_string(KernelArgumentNumber) + " Does not have buffer created. in ReadBuffer In: cl_MemoryStruct!\n");
 				}
 				else
 				{
 					cl_int ClErrorResult = 0;
 					if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
 					{
-						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), &GlobalMemoryInDevice);
+						ClErrorResult = clSetKernelArg(*TheKernel, KernelArgumentNumber, sizeof(cl_mem), GlobalMemoryInDevice);
 					}
 					else
 					{
@@ -2027,7 +2060,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								else
 								{
 									IsSuccessful = false;
-									cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, GlobalMemoryInDevice, CL_TRUE, 0, MemoryInDeviceTotalSizeInBytes, RetreivedData.GetData(), 0, NULL, NULL);
+									cl_int ClErrorResult = clEnqueueReadBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, MemoryInDeviceTotalSizeInBytes, RetreivedData.GetData(), 0, NULL, NULL);
 
 									if (ClErrorResult != CL_SUCCESS)
 									{
@@ -2218,7 +2251,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}*/
 							if (clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
 							{
-								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
+								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
 								PointerToBuffer->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
 								PointerToBuffer->GlobalMemoryInDevice = GlobalMemoryInDevice;
 								PointerToBuffer->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
@@ -2253,7 +2286,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								if(!IsSuccessful)
 								{
 									//reseting here
-									cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
+									cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
 									PointerToBuffer->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
 									PointerToBuffer->GlobalMemoryInDevice = GlobalMemoryInDevice;
 									PointerToBuffer->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
@@ -2469,7 +2502,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}*/
 							if (clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
 							{
-								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
+								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
 								PointerToBuffer->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
 								PointerToBuffer->GlobalMemoryInDevice = GlobalMemoryInDevice;
 								PointerToBuffer->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
@@ -2486,7 +2519,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								cl_int ClErrorResult = 0;
 								if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_PRIVATE)
 								{
-									ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+									ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
 									if (ClErrorResult != CL_SUCCESS)
 									{
 										Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
@@ -2501,7 +2534,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								}
 								if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_PRIVATE)
 								{
-									ClErrorResult = clEnqueueMigrateMemObjects(*(PointerToBuffer->cl_CommandQueueForThisArgument), 1, &(PointerToBuffer->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+									ClErrorResult = clEnqueueMigrateMemObjects(*(PointerToBuffer->cl_CommandQueueForThisArgument), 1, (PointerToBuffer->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
 									if (ClErrorResult != CL_SUCCESS)
 									{
 										Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
@@ -2540,7 +2573,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								if (!IsSuccessful)
 								{
 									//reseting here
-									cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
+									cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
 									PointerToBuffer->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
 									PointerToBuffer->GlobalMemoryInDevice = GlobalMemoryInDevice;
 									PointerToBuffer->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
@@ -2692,6 +2725,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									PointerToShareReceiveBuffers = nullptr;
 									TotalNumberOfchildBuffers = TotalNumberOfchildBuffers - 1;
 
+									PointerTochildBuffer->PointerToShareGiverBuffer = nullptr;
 									PointerTochildBuffer->DoesBufferAlreadyExist = false;
 									PointerTochildBuffer->GlobalMemoryInDevice = 0;
 									PointerTochildBuffer->COPY_OF_PrivateMemoryType = nullptr;
@@ -2722,6 +2756,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									free(PointerToShareReceiveBuffers);
 									PointerToShareReceiveBuffers = TEMP_COPY_MultiBufferOnDevice;
 
+									PointerTochildBuffer->PointerToShareGiverBuffer = nullptr;
 									PointerTochildBuffer->DoesBufferAlreadyExist = false;
 									PointerTochildBuffer->GlobalMemoryInDevice = 0;
 									PointerTochildBuffer->COPY_OF_PrivateMemoryType = nullptr;
@@ -2752,10 +2787,32 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (PointerToShareGiverBuffer == nullptr)//When this buffer is Sharing it's buffer
 				{
-					if (DoesBufferAlreadyExist)
+					if (TotalNumberOfchildBuffers == 0)
 					{
-						FreeBuffer(IsConstructionSuccesful);//Temporarily using IsConstructionSuccesful boolean here //Does not matter if this fails because it can't be accesed anyway...					
+						if (DoesBufferAlreadyExist)
+						{
+							FreeBuffer(IsConstructionSuccesful);//Temporarily using IsConstructionSuccesful boolean here //Does not matter if this fails because it can't be accesed anyway...					
+						}
 					}
+					else
+					{
+						for (int i = 0; i < TotalNumberOfchildBuffers; ++i)
+						{
+							PointerToShareReceiveBuffers[i]->PointerToShareGiverBuffer = nullptr;
+							PointerToShareReceiveBuffers[i]->DoesBufferAlreadyExist = false;
+							PointerToShareReceiveBuffers[i]->GlobalMemoryInDevice = 0;
+							PointerToShareReceiveBuffers[i]->COPY_OF_PrivateMemoryType = nullptr;
+							PointerToShareReceiveBuffers[i]->MemoryInDeviceTotalSizeInBytes = 0;//NOTE: for private pass the sizeof(variable_type)
+							PointerToShareReceiveBuffers[i]->MemoryInDevice_Occupied_SizeInBytes = 0;
+						}
+						TotalNumberOfchildBuffers = 0;
+						free(PointerToShareReceiveBuffers);
+						PointerToShareReceiveBuffers = nullptr;
+					}
+				}
+				else
+				{
+					PointerToShareGiverBuffer->StopSharingBufferWithchild(this, IsConstructionSuccesful);//Does not matter if this is false
 				}
 				IsConstructionSuccesful = false;
 			}
@@ -2782,7 +2839,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			BufferToUse = 0;
 			TotalNumberOfBuffers = 0;
-			MultiBufferOnDevice = nullptr;
+			IsBufferReady = nullptr;
 			MultiBufferOnDevice = nullptr;
 
 			IsConstructionSuccesful = false;
@@ -2881,74 +2938,24 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				else
 				{
 					bool** TEMP_COPY_IsBufferReady = nullptr;
-					Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_IsBufferReady, 1, sizeof(bool*), IsSuccessful);
+					Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_IsBufferReady, (TotalNumberOfBuffers + 1), sizeof(bool*), IsSuccessful);
 					if (!IsSuccessful)
 					{
 						Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(bool*) * (TotalNumberOfBuffers + 1)) + " Byes Of Memory for TEMP_COPY_IsBufferReadyy In AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
 						free(TEMP_COPY_MultiBufferOnDevice);
 					}
 					else
-					{
-						for (int i = 0; i < TotalNumberOfBuffers; ++i)
-						{
-							TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[i], true, IsSuccessful);// Copies const variables, buffer location and sizes.						
-							if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
-							{
-								IsSuccessful = false;
-							}
-							else
-							{
-								if (!IsSuccessful)
-								{
-									delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
-								}
-							}
-
-							TEMP_COPY_IsBufferReady[i] = new bool(*(IsBufferReady[i]));
-							if (TEMP_COPY_IsBufferReady[i] == nullptr)
-							{
-								IsSuccessful = false;
-							}
-
-							if (!IsSuccessful)
-							{
-								Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_MemoryStruct)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" + std::to_string(i) + "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-								for (int j = i; j < i; ++j)
-								{
-									TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-									delete TEMP_COPY_MultiBufferOnDevice[j];
-									delete TEMP_COPY_IsBufferReady[j];
-								}
-								free(TEMP_COPY_MultiBufferOnDevice);
-								free(TEMP_COPY_IsBufferReady);
-								break;
-							}
-						}
-					}
-					
-
-					if (IsSuccessful)
-					{
-						TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] = new cl_MemoryStruct(MultiBufferOnDevice[0], false, IsSuccessful, true);// Copies const variables and size only.
+					{						
+						TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] = new cl_MemoryStruct(MultiBufferOnDevice[0], IsSuccessful, false);// Copies const variables, buffer location and sizes.						
 						if (TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] == nullptr)
 						{
 							IsSuccessful = false;
-							Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_MemoryStruct)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" + std::to_string(TotalNumberOfBuffers) + "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-							for (int i = 0; i < TotalNumberOfBuffers; ++i)
-							{
-								TEMP_COPY_MultiBufferOnDevice[i]->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-								delete TEMP_COPY_MultiBufferOnDevice[i];
-								delete TEMP_COPY_IsBufferReady[i];
-							}
-							free(TEMP_COPY_MultiBufferOnDevice);
-							free(TEMP_COPY_IsBufferReady);
 						}
 						else
 						{
 							if (!IsSuccessful)
 							{
-								delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
-								Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_MemoryStruct)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" + std::to_string(TotalNumberOfBuffers)+ "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
+								delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];// Since the construction is not succesful this is safe to delete
 							}
 							else
 							{
@@ -2956,30 +2963,77 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								if (TEMP_COPY_IsBufferReady[TotalNumberOfBuffers] == nullptr)
 								{
 									IsSuccessful = false;
-									Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_MemoryStruct)) + " Byes Of Memory for TEMP_COPY_IsBufferReady[" + std::to_string(TotalNumberOfBuffers) + "] in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-									for (int i = 0; i < TotalNumberOfBuffers; ++i)
-									{
-										TEMP_COPY_MultiBufferOnDevice[i]->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_MultiBufferOnDevice[i];
-										delete TEMP_COPY_IsBufferReady[i];
-									}
-									TEMP_COPY_MultiBufferOnDevice[(TotalNumberOfBuffers + 1)]->IsConstructionSuccesful = false;
-									delete TEMP_COPY_MultiBufferOnDevice[(TotalNumberOfBuffers + 1)];
-									free(TEMP_COPY_MultiBufferOnDevice);
-									free(TEMP_COPY_IsBufferReady);
+									TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers]->IsConstructionSuccesful = false;
+									delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
 								}
 							}
-						}						
+						}											
 
-						if (IsSuccessful)
+						if (!IsSuccessful)
 						{
-							TotalNumberOfBuffers = TotalNumberOfBuffers + 1;
-							free(MultiBufferOnDevice);
-							free(IsBufferReady);
-							MultiBufferOnDevice = TEMP_COPY_MultiBufferOnDevice;
-							IsBufferReady = TEMP_COPY_IsBufferReady;
+							free(TEMP_COPY_MultiBufferOnDevice);
+							free(TEMP_COPY_IsBufferReady);
 						}
+						else
+						{
+							for (int i = 0; i < TotalNumberOfBuffers; ++i)
+							{
+								TEMP_COPY_MultiBufferOnDevice[i] = MultiBufferOnDevice[i];
+								TEMP_COPY_IsBufferReady[i] = IsBufferReady[i];
+							}
+						}
+						/*else
+						{
+							for (int i = 0; i < TotalNumberOfBuffers; ++i)
+							{
+								TEMP_COPY_IsBufferReady[i] = new bool(IsBufferReady[i]);
+								if (TEMP_COPY_IsBufferReady[i] == nullptr)
+								{
+									IsSuccessful = false;
+								}
+								else
+								{
+									TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[i], IsSuccessful, true);
+									if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
+									{
+										delete TEMP_COPY_IsBufferReady[i];
+										IsSuccessful = false;
+									}
+									else
+									{
+										if (!IsSuccessful)
+										{
+											delete TEMP_COPY_IsBufferReady[i];
+											delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
+										}
+									}
+								}
 
+								if (!IsSuccessful)
+								{
+									for (int j = 0; j < i; ++j)
+									{
+										TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;
+										delete TEMP_COPY_MultiBufferOnDevice[j];
+										delete TEMP_COPY_IsBufferReady[j];
+									}
+									delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
+									delete TEMP_COPY_IsBufferReady[TotalNumberOfBuffers];
+									free(TEMP_COPY_MultiBufferOnDevice);
+									free(TEMP_COPY_IsBufferReady);
+									break;
+								}
+							}
+						}*/
+					}			
+
+					if (IsSuccessful)
+					{						
+						TotalNumberOfBuffers = TotalNumberOfBuffers + 1;
+						free(MultiBufferOnDevice);
+						free(IsBufferReady);
+						MultiBufferOnDevice = TEMP_COPY_MultiBufferOnDevice;
+						IsBufferReady = TEMP_COPY_IsBufferReady;
 					}
 				}
 			}
@@ -3005,33 +3059,27 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						Essenbp::WriteLogToFile("\n Error :Failed to Remove Last Buffser! Because A Minimum Of 1 Buffer Should be present. in RemoveBufferForThisArgument In: cl_KernelSingleArgumentStruct!\n");
 					}
-					cl_MemoryStruct** TEMP_COPY_MultiBufferOnDevice = nullptr;
-					Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_MultiBufferOnDevice, (TotalNumberOfBuffers - 1), sizeof(cl_Memory_Type*), IsSuccessful);
-					if (!IsSuccessful)
-					{
-						Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_Memory_Type*) * (TotalNumberOfBuffers - 1)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice in RemoveBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-					}
 					else
 					{
-						bool** TEMP_COPY_IsBufferReady = nullptr;
-						Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_IsBufferReady, (TotalNumberOfBuffers - 1), sizeof(bool*), IsSuccessful);
+						cl_MemoryStruct** TEMP_COPY_MultiBufferOnDevice = nullptr;
+						Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_MultiBufferOnDevice, (TotalNumberOfBuffers - 1), sizeof(cl_Memory_Type*), IsSuccessful);
 						if (!IsSuccessful)
 						{
-							Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(bool*) * (TotalNumberOfBuffers - 1)) + " Byes Of Memory for TEMP_COPY_IsBufferReadyy In RemoveBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-							free(TEMP_COPY_MultiBufferOnDevice);
+							Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_Memory_Type*) * (TotalNumberOfBuffers - 1)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice in AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
 						}
 						else
 						{
-							int j = 0;
-							for (int i = 0; i < (TotalNumberOfBuffers - 1); ++i)
+							bool** TEMP_COPY_IsBufferReady = nullptr;
+							Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_IsBufferReady, (TotalNumberOfBuffers - 1), sizeof(bool*), IsSuccessful);
+							if (!IsSuccessful)
 							{
-								j = j + 1;
-								if (BufferNumber == i)
-								{
-									j = j + 1;
-								}
-								TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[j], true, IsSuccessful);// Copies const variables, buffer location and sizes.						
-								if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
+								Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(bool*) * (TotalNumberOfBuffers - 1)) + " Byes Of Memory for TEMP_COPY_IsBufferReadyy In AddBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
+								free(TEMP_COPY_MultiBufferOnDevice);
+							}
+							else
+							{
+								TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] = new cl_MemoryStruct(MultiBufferOnDevice[0], IsSuccessful, false);// Copies const variables, buffer location and sizes.						
+								if (TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers] == nullptr)
 								{
 									IsSuccessful = false;
 								}
@@ -3039,42 +3087,96 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								{
 									if (!IsSuccessful)
 									{
-										delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
+										delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];// Since the construction is not succesful this is safe to delete
 									}
-								}
-
-								TEMP_COPY_IsBufferReady[i] = new bool(*(IsBufferReady[i]));
-								if (TEMP_COPY_IsBufferReady[i] == nullptr)
-								{
-									IsSuccessful = false;
+									else
+									{
+										TEMP_COPY_IsBufferReady[TotalNumberOfBuffers] = new bool(false);
+										if (TEMP_COPY_IsBufferReady[TotalNumberOfBuffers] == nullptr)
+										{
+											IsSuccessful = false;
+											TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers]->IsConstructionSuccesful = false;
+											delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
+										}
+									}
 								}
 
 								if (!IsSuccessful)
 								{
-									Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_MemoryStruct)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice[" + std::to_string(i) + "] in RemoveBufferForThisArgument In cl_KernelSingleArgumentStruct!\n");
-									for (int j = i; j < i; ++j)
-									{
-										TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_MultiBufferOnDevice[j];
-										delete TEMP_COPY_IsBufferReady[j];
-									}
 									free(TEMP_COPY_MultiBufferOnDevice);
 									free(TEMP_COPY_IsBufferReady);
-									break;
 								}
-							}
-						}
+								else
+								{
+									int j = 0;
+									for (int i = 0; i < (TotalNumberOfBuffers - 1); ++i, ++j)
+									{
+										if (i == BufferNumber)
+										{
+											j = j + 1;
+										}
+										TEMP_COPY_MultiBufferOnDevice[i] = MultiBufferOnDevice[j];
+										TEMP_COPY_IsBufferReady[i] = IsBufferReady[j];
+									}
+								}
+								/*else
+								{
+									for (int i = 0, int j = 0; i < (TotalNumberOfBuffers - 1); ++i, ++j)
+									{
+										if (i == BufferNumber)
+										{
+											j = j + 1;
+										}
 
-						if (IsSuccessful)
-						{
+										TEMP_COPY_IsBufferReady[i] = new bool(IsBufferReady[j]);
+										if (TEMP_COPY_IsBufferReady[i] == nullptr)
+										{
+											IsSuccessful = false;
+										}
+										else
+										{
+											TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[j], IsSuccessful, true);
+											if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
+											{
+												delete TEMP_COPY_IsBufferReady[i];
+												IsSuccessful = false;
+											}
+											else
+											{
+												if (!IsSuccessful)
+												{
+													delete TEMP_COPY_IsBufferReady[i];
+													delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
+												}
+											}
+										}
+
+										if (!IsSuccessful)
+										{
+											for (int j = 0; j < i; ++j)
+											{
+												TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;
+												delete TEMP_COPY_MultiBufferOnDevice[j];
+												delete TEMP_COPY_IsBufferReady[j];
+											}
+											delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
+											delete TEMP_COPY_IsBufferReady[TotalNumberOfBuffers];
+											free(TEMP_COPY_MultiBufferOnDevice);
+											free(TEMP_COPY_IsBufferReady);
+											break;
+										}
+									}
+								}*/
+							}
+
 							if (IsSuccessful)
 							{
 								TotalNumberOfBuffers = TotalNumberOfBuffers - 1;
-								delete MultiBufferOnDevice[BufferNumber];
 								free(MultiBufferOnDevice);
 								free(IsBufferReady);
 								MultiBufferOnDevice = TEMP_COPY_MultiBufferOnDevice;
 								IsBufferReady = TEMP_COPY_IsBufferReady;
+								BufferToUse = 0;
 							}
 						}
 					}
@@ -3392,7 +3494,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				for (int i = 0; i < TotalNumberOfBuffers; ++i)
 				{
 					delete IsBufferReady[i];
+					//IsBufferReady[i] = nullptr;
 					delete MultiBufferOnDevice[i];
+					//MultiBufferOnDevice[i] = nullptr;
 				}
 				free(IsBufferReady);
 				free(MultiBufferOnDevice);
@@ -3409,6 +3513,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		const cl_KernelFunctionArgumentOrderListStruct* OrderedListOfArugments;
 		const cl_command_queue* cl_CommandQueueForThisKernel;
 		cl_kernel ThisKernel = NULL;
+		cl_event CurrentEvent = NULL;
 
 	public:
 		bool IsConstructionSuccesful = false;// NOTE: Memory Leaks bad, so do not change this manualy...
@@ -3657,32 +3762,41 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						else//Run the Kernel
 						{
 							cl_int ClErrorResult = 0;
+							if (CurrentEvent != NULL)//First Finish Previous Kernel
+							{
+								ClErrorResult = clWaitForEvents(1, &CurrentEvent);
+								if (ClErrorResult != CL_SUCCESS)
+								{
+									Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + " : clWaitForEvents in RunKernel In: cl_KernelMultipleArgumentStruct!\n");
+									ClErrorResult = 0;
+								}
+								CurrentEvent = NULL;
+							}							
 							if (WorkSizeOffset == nullptr)
 							{
 								if (LocalWorkSize == nullptr)
 								{
-									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, NULL, 0, NULL, NULL);
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, NULL, 0, NULL, &CurrentEvent);
 								}
 								else
 								{
-									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, NULL, GlobalWorkSize, LocalWorkSize, 0, NULL, &CurrentEvent);
 								}
 							}
 							else
 							{
 								if (LocalWorkSize == nullptr)
 								{
-									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, NULL, 0, NULL, NULL);
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, NULL, 0, NULL, &CurrentEvent);
 								}
 								else
 								{
-									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, LocalWorkSize, 0, NULL, NULL);
+									ClErrorResult = clEnqueueNDRangeKernel(*cl_CommandQueueForThisKernel, ThisKernel, Dimensions, WorkSizeOffset, GlobalWorkSize, LocalWorkSize, 0, NULL, &CurrentEvent);
 								}
 							}
-							clFinish(*cl_CommandQueueForThisKernel);
 							if (ClErrorResult != CL_SUCCESS)
 							{
-								Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + " : clEnqueueNDRangeKernel in RunKernel In: MemoryAllocationOnDevice In: cl_KernelMultipleArgumentStruct!\n");
+								Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + " : clEnqueueNDRangeKernel in RunKernel In: cl_KernelMultipleArgumentStruct!\n");
 								IsSuccessful = false;
 							}
 						}
@@ -4588,7 +4702,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											}
 											else
 											{
-												if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kerel)
+												if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kernel)
 												{
 													// Previous Data On the BUFFER Will be reused
 													IsSuccessful = true;// setting it to succesful
@@ -4624,7 +4738,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									{
 										if (ArgSizeOfData == 0)
 										{
-											if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kerel)
+											if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kernel)
 											{
 												// Previous Data On the BUFFER Will be reused
 												IsSuccessful = true;// setting it to succesful
@@ -4686,17 +4800,18 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									else
 									{
 										ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccessful, false);
+										Essenbp::UnknownDataAndSizeStruct* asd = ArrayOfArgumentData[ArgumentNumber];
 										if (!IsSuccessful)
 										{
 											Essenbp::WriteLogToFile("\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n");
-										}
+										}										
 									}
 								}
 								else
 								{
 									if (ArgSizeOfData == 0)
 									{
-										if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kerel)
+										if (UsePreviouslyAllocatedMemoryOnBuffer)// The difference is that This useses data ON THE BUFFER(May or may not have been changed by the kernel)
 										{
 											// Previous Data On the BUFFER Will be reused
 											IsSuccessful = true;// setting it to succesful
@@ -4750,6 +4865,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							*(ArrayOfUsePreviouslyAllocatedMemoryBoolean[ArgumentNumber]) = false;
 						}
 					}
+					*(ArrayOfBufferToUse[ArgumentNumber]) = BufferTouse;//PENDING Check this
 				}
 			}			
 		}
@@ -4969,7 +5085,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = true;
 			}
 		}
-
+		//PENDING last argument of storedataforkernelarugment
 		void StoreDataForKernelArgument(unsigned int DeviceNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccessful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
 		{
 			IsSuccessful = false;
