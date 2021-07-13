@@ -1653,7 +1653,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				if (AlsoCopyBufferAddressAndSize)
 				{
 					DoesBufferAlreadyExist = CopyStruct->DoesBufferAlreadyExist;
-					GlobalMemoryInDevice = CopyStruct->GlobalMemoryInDevice;//PENDING
+					GlobalMemoryInDevice = CopyStruct->GlobalMemoryInDevice;
 					COPY_OF_PrivateMemoryType = CopyStruct->COPY_OF_PrivateMemoryType;
 					MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
 					MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
@@ -2022,7 +2022,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (PointerToShareGiverBuffer != nullptr)
 				{
-					Essenbp::WriteLogToFile("\n Error :Trying to Read memory on a Share Receiving Buffer(child)! In ReadBuffer In: cl_MemoryStruct!\n");
+					//Essenbp::WriteLogToFile("\n Error :Trying to Read memory on a Share Receiving Buffer(child)! In ReadBuffer In: cl_MemoryStruct!\n");
+					//NOTE: If buffer is going to be read why not read it from the source(Parent Buffer)?
+					PointerToShareGiverBuffer->ReadBuffer(RetreivedData, IsSuccessful);
 				}
 				else
 				{
@@ -2649,30 +2651,50 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							}
 							else
 							{
-								PointerTochildBuffer->FreeBuffer(IsSuccessful);//Does not Matter If this was UnSuccessful
-
-								cl_MemoryStruct** TEMP_COPY_MultiBufferOnDevice = nullptr;
-								Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_MultiBufferOnDevice, (TotalNumberOfchildBuffers + 1), sizeof(cl_Memory_Type*), IsSuccessful);
-								if (!IsSuccessful)
+								if (PointerTochildBuffer == this)
 								{
-									Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_Memory_Type*) * (TotalNumberOfchildBuffers + 1)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice in ShareBufferWithchild In cl_MemoryStruct!\n");
+									Essenbp::WriteLogToFile("\n Error Trying to Share Buffer With self! in ShareBufferWithchild In: cl_MemoryStruct!\n");
 								}
 								else
 								{
-									for (int i = 0; i < TotalNumberOfchildBuffers; ++i)
+									if (TheKernel == PointerTochildBuffer->TheKernel)
 									{
-										TEMP_COPY_MultiBufferOnDevice[i] = PointerToShareReceiveBuffers[i];
+										Essenbp::WriteLogToFile("\n Error Trying to Share Buffer With Same kernel! in ShareBufferWithchild In: cl_MemoryStruct!\n");
 									}
-								}
+									else
+									{
+										PointerTochildBuffer->FreeBuffer(IsSuccessful);//Does not Matter If this was UnSuccessful
 
-								if (IsSuccessful)
-								{
-									TEMP_COPY_MultiBufferOnDevice[TotalNumberOfchildBuffers] = PointerTochildBuffer;
-									TotalNumberOfchildBuffers = TotalNumberOfchildBuffers + 1;
-									free(PointerToShareReceiveBuffers);
-									PointerToShareReceiveBuffers = TEMP_COPY_MultiBufferOnDevice;
+										cl_MemoryStruct** TEMP_COPY_MultiBufferOnDevice = nullptr;
+										Essenbp::Malloc_PointerToArrayOfPointers((void***)&TEMP_COPY_MultiBufferOnDevice, (TotalNumberOfchildBuffers + 1), sizeof(cl_Memory_Type*), IsSuccessful);
+										if (!IsSuccessful)
+										{
+											Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(cl_Memory_Type*) * (TotalNumberOfchildBuffers + 1)) + " Byes Of Memory for TEMP_COPY_MultiBufferOnDevice in ShareBufferWithchild In cl_MemoryStruct!\n");
+										}
+										else
+										{
+											for (int i = 0; i < TotalNumberOfchildBuffers; ++i)
+											{
+												TEMP_COPY_MultiBufferOnDevice[i] = PointerToShareReceiveBuffers[i];
+											}
+										}
 
-									PointerTochildBuffer->PointerToShareGiverBuffer = this;
+										if (IsSuccessful)
+										{
+											TEMP_COPY_MultiBufferOnDevice[TotalNumberOfchildBuffers] = PointerTochildBuffer;
+											TotalNumberOfchildBuffers = TotalNumberOfchildBuffers + 1;
+											free(PointerToShareReceiveBuffers);
+											PointerToShareReceiveBuffers = TEMP_COPY_MultiBufferOnDevice;
+
+											PointerTochildBuffer->PointerToShareGiverBuffer = this;
+											PointerTochildBuffer->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
+											PointerTochildBuffer->GlobalMemoryInDevice = GlobalMemoryInDevice;
+											PointerTochildBuffer->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
+											PointerTochildBuffer->MemoryInDeviceTotalSizeInBytes = MemoryInDeviceTotalSizeInBytes;//NOTE: for private pass the sizeof(variable_type)
+											PointerTochildBuffer->MemoryInDevice_Occupied_SizeInBytes = MemoryInDevice_Occupied_SizeInBytes;
+											PointerTochildBuffer->PassBufferToKernel(IsSuccessful);
+										}
+									}
 								}
 							}
 						}
@@ -3494,8 +3516,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				for (int i = 0; i < TotalNumberOfBuffers; ++i)
 				{
 					delete IsBufferReady[i];
-					//IsBufferReady[i] = nullptr;
 					delete MultiBufferOnDevice[i];
+					//IsBufferReady[i] = nullptr;
 					//MultiBufferOnDevice[i] = nullptr;
 				}
 				free(IsBufferReady);
@@ -4613,10 +4635,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					if (BufferTouse != *(ArrayOfBufferToUse[ArgumentNumber]))
-					{
-						*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = false;// Since we are changing buffer number
-					}
+					//This Bad
+					//if (BufferTouse != *(ArrayOfBufferToUse[ArgumentNumber]))
+					//{
+					//	*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = false;// Since we are changing buffer number
+					//}
 
 					if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_LOCALENUM)
 					{
@@ -4800,7 +4823,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 									else
 									{
 										ArrayOfArgumentData[ArgumentNumber]->CopyAndStoreData(ArgData, ArgSizeOfData, IsSuccessful, false);
-										Essenbp::UnknownDataAndSizeStruct* asd = ArrayOfArgumentData[ArgumentNumber];
 										if (!IsSuccessful)
 										{
 											Essenbp::WriteLogToFile("\n Error CopyAndStoreData Failed in StoreDataForKernelArgument In: cl_KernelArgumentSendStruct!\n");
@@ -4852,7 +4874,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = true;
 					if (OverWriteMemory_NOTForLOCAL_PRIVATE)
 					{
-						*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = true;
+						*(ArrayOfOverWriteDataSetBoolean[ArgumentNumber]) = true;
 					}
 					else
 					{
@@ -4865,7 +4887,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							*(ArrayOfUsePreviouslyAllocatedMemoryBoolean[ArgumentNumber]) = false;
 						}
 					}
-					*(ArrayOfBufferToUse[ArgumentNumber]) = BufferTouse;//PENDING Check this
+					*(ArrayOfBufferToUse[ArgumentNumber]) = BufferTouse;
 				}
 			}			
 		}
@@ -4994,6 +5016,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}		
 		}		
 
+		void FreeDataInSendStruct(unsigned int BufferNumber)
+		{
+			//PENDING
+		}
+
 		~cl_KernelArgumentSendStruct()
 		{
 			Essenbp::WriteLogToFile("\n Destructing cl_KernelArgumentSendStruct!");
@@ -5085,7 +5112,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = true;
 			}
 		}
-		//PENDING last argument of storedataforkernelarugment
+
 		void StoreDataForKernelArgument(unsigned int DeviceNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccessful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
 		{
 			IsSuccessful = false;
@@ -5113,6 +5140,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				Essenbp::WriteLogToFile("\n Error StoreDataForKernelArgument() Failed in cl_MultiDevice_KernelArgumentSendStruct!");
 			}
+		}
+
+		void FreeDataInSendStruct(unsigned int ArgumentNumber, unsigned int BufferNumber)
+		{
+			//PENDING
 		}
 
 		~cl_MultiDevice_KernelArgumentSendStruct()
@@ -7047,9 +7079,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				if (KernelNumber < TotalNumberOfKernelFunctions)
+				if ((KernelNumber < TotalNumberOfKernelFunctions) && (TargetKernelNumber < TotalNumberOfKernelFunctions))
 				{
-					if (DeviceNumber < NumberOfDevices)
+					if ((DeviceNumber < NumberOfDevices) && (TargetDeviceNumber < NumberOfDevices))
 					{
 						cl_MemoryStruct* PointerToBuffer = nullptr;
 						MultiDeviceMultiKernel[TargetKernelNumber]->MultiDeviceKernelArgumentsArray[TargetDeviceNumber]->GetPointerToBufferPointer(TargetArgumentNumber, TargetBufferNumber, &PointerToBuffer, IsSuccessful);
@@ -7075,28 +7107,37 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void ShareBufferWithchild(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, cl_MemoryStruct* PointerTochildBuffer, bool& IsSuccessful)
+		void ShareBufferWithAnotherKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, unsigned int ChildKernelNumber, unsigned int ChildArgumentNumber, unsigned int ChildBufferNumber, bool& IsSuccessful)
 		{
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling ShareBufferWithchild Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-				Essenbp::WriteLogToFile("\n Error ShareBufferWithchild() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+				Essenbp::WriteLogToFile("\n Error :Calling ShareBufferWithAnotherKernel Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+				Essenbp::WriteLogToFile("\n Error ShareBufferWithAnotherKernel() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 			}
 			else
 			{
-				if (KernelNumber < TotalNumberOfKernelFunctions)
+				if ((KernelNumber < TotalNumberOfKernelFunctions) && (ChildKernelNumber < TotalNumberOfKernelFunctions))
 				{
 					if (DeviceNumber < NumberOfDevices)
 					{
-						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->ShareBufferWithchild(ArgumentNumber, ArgBufferNumber, PointerTochildBuffer, IsSuccessful);
-						if (!IsSuccessful)
+						if (KernelNumber == ChildKernelNumber)
 						{
-							Essenbp::WriteLogToFile("\n Error cl_KernelMultipleArgumentStruct::ShareBufferWithchild() Failed in ShareBufferWithchild In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+							Essenbp::WriteLogToFile("\n Error Trying to Share Buffer With Same kernel! in ShareBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						}
+						else
+						{
+							cl_MemoryStruct* PointerTochildBuffer = nullptr;
+							MultiDeviceMultiKernel[ChildKernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetPointerToBufferPointer(ChildArgumentNumber, ChildBufferNumber, &PointerTochildBuffer, IsSuccessful);
+							MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->ShareBufferWithchild(ArgumentNumber, ArgBufferNumber, PointerTochildBuffer, IsSuccessful);
+							if (!IsSuccessful)
+							{
+								Essenbp::WriteLogToFile("\n Error cl_KernelMultipleArgumentStruct::ShareBufferWithAnotherKernel() Failed in ShareBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+							}
 						}
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in ShareBufferWithchild In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in ShareBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 					}
 				}
 				else
@@ -7106,42 +7147,44 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error ShareBufferWithchild() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+				Essenbp::WriteLogToFile("\n Error ShareBufferWithAnotherKernel() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 			}
 		}
 
-		void StopSharingBufferWithchild(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, cl_MemoryStruct* PointerTochildBuffer, bool& IsSuccessful)
+		void StopSharingBufferWithAnotherKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, unsigned int ChildKernelNumber, unsigned int ChildArgumentNumber, unsigned int ChildBufferNumber, bool& IsSuccessful)
 		{
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling StopSharingBufferWithchild Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-				Essenbp::WriteLogToFile("\n Error StopSharingBufferWithchild() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+				Essenbp::WriteLogToFile("\n Error :Calling StopSharingBufferWithAnotherKernel Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+				Essenbp::WriteLogToFile("\n Error StopSharingBufferWithAnotherKernel() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 			}
 			else
 			{
-				if (KernelNumber < TotalNumberOfKernelFunctions)
+				if ((KernelNumber < TotalNumberOfKernelFunctions) && (ChildKernelNumber < TotalNumberOfKernelFunctions))
 				{
 					if (DeviceNumber < NumberOfDevices)
 					{
+						cl_MemoryStruct* PointerTochildBuffer = nullptr;
+						MultiDeviceMultiKernel[ChildKernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetPointerToBufferPointer(ChildArgumentNumber, ChildBufferNumber, &PointerTochildBuffer, IsSuccessful);
 						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->StopSharingBufferWithchild(ArgumentNumber, ArgBufferNumber, PointerTochildBuffer, IsSuccessful);
 						if (!IsSuccessful)
 						{
-							Essenbp::WriteLogToFile("\n Error cl_KernelMultipleArgumentStruct::StopSharingBufferWithchild() Failed in StopSharingBufferWithchild In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+							Essenbp::WriteLogToFile("\n Error cl_KernelMultipleArgumentStruct::StopSharingBufferWithAnotherKernel() Failed in StopSharingBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 						}
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in StopSharingBufferWithchild In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in StopSharingBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 					}
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in StopSharingBufferWithchild In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in StopSharingBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 				}
 			}
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error StopSharingBufferWithchild() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+				Essenbp::WriteLogToFile("\n Error StopSharingBufferWithAnotherKernel() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 			}
 		}
 

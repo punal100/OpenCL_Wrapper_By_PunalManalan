@@ -526,13 +526,13 @@ namespace Essenbp//Essential Functions By Punal
 
 		void GetData(unsigned int ElementNumber, UnknownDataAndSizeStruct** ReturnUnknownDataAndSize, bool& Issuccessful)
 		{
-			if (ElementNumber > TotalNumberOfUnknownData)
+			if (ElementNumber < TotalNumberOfUnknownData)
 			{
-				WriteLogToFile("\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetData in AddElement In: ArrayOfUnknownDataAndSize!\n");
+				*ReturnUnknownDataAndSize = ArrayOfUnknownData[ElementNumber];				
 			}
 			else
 			{
-				*ReturnUnknownDataAndSize = ArrayOfUnknownData[ElementNumber];
+				WriteLogToFile("\n Error ElementNumber Exceeds the total number of Unknown Data Present! in GetData in AddElement In: ArrayOfUnknownDataAndSize!\n");
 			}
 		}
 
