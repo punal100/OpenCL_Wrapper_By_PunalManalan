@@ -38,7 +38,7 @@ int main()
 	//int K1 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 5 Argument: 2 input And 1 Output
 	//int K2 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 5 Argument: 2 input And 1 Output
 	
-	//cl_KernelFunctionsStruct [Constructor](/*Total Number Of Functions*/, /*Is Succesful Boolean*/);
+	//OCLW_P::cl_KernelFunctionsStruct [Constructor](/*Total Number Of Functions*/, /*Is Succesful Boolean*/);
 	OCLW_P::cl_KernelFunctionsStruct Functions_List(N, Issuccessful);// Specify The Total Number of functions to add
 	
 	//SetTheNameAndNumberOfArgumentsForNextKernelFunction(/*Kernel Name*/, /*Total Number Of Arguments*/, /*Is Succesful Boolean*/);
@@ -60,16 +60,20 @@ int main()
 	Functions_List.SetMemoryTypeOfArugment(1, 4, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
 	Functions_List.SetMemoryTypeOfArugment(1, 5, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
 	
-	//This Returns ALL the Available Platforms(Example: Intel, AMD, Nvdia)
+	//OCLW_P::cl_PlatformVendorStruct(/*Is Succesful Boolean*/);
+	//NOTE:This Returns ALL the Available Platforms(Example: Intel, AMD, Nvdia)
 	OCLW_P::cl_PlatformVendorStruct AvailablePlatformVendors(Issuccessful);
 
 	int TotalNumberOfPlatforms = 0;
+	//GetTotalNumberOfPlatformVendors(/*Return Total Number Of Platforms*/, /*Is Succesful Boolean*/);
 	AvailablePlatformVendors.GetTotalNumberOfPlatformVendors(TotalNumberOfPlatforms, Issuccessful);
-	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
+	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);// Prints These In Log.txt
+	//SetChosenPlatform(/*Platfrom Number From 1 to TotalNumberOfPlatforms*/, /*Is Succesful Boolean*/);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);//For Me AMD is the First Platform(GPU), Intel is Second Platform(CPU)
 
 	//std::string FilePath = "C:\\OpenCL Folder\\PunalOpenclFunctionsProgram.cl";// Is Direct Path
 	std::string FilePath = "OpenclFunctionsProgram.cl";// This looks for the file in program location
+	//OCLW_P::OpenCLWrapper(/*File Path*/, /*Reference to Constructed OCLW_P::cl_KernelFunctionsStruct*/, /*Reference to Constructed OCLW_P::cl_PlatformVendorStruct*/, /*Is Succesful Boolean*/);
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	
 	//Initialization End
