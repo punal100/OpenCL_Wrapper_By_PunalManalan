@@ -1447,7 +1447,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (BUFFER_CREATION_ONLY_SizeOfBuffer < 1)
 				{
-					Essenbp::WriteLogToFile("\n Error Supplied Size of " + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer) + " Bytes Is Less than 1 Bytes, Pass atleast 1 byte of Data for Buffer Creation" + ": BufferCreation In: cl_MemoryStruct!\n");
+					//Essenbp::WriteLogToFile("\n Error Supplied Size of " + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer) + " Bytes Is Less than 1 Bytes, Pass atleast 1 byte of Data for Buffer Creation" + ": BufferCreation In: cl_MemoryStruct!\n");
+					FreeBuffer(IsSuccessful);
+					if (!IsSuccessful)
+					{
+						Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n");
+					}
 				}
 				else
 				{
@@ -1463,110 +1468,110 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 						switch (clMemory_Type_Of_Argument)
 						{
-						case cl_Memory_Type::CL_LOCALENUM:
-						{
-							//No Need for Buffer creation as this is a local memory...
-							//if (MemoryInDeviceTotalSizeInBytes != MemoryInDevice_Occupied_SizeInBytes)
-							//{
-							//	Essenbp::WriteLogToFile("\n Error CL_LOCALENUM MemoryInDeviceTotalSizeInBytes is not equal to MemoryInDevice_Occupied_SizeInBytes In BufferCreation In: cl_MemoryStruct!\n");
-							//	Essenbp::WriteLogToFile("NOTE: Local Memory occupies space regardless of MemoryInDevice_Occupied_SizeInBytes, So both variables should have the same value\n");
-							//	return;
-							//}
-							MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-							MemoryInDevice_Occupied_SizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-							IsSuccessful = true;
-							DoesBufferAlreadyExist = true;
-							break;
-						}
-
-						case cl_Memory_Type::CL_PRIVATE:
-						{
-							if ((MemoryInDeviceTotalSizeInBytes != 0) || (MemoryInDevice_Occupied_SizeInBytes != 0))
+							case cl_Memory_Type::CL_LOCALENUM:
 							{
-								Essenbp::WriteLogToFile("\n Error Trying to Change the Size of CL_PRIVATE Memory On device In BufferCreation In: cl_MemoryStruct!\n");
+								//No Need for Buffer creation as this is a local memory...
+								//if (MemoryInDeviceTotalSizeInBytes != MemoryInDevice_Occupied_SizeInBytes)
+								//{
+								//	Essenbp::WriteLogToFile("\n Error CL_LOCALENUM MemoryInDeviceTotalSizeInBytes is not equal to MemoryInDevice_Occupied_SizeInBytes In BufferCreation In: cl_MemoryStruct!\n");
+								//	Essenbp::WriteLogToFile("NOTE: Local Memory occupies space regardless of MemoryInDevice_Occupied_SizeInBytes, So both variables should have the same value\n");
+								//	return;
+								//}
+								MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+								MemoryInDevice_Occupied_SizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+								IsSuccessful = true;
+								DoesBufferAlreadyExist = true;
 								break;
 							}
 
-							COPY_OF_PrivateMemoryType = calloc(BUFFER_CREATION_ONLY_SizeOfBuffer, sizeof(char));// malloc works great too, but i prefer to use calloc here, NOTE: Char is 1 Byte so using char
-							if (COPY_OF_PrivateMemoryType == nullptr)
+							case cl_Memory_Type::CL_PRIVATE:
 							{
-								Essenbp::WriteLogToFile("\n Error Allocating" + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer * sizeof(char)) + "COPY_OF_PrivateMemoryType Variable In: cl_MemoryStruct!\n");
-								break;
-							}
-
-							MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-							MemoryInDevice_Occupied_SizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-							IsSuccessful = true;
-							DoesBufferAlreadyExist = true;
-							break;
-						}
-
-						case cl_Memory_Type::Uninitialized_cl_Memory:
-						{
-							Essenbp::WriteLogToFile("\n Error Default 'Uninitialized_cl_Memory' Enum Passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE In BufferCreation In: cl_MemoryStruct!\n");
-							MemoryInDeviceTotalSizeInBytes = 0;
-							MemoryInDevice_Occupied_SizeInBytes = 0;
-							break;
-						}
-
-						default://CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY And CL_MEM_READ_WRITE
-						{
-							if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY)
-							{
-								*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
-							}
-							else
-							{
-								if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY)
+								if (MemoryInDevice_Occupied_SizeInBytes != 0)
 								{
-									*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_WRITE_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+									Essenbp::WriteLogToFile("\n Error Trying to Change the Size of CL_PRIVATE Memory On device In BufferCreation In: cl_MemoryStruct!\n");
+									break;
+								}
+
+								COPY_OF_PrivateMemoryType = calloc(BUFFER_CREATION_ONLY_SizeOfBuffer, sizeof(char));// malloc works great too, but i prefer to use calloc here, NOTE: Char is 1 Byte so using char
+								if (COPY_OF_PrivateMemoryType == nullptr)
+								{
+									Essenbp::WriteLogToFile("\n Error Allocating" + std::to_string(BUFFER_CREATION_ONLY_SizeOfBuffer * sizeof(char)) + "COPY_OF_PrivateMemoryType Variable In: cl_MemoryStruct!\n");
+									break;
+								}
+
+								MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+								MemoryInDevice_Occupied_SizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+								IsSuccessful = true;
+								DoesBufferAlreadyExist = true;
+								break;
+							}
+
+							case cl_Memory_Type::Uninitialized_cl_Memory:
+							{
+								Essenbp::WriteLogToFile("\n Error Default 'Uninitialized_cl_Memory' Enum Passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE In BufferCreation In: cl_MemoryStruct!\n");
+								MemoryInDeviceTotalSizeInBytes = 0;
+								MemoryInDevice_Occupied_SizeInBytes = 0;
+								break;
+							}
+
+							default://CL_MEM_READ_ONLY, CL_MEM_WRITE_ONLY And CL_MEM_READ_WRITE
+							{
+								if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY)
+								{
+									*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 								}
 								else
 								{
-									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE)
+									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY)
 									{
-										*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_WRITE, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+										*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_WRITE_ONLY, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 									}
 									else
 									{
-										Essenbp::WriteLogToFile("\n Error Undefined Enum Passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE In BufferCreation In: cl_MemoryStruct!\n");
-										break;
+										if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE)
+										{
+											*GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, CL_MEM_READ_WRITE, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
+										}
+										else
+										{
+											Essenbp::WriteLogToFile("\n Error Undefined Enum Passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE In BufferCreation In: cl_MemoryStruct!\n");
+											break;
+										}
 									}
 								}
-							}
-							//GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, clMemory_Type_Of_Argument, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
-							if (ClErrorResult != CL_SUCCESS)
-							{
-								Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Creating Buffer On device In BufferCreation In: cl_MemoryStruct!\n");
-								MemoryInDeviceTotalSizeInBytes = 0;
-								MemoryInDevice_Occupied_SizeInBytes = 0;
-								IsSuccessful = false;
-							}
-							else
-							{
-								DoesBufferAlreadyExist = true;// Buffer Created so it exists
-								ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+								//GlobalMemoryInDevice = clCreateBuffer(*cl_ContextForThisArgument, clMemory_Type_Of_Argument, BUFFER_CREATION_ONLY_SizeOfBuffer, NULL, &ClErrorResult);
 								if (ClErrorResult != CL_SUCCESS)
 								{
-									Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in BufferCreation In: cl_MemoryStruct!\n");
-									FreeBuffer(IsSuccessful);
-									if (!IsSuccessful)
-									{
-										Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n");
-									}
+									Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Creating Buffer On device In BufferCreation In: cl_MemoryStruct!\n");
+									MemoryInDeviceTotalSizeInBytes = 0;
+									MemoryInDevice_Occupied_SizeInBytes = 0;
 									IsSuccessful = false;
 								}
 								else
 								{
-									//MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;// Same Value
-									MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
-									MemoryInDevice_Occupied_SizeInBytes = 0;
-									DoesBufferAlreadyExist = true;
-									IsSuccessful = true;
+									DoesBufferAlreadyExist = true;// Buffer Created so it exists
+									ClErrorResult = clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, GlobalMemoryInDevice, CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
+									if (ClErrorResult != CL_SUCCESS)
+									{
+										Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in BufferCreation In: cl_MemoryStruct!\n");
+										FreeBuffer(IsSuccessful);
+										if (!IsSuccessful)
+										{
+											Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in BufferCreation In: cl_MemoryStruct!\n");
+										}
+										IsSuccessful = false;
+									}
+									else
+									{
+										//MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;// Same Value
+										MemoryInDeviceTotalSizeInBytes = BUFFER_CREATION_ONLY_SizeOfBuffer;
+										MemoryInDevice_Occupied_SizeInBytes = 0;
+										DoesBufferAlreadyExist = true;
+										IsSuccessful = true;
+									}
 								}
+								break;
 							}
-							break;
-						}
 						}
 					}
 				}
@@ -1611,7 +1616,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					Essenbp::WriteLogToFile("\n Error Allocating:" + std::to_string(sizeof(cl_mem)) + "GlobalMemoryInDevice In: cl_MemoryStruct!\n");
 				}
-				BufferCreation(1, IsSuccessful);// No Need to use IsSuccessful Here
+				BufferCreation(0, IsSuccessful);
 			}
 
 			if (!IsSuccessful)// For the safe of readability
@@ -1620,7 +1625,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				DoesBufferAlreadyExist = true;
 				IsConstructionSuccesful = true;
 			}
 		}
@@ -1732,18 +1736,18 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								{
 									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
 									{
-										if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type != MemoryInDeviceTotalSizeInBytes)
-										{
-											Essenbp::WriteLogToFile("\n Error :Trying to change the Size of Private Variable(NOTE: This is impossible to happen. Because size of variables type does not change...) in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-										}
-										else
-										{
-											for (int i = 0; i < MemoryInDeviceTotalSizeInBytes; ++i)// Memccpy bad
-											{
-												((char*)COPY_OF_PrivateMemoryType)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
-											}
-											IsSuccessful = true;
-										}
+										//if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type != MemoryInDeviceTotalSizeInBytes)
+										//{
+										Essenbp::WriteLogToFile("\n Error :Trying to OverWrite cl_Memory_Type::CL_PRIVATE, OverWrtie Function is only for Global Memory. Pass Private Normally... in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+										//}
+										//else
+										//{
+										//	for (int i = 0; i < MemoryInDeviceTotalSizeInBytes; ++i)// Memccpy bad
+										//	{
+										//		((char*)COPY_OF_PrivateMemoryType)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
+										//	}
+										//	IsSuccessful = true;
+										//}
 									}
 									else
 									{
@@ -1784,16 +1788,16 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										}
 										else
 										{
-											if (PointerToMemoryToCopyFrom != nullptr)
-											{
-												Essenbp::WriteLogToFile("\n Error :Trying To OverWrite Local Memory(This type can not be written or overwritten from host...) So Pass nullptr to the parameter 'PointerToMemoryToCopyFrom' in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-											}
-											else
-											{
-												MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-												MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-												IsSuccessful = true;
-											}
+											//if (PointerToMemoryToCopyFrom != nullptr)
+											//{
+											Essenbp::WriteLogToFile("\n Error :Trying To OverWrite Local Memory(This type can not be written or overwritten from host...) So Pass nullptr to the parameter 'PointerToMemoryToCopyFrom' in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+											//}
+											//else
+											//{
+											//	MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
+											//	MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
+											//	IsSuccessful = true;
+											//}
 										}
 									}
 								}
@@ -1815,49 +1819,77 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							Essenbp::WriteLogToFile("\n Error :Supplied Size Of SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type Excedes the size maximum size specified by BUFFER_CREATION_ONLY_SizeOfBuffer in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
 						}
 						else
-						{
-							BufferCreation(BUFFER_CREATION_ONLY_SizeOfBuffer, IsSuccessful);
-							if (!IsSuccessful)
+						{		
+							if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
 							{
-								Essenbp::WriteLogToFile("\n Error :Buffer Creation Unsuccesful In MemoryAllocationOnDevice in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-							}
-							else
-							{
-								IsSuccessful = false;// Yes it is set to false So that it can be used for below code
-								if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
+								if (!DoesBufferAlreadyExist)
 								{
-									if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type > 0)
-									{
-										ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, PointerToMemoryToCopyFrom, 0, NULL, NULL);
-										if (ClErrorResult != CL_SUCCESS)
-										{
-											Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-											FreeBuffer(IsSuccessful);
-											if (!IsSuccessful)
-											{
-												Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-											}
-										}
-										else
-										{
-											//Put the Buffer in Specified Device(GPU Or CPU)
-											MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-											IsSuccessful = true;
-										}
-									}
+									BufferCreation(BUFFER_CREATION_ONLY_SizeOfBuffer, IsSuccessful);
 								}
 								else
 								{
-									//Only Works for First time for the second and other times this section will not even execute...
-									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
+									IsSuccessful = true;
+								}
+
+								if (!IsSuccessful)
+								{
+									Essenbp::WriteLogToFile("\n Error :Buffer Creation Unsuccesful for cl_Memory_Type::CL_PRIVATE In MemoryAllocationOnDevice in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+								}
+								else
+								{
+									IsSuccessful = false;
+									if (MemoryInDeviceTotalSizeInBytes == SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type)
 									{
-										for (int i = 0; i < SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type; ++i)// Memccpy bad
+										for (int i = 0; i < SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type; ++i)
 										{
 											((char*)COPY_OF_PrivateMemoryType)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 										}
 										IsSuccessful = true;
-									}//Local can get pass through here but no code is required for it...
-									//else No need for else, as it is impossible for invalid or other enum type to get past through, unless a glitch occurs which is extremely unlikely...
+									}
+									else
+									{
+										Essenbp::WriteLogToFile("\n Error :Supplied Memory Size of " + std::to_string(SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type) + " Does Not Match with the Private Size of " + std::to_string(MemoryInDeviceTotalSizeInBytes) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+									}
+								}
+							}
+							else
+							{
+								BufferCreation(BUFFER_CREATION_ONLY_SizeOfBuffer, IsSuccessful);
+								if (!IsSuccessful)
+								{
+									Essenbp::WriteLogToFile("\n Error :Buffer Creation Unsuccesful In MemoryAllocationOnDevice in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+								}
+								else
+								{
+									IsSuccessful = false;// Yes it is set to false So that it can be used for below code
+									if ((clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_WRITE_ONLY) || (clMemory_Type_Of_Argument == cl_Memory_Type::CL_READ_AND_WRITE))
+									{
+										if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type > 0)
+										{
+											ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, PointerToMemoryToCopyFrom, 0, NULL, NULL);
+											if (ClErrorResult != CL_SUCCESS)
+											{
+												Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+												FreeBuffer(IsSuccessful);
+												if (!IsSuccessful)
+												{
+													Essenbp::WriteLogToFile("\n Error FreeBuffer() failed in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+												}
+											}
+											else
+											{
+												//Put the Buffer in Specified Device(GPU Or CPU)
+												MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
+												IsSuccessful = true;
+											}
+										}
+									}
+									else
+									{
+										//Local can get pass through here but no code is required for it Execpt for Is Succesful...
+										IsSuccessful = true;//Since Buffer(Local) is already created for it above
+										//No need for another else, as it is impossible for invalid or other enum type to get past through, unless a glitch occurs which is extremely unlikely...
+									}
 								}
 							}
 						}
@@ -2826,6 +2858,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							PointerToShareReceiveBuffers[i]->COPY_OF_PrivateMemoryType = nullptr;
 							PointerToShareReceiveBuffers[i]->MemoryInDeviceTotalSizeInBytes = 0;//NOTE: for private pass the sizeof(variable_type)
 							PointerToShareReceiveBuffers[i]->MemoryInDevice_Occupied_SizeInBytes = 0;
+							delete PointerToShareReceiveBuffers[i];
 						}
 						TotalNumberOfchildBuffers = 0;
 						free(PointerToShareReceiveBuffers);
@@ -3230,7 +3263,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					MultiBufferOnDevice[BufferNumber]->AllocateMemoryAndPassToKernel(PointerToMemoryToCopyFrom, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, BUFFER_CREATION_ONLY_SizeOfBuffer, OverWriteMemory, UsePreviouslyAllocatedMemoryOnBuffer, IsSuccessful);
 					if (!IsSuccessful)
 					{
-						Essenbp::WriteLogToFile("\n Error :MultiBufferOnDevice[BufferNumber]->AllocateMemoryAndPassToKernel Failed in AllocateMemoryAndPassToKernel In: cl_KernelSingleArgumentStruct!\n");
+						Essenbp::WriteLogToFile("\n Error :MultiBufferOnDevice[" + std::to_string(BufferNumber) + "]->AllocateMemoryAndPassToKernel Failed in AllocateMemoryAndPassToKernel In: cl_KernelSingleArgumentStruct!\n");
 					}
 					else
 					{
@@ -5016,9 +5049,26 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}		
 		}		
 
-		void FreeDataInSendStruct(unsigned int BufferNumber)
+		void FreeDataInSendStruct(unsigned int ArgumentNumber)
 		{
-			//PENDING
+			if (!IsConstructionSuccesful)
+			{
+				Essenbp::WriteLogToFile("\n Error Calling FreeDataInSendStruct Without Constructing the struct In: cl_KernelArgumentSendStruct!\n");
+			}
+			else
+			{
+				if (ArgumentNumber >= ArugmentList->TotalNumberOfArugments)
+				{
+					Essenbp::WriteLogToFile("\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in FreeDataInSendStruct In: PassDataStructToKernel!\n");
+				}
+				else
+				{
+					ArrayOfArgumentData[ArgumentNumber]->FreeData();					
+					*(ArrayOfOverWriteDataSetBoolean[ArgumentNumber]) = false;
+					*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = false;
+					*(ArrayOfUsePreviouslyAllocatedMemoryBoolean[ArgumentNumber]) = false;
+				}
+			}
 		}
 
 		~cl_KernelArgumentSendStruct()
@@ -5142,9 +5192,23 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		void FreeDataInSendStruct(unsigned int ArgumentNumber, unsigned int BufferNumber)
+		void FreeDataInSendStruct(unsigned int DeviceNumber, unsigned int ArgumentNumber)
 		{
-			//PENDING
+			if (!IsConstructionSuccesful)
+			{
+				Essenbp::WriteLogToFile("\n Error Calling FreeDataInSendStruct Without Constructing the struct In: cl_MultiDevice_KernelArgumentSendStruct!\n");
+			}
+			else
+			{
+				if (DeviceNumber >= NumberOfDevices)
+				{
+					Essenbp::WriteLogToFile("\n Error DeviceNumber + 1 Exceeds the Total Number Of Arugments Present! in FreeDataInSendStruct In: cl_MultiDevice_KernelArgumentSendStruct!\n");
+				}
+				else
+				{
+					MultiArgumentSendStructList[DeviceNumber]->FreeDataInSendStruct(ArgumentNumber);
+				}
+			}
 		}
 
 		~cl_MultiDevice_KernelArgumentSendStruct()
@@ -6897,7 +6961,31 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				GetKernelInformation(KernelNumber, OrderedStruct, IsSuccessful);
 			}
 		}
+		void GetDeviceInfoStruct(unsigned int DeviceNumber, cl_PerDeviceValuesStruct** DeviceInfo, bool& IsSuccessful)
+		{
+			IsSuccessful = false;
+			if (!IsConstructionSuccesful)
+			{
+				Essenbp::WriteLogToFile("\n Error :Calling GetDeviceInfoStruct Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+			}
+			else
+			{
+				if (DeviceNumber < NumberOfDevices)
+				{
+					IsSuccessful = true;
+					*DeviceInfo = PerDeviceValueStruct[DeviceNumber];
+				}
+				else
+				{
+					Essenbp::WriteLogToFile("\n Error DeviceNumber + 1 '" + std::to_string(DeviceNumber + 1) + "' is greater than NumberOfDevices in GetDeviceInfoStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+				}
+			}
 
+			if (!IsSuccessful)// For the safe of readability
+			{
+				Essenbp::WriteLogToFile("\n Error GetDeviceInfoStruct() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+			}
+		}
 		void RetreiveDataFromKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, Essenbp::UnknownDataAndSizeStruct& ReteivedData, bool& IsSuccessful)
 		{
 			IsSuccessful = false;
@@ -6957,7 +7045,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsSuccessful = false;
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling AddBufferForArgument Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n");
+				Essenbp::WriteLogToFile("\n Error :Calling AddBufferForArgument Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct\n");
 			}
 			else
 			{
@@ -6968,12 +7056,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->AddBufferForArgument(KernelArgumentNumber, IsSuccessful);
 						if (!IsSuccessful)
 						{
-							Essenbp::WriteLogToFile("\n Error :SingleKernelFunctionMultiArgumentsArray[" + std::to_string(KernelArgumentNumber) + "] Failed in AddBufferForArgument In: cl_KernelMultipleArgumentStruct!\n");
+							Essenbp::WriteLogToFile("\n Error :SingleKernelFunctionMultiArgumentsArray[" + std::to_string(KernelArgumentNumber) + "] Failed in AddBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct\n");
 						}
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in AddBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error DeviceNumber Exceeds the Number Of Devices Present! in AddBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 					}
 				}
 				else
@@ -6984,7 +7072,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error AddBufferForArgument() Failed in cl_KernelMultipleArgumentStruct!");
+				Essenbp::WriteLogToFile("\n Error AddBufferForArgument() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct");
 			}
 		}
 
@@ -6993,7 +7081,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			IsSuccessful = false;
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling RemoveBufferForArgument Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n");
+				Essenbp::WriteLogToFile("\n Error :Calling RemoveBufferForArgument Without Constructing the struct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct\n");
 			}
 			else
 			{
@@ -7004,12 +7092,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->RemoveBufferForArgument(KernelArgumentNumber, BufferNumber, IsSuccessful);
 						if (!IsSuccessful)
 						{
-							Essenbp::WriteLogToFile("\n Error :SingleKernelFunctionMultiArgumentsArray[" + std::to_string(KernelArgumentNumber) + "] Failed in RemoveBufferForArgument In: cl_KernelMultipleArgumentStruct!\n");
+							Essenbp::WriteLogToFile("\n Error :SingleKernelFunctionMultiArgumentsArray[" + std::to_string(KernelArgumentNumber) + "] Failed in RemoveBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct\n");
 						}
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error DevicesToRunKernel_To Exceeds the Number Of Devices Present! in RemoveBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error DeviceNumber Exceeds the Number Of Devices Present! in RemoveBufferForArgument In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 					}
 				}
 				else
@@ -7020,7 +7108,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error RemoveBufferForArgument() Failed in cl_KernelMultipleArgumentStruct!");
+				Essenbp::WriteLogToFile("\n Error RemoveBufferForArgument() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct");
 			}
 		}
 
