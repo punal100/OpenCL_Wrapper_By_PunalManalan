@@ -156,3 +156,32 @@ int main()
 	return 0;
 }
 ```
+## Add/Remove/Reuse/Overwrite/Share/UnShare/Interchange Buffer
+```c++
+int main()
+{
+	//Initialization Is Ommitted
+	//Run Kernel Is Ommitted
+	
+	//AddBufferForArgument(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int KernelArgumentNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.AddBufferForArgument(0, 0, 0, Issuccessful);
+	
+	//RemoveBufferForArgument(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int KernelArgumentNumber, unsigned int BufferNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.RemoveBufferForArgument(0, 0, 0, 0, Issuccessful);
+	
+	//StoreDataForKernelArgument(unsigned int DeviceNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, void* ArgData, size_t ArgSizeOfData, bool& IsSuccessful, bool OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false)
+	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, nullptr, 0, Issuccessful, false, true);
+	
+	//ShareBufferWithAnotherKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, unsigned int ChildKernelNumber, unsigned int ChildArgumentNumber, unsigned int ChildBufferNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.ShareBufferWithAnotherKernel(0, 0, 0, 0, 1, 0, 0, Issuccessful);//Sharing Arugment0Buffer0 of Kernel0(KenrelOne) with Arugment0Buffer0 of Kernel1(KernelTwo)
+	
+	//StopSharingBufferWithAnotherKernel(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int ArgBufferNumber, unsigned int ChildKernelNumber, unsigned int ChildArgumentNumber, unsigned int ChildBufferNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.StopSharingBufferWithAnotherKernel(0, 0, 0, 0, 1, 0, 0, Issuccessful);
+	
+	//InterchangeBufferWithinSameDevice(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, unsigned int TargetKernelNumber, unsigned int TargetArgumentNumber, unsigned int TargetBufferNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.InterchangeBufferWithinSameDevice(0, 0, 0, 0, 1, 0, 0, Issuccessful);//Inter Changing Arugment0Buffer0 of Kernel0(KernelOne) with Arugment0Buffer0 of Kernel1(KernelTwo)
+	
+	//InterchangeBufferWithAnotherDevice(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, unsigned int TargetDeviceNumber, unsigned int TargetKernelNumber, unsigned int TargetArgumentNumber, unsigned int TargetBufferNumber, bool& IsSuccessful)
+	EntireOpenCLProgram.InterchangeBufferWithAnotherDevice(0, 0, 0, 0, 1 ,1, 0, 0, Issuccessful);//Inter Changing Arugment0Buffer0 of Kernel0(KernelOne) with Arugment0Buffer0 of Kernel1(KernelTwo)
+}
+```
