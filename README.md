@@ -20,7 +20,7 @@ Free to Use, Whenever and whereever needed!
 14. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
 15. Details and Errors(If any) are Logged as a Log.txt file Upon Exit (**NOTE**:"OCLW_P.h" is tested bug free!).
 
-#requirements
+# Requirements
 1. OpenCL Minimum Version 1.2
 2. "Essenbp.h" Header(Provided)
 
