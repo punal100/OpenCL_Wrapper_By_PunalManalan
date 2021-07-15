@@ -91,9 +91,11 @@ int main()
 	//Initialization Is Ommited from Above
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;// No need to free it since it is only pointing to The One Inside
-	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, Issuccessful);//This Gets the Pointer to Argument List Order Created in Initialization
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, Issuccessful);//This Gets the Pointer to Ordered Argument List Created in Initialization
 	
-	//OCLW_P::cl_MultiDevice_KernelArgumentSendStruct [Constructor](/*Total Number Of Devices*/,  ,/*Is Succesful Boolean*/);
+	//OCLW_P::cl_MultiDevice_KernelArgumentSendStruct [Constructor](/*Total Number Of Devices*/, 
+      ///*Pointer to Constructed OCLW_P::cl_KernelFunctionArgumentOrderListStruct*/,
+      ///*Is Succesful Boolean*/);
 	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, Issuccessful);
 	
 	//int X = "Total Elements";// Anything of Choice, like Read[Y], ReadWrite[Z] etc
@@ -114,16 +116,24 @@ int main()
 	MultiDeviceData.StoreDataForKernelArgument(0, 4, 0, Private, 	   sizeof(cl_int), Issuccessful);
 
 	//Setting our Range
+	//OCLW_P::cl_MultiDevice_NDRangeStruct [Constructor](/*Total Number Of Devices*/, 
+      ///*Is Succesful Boolean*/);
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), Issuccessful);
-	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;
-	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, Issuccessful);
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;//Single Device
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, Issuccessful);//Pointer to NDRange of Device 0
 	NDRangeStructPtr->SetNDRange(10, 1, 0);
+	
+	//RunKernelFunction(/*Kernel Number or Name*/,
+      ///*Devices to Run From*/, /*Devices to Run to*/,// Example From and To is Set to 2,5 it means Kernel Will be run on 2,3,4,5(Assuming NDRange Is Set) 
+      ///*Multi NDRange Struct*/, /*Is Succesful Boolean*/,
+      //OCLW_P::cl_MultiDevice_KernelArgumentSendStruct = nullptr);//Should be Set Atleast Once before Use
+	EntireOpenCLProgram.RunKernelFunction("KernelOne", 0, 0, &MultiNDRange, Issuccessful, &MultiDeviceData);// Here Only Device 0 Will run
 
-	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, Issuccessful, &MultiDeviceData);
-
-	Essenbp::UnknownDataAndSizeStruct RetreivedData;
+	Essenbp::UnknownDataAndSizeStruct RetreivedData;//A Simple Struct of Void* Data and size_t Size
+	
+	//RetreiveDataFromKernel(/*Device Number*/, /*Kernel Number*/, /*Argument Number*/
+      ///*Buffer Number*/, /*Is Succesful Boolean*/)
 	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 0, 0, RetreivedData, Issuccessful);
-
 	Essenbp::WriteLogToFile("\n Retreived Data of Arg 0:-");
 	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(cl_int); ++i)
 	{
