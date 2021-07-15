@@ -34,25 +34,31 @@ int main()
 	//Error Checking is omitted
 	bool Issuccessful = false;//NOTE: Checking for failures is a good practice!
 	
-	//int N = "Total_Number_Of_Functions";//Example 2 functions namely "Add_Integers" & "Sub_Integers"//Function Names are Case and Symbol Sensitive
-	//int K1 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 3 Argument: 2 input And 1 Output
-	//int K2 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 3 Argument: 2 input And 1 Output
+	//int N = "Total_Number_Of_Functions";//Example 2 functions namely "KernelOne" & "KernelTwo"//Function Names are Case and Symbol Sensitive
+	//int K1 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 5 Argument: 2 input And 1 Output
+	//int K2 = "Total_Number_Of_Arugmnets_Of_Each_Specific_Function"//Example: 5 Argument: 2 input And 1 Output
 	
+	//cl_KernelFunctionsStruct [Constructor](/*Total Number Of Functions*/, /*Is Succesful Boolean*/);
 	OCLW_P::cl_KernelFunctionsStruct Functions_List(N, Issuccessful);// Specify The Total Number of functions to add
 	
+	//SetTheNameAndNumberOfArgumentsForNextKernelFunction(/*Kernel Name*/, /*Total Number Of Arguments*/, /*Is Succesful Boolean*/);
 	//NOTE: Function Names and Arugmnets are Stored in Order Like this: First->Second...->Last == (1,2...,N)
-	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Add_Integers", K1, Issuccessful);// 1st Function
-	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("Sub_Integers", K2, Issuccessful);// 2nd Function
+	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("KernelOne", K1, Issuccessful);// 1st Function
+	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("KernelTwo", K2, Issuccessful);// 2nd Function
 
-	//First Function "Add_Integers"
-	Functions_List.SetMemoryTypeOfArugment(0, K1, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);//Input
-	Functions_List.SetMemoryTypeOfArugment(0, K1, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);//Input
-	Functions_List.SetMemoryTypeOfArugment(0, K1, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);//OutPut
+	//First Function "KernelOne"
+	Functions_List.SetMemoryTypeOfArugment(0, 0, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 3, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 4, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 5, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
 	
-	//Second Function "Sub_Integers"
-	Functions_List.SetMemoryTypeOfArugment(1, K2, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);//Input
-	Functions_List.SetMemoryTypeOfArugment(1, K2, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);//Input
-	Functions_List.SetMemoryTypeOfArugment(1, K2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);//OutPut
+	//Second Function "KernelTwo"
+	Functions_List.SetMemoryTypeOfArugment(1, 0, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 3, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 4, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 5, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
 	
 	//This Returns ALL the Available Platforms(Example: Intel, AMD, Nvdia)
 	OCLW_P::cl_PlatformVendorStruct AvailablePlatformVendors(Issuccessful);
