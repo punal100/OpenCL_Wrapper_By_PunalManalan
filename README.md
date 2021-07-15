@@ -46,19 +46,20 @@ int main()
 	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("KernelOne", K1, Issuccessful);// 1st Function
 	Functions_List.SetTheNameAndNumberOfArgumentsForNextKernelFunction("KernelTwo", K2, Issuccessful);// 2nd Function
 
+	//SetMemoryTypeOfArugment(/*Kernel Numbter*/, /*Argument Number*/, /*Argument Type*/, /*Is Succesful Boolean*/);
 	//First Function "KernelOne"
 	Functions_List.SetMemoryTypeOfArugment(0, 0, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(0, 2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(0, 3, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(0, 4, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(0, 5, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 1, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 2, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 3, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(0, 4, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
 	
 	//Second Function "KernelTwo"
 	Functions_List.SetMemoryTypeOfArugment(1, 0, OCLW_P::cl_Memory_Type::CL_READ_ONLY, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(1, 2, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(1, 3, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(1, 4, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
-	Functions_List.SetMemoryTypeOfArugment(1, 5, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 1, OCLW_P::cl_Memory_Type::CL_WRITE_ONLY, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 2, OCLW_P::cl_Memory_Type::CL_READ_AND_WRITE, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 3, OCLW_P::cl_Memory_Type::CL_LOCALENUM, Issuccessful);
+	Functions_List.SetMemoryTypeOfArugment(1, 4, OCLW_P::cl_Memory_Type::CL_PRIVATE, Issuccessful);
 	
 	//OCLW_P::cl_PlatformVendorStruct(/*Is Succesful Boolean*/);
 	//NOTE:This Returns ALL the Available Platforms(Example: Intel, AMD, Nvdia)
@@ -74,11 +75,68 @@ int main()
 	//std::string FilePath = "C:\\OpenCL Folder\\PunalOpenclFunctionsProgram.cl";// Is Direct Path
 	std::string FilePath = "OpenclFunctionsProgram.cl";// This looks for the file in program location
 	//OCLW_P::OpenCLWrapper(/*File Path*/,
- /*Reference to Constructed OCLW_P::cl_KernelFunctionsStruct*/,
- /*Reference to Constructed OCLW_P::cl_PlatformVendorStruct*/,
- /*Is Succesful Boolean*/);
+      ///*Reference to Constructed OCLW_P::cl_KernelFunctionsStruct*/,
+      ///*Reference to Constructed OCLW_P::cl_PlatformVendorStruct*/,
+      ///*Is Succesful Boolean*/);
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	
 	//Initialization End
+}
+```
+
+## Run Kernel
+```c++
+int main()
+{	
+	//Initialization Is Ommited from Above
+
+	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;// No need to free it since it is only pointing to The One Inside
+	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, Issuccessful);//This Gets the Pointer to Argument List Order Created in Initialization
+
+	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, Issuccessful);
+	
+	
+	cl_int Read[X];//Creation Of Global Variables are the Same
+	cl_int Write[X];//NOTE: Every Buffer Should Be Initialized even if Write[X] Buffer's Element's value are 0
+	cl_int ReadWrite[X];
+	cl_int Local = nullptr;
+	cl_int Private = Y;
+
+	//StoreDataForKernelArgument(/*Kernel Numbter*/, /*Argument Number*/, /*Buffer Number*/, /*Pointer To Data*/, /*Size Of Data*/, /*Is Succesful Boolean*/);
+	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, Read, 10 * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 1, 0, Write, 10 * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 2, 0, ReadWrite, 10 * sizeof(cl_int), Issuccessful);
+
+	//Setting our Range
+	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), Issuccessful);
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, Issuccessful);
+	NDRangeStructPtr->SetNDRange(10, 1, 0);
+
+	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, Issuccessful, &MultiDeviceData);
+
+	Essenbp::UnknownDataAndSizeStruct RetreivedData;
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 0, 0, RetreivedData, Issuccessful);
+
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 0:-");
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(cl_int); ++i)
+	{
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
+	}
+
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 1, 0, RetreivedData, Issuccessful);
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 1:-");
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(cl_int); ++i)
+	{
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
+	}
+
+	EntireOpenCLProgram.RetreiveDataFromKernel(0, 0, 2, 0, RetreivedData, Issuccessful);	
+	Essenbp::WriteLogToFile("\n Retreived Data of Arg 2:-");
+	for (int i = 0; i < RetreivedData.GetDataSize() / sizeof(cl_int); ++i)
+	{
+		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
+	}
+	return 0;
 }
 ```
