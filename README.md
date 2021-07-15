@@ -73,7 +73,10 @@ int main()
 
 	//std::string FilePath = "C:\\OpenCL Folder\\PunalOpenclFunctionsProgram.cl";// Is Direct Path
 	std::string FilePath = "OpenclFunctionsProgram.cl";// This looks for the file in program location
-	//OCLW_P::OpenCLWrapper(/*File Path*/, /*Reference to Constructed OCLW_P::cl_KernelFunctionsStruct*/, /*Reference to Constructed OCLW_P::cl_PlatformVendorStruct*/, /*Is Succesful Boolean*/);
+	//OCLW_P::OpenCLWrapper(/*File Path*/,
+ /*Reference to Constructed OCLW_P::cl_KernelFunctionsStruct*/,
+ /*Reference to Constructed OCLW_P::cl_PlatformVendorStruct*/,
+ /*Is Succesful Boolean*/);
 	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	
 	//Initialization End
