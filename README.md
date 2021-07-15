@@ -92,20 +92,26 @@ int main()
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;// No need to free it since it is only pointing to The One Inside
 	EntireOpenCLProgram.GetKernelInformation("Add_Integers", &OrderedStruct, Issuccessful);//This Gets the Pointer to Argument List Order Created in Initialization
-
+	
+	//OCLW_P::cl_MultiDevice_KernelArgumentSendStruct [Constructor](/*Total Number Of Devices*/,  ,/*Is Succesful Boolean*/);
 	OCLW_P::cl_MultiDevice_KernelArgumentSendStruct MultiDeviceData(EntireOpenCLProgram.GetTotalNumberOfDevices(), OrderedStruct, Issuccessful);
 	
-	
+	//int X = "Total Elements";// Anything of Choice, like Read[Y], ReadWrite[Z] etc
 	cl_int Read[X];//Creation Of Global Variables are the Same
 	cl_int Write[X];//NOTE: Every Buffer Should Be Initialized even if Write[X] Buffer's Element's value are 0
 	cl_int ReadWrite[X];
-	cl_int Local = nullptr;
-	cl_int Private = Y;
+	cl_int Local = nullptr;//Let the Size Be Y
+	cl_int Private = Z;//Z being Some Value
 
-	//StoreDataForKernelArgument(/*Kernel Numbter*/, /*Argument Number*/, /*Buffer Number*/, /*Pointer To Data*/, /*Size Of Data*/, /*Is Succesful Boolean*/);
-	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, Read, 10 * sizeof(cl_int), Issuccessful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 1, 0, Write, 10 * sizeof(cl_int), Issuccessful);
-	MultiDeviceData.StoreDataForKernelArgument(0, 2, 0, ReadWrite, 10 * sizeof(cl_int), Issuccessful);
+	//StoreDataForKernelArgument(/*Kernel Numbter*/,
+      ///*Argument Number*/, /*Buffer Number*/,
+      ///*Pointer To Data*/, /*Size Of Data*/, /*Is Succesful Boolean*/,
+      //OverWriteMemory_NOTForLOCAL_PRIVATE = false, bool UsePreviouslyAllocatedMemoryOnBuffer = false);//These Two Are Optional, To be Used Only after Storing Data Atleast Once
+	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, Read, X * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 1, 0, Write,     X * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 2, 0, ReadWrite, X * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 3, 0, nullptr,   Y * sizeof(cl_int), Issuccessful);
+	MultiDeviceData.StoreDataForKernelArgument(0, 4, 0, Private, 	   sizeof(cl_int), Issuccessful);
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), Issuccessful);
