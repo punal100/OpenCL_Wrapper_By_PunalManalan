@@ -21,10 +21,11 @@ Free to Use, Whenever and whereever needed!
 15. Details and Errors(If any) are Logged as a Log.txt file Upon Exit (**NOTE**:"OCLW_P.h" is tested bug free!).
 
 # Requirements
-1. OpenCL Minimum Version 1.2
+1. OpenCL Minimum Version 1.2 //cl.h & OpenCL.lib
 2. "Essenbp.h" Header(Provided)
 
 # How to use
+**NOTE: Example Code Available as Examples.cpp & ExampleOpenCLKernels.cl**
 ## Initialization:
 ```c++
 #include "OCLW_P.h"
@@ -84,7 +85,7 @@ int main()
 }
 ```
 
-## Run Kernel
+## Runing Kernel:
 ```c++
 int main()
 {	
@@ -157,7 +158,7 @@ int main()
 }
 ```
 
-## Add/Remove/Reuse/Overwrite/Share/UnShare/Interchange Buffer
+## Add/Remove/Reuse/Overwrite/Share/UnShare/Interchange for Buffer:
 ```c++
 int main()
 {
@@ -187,7 +188,7 @@ int main()
 }
 ```
 
-## Additonal Functions
+## Additonal Functions:
 ```c++
 int main()
 {
@@ -214,3 +215,9 @@ int main()
 	void GetBinaryInformationOfProgram(Essenbp::ArrayOfUnknownDataAndSize& Binary_Program_OfEachDevice, bool& IsSuccessful)
 }
 ```
+
+# About Me
+I am Punal Manalan, I Spend My Free Time in C++ Mostly Optimizing(Pointer & Less Code) my Code Been Programming for Over 2 years as of 2021, I also Use Unreal Engine 4(C++)
+Took me 4 Months to complete This Wrapper Mainly Due to me spending my free time Playing **Black Mesa, Metro Redux, Metro LastLight, Metro Exodus, Halo CE, Halo 2, Halo 3, Enlisted, Warthunder, Planetside 2, swtor(returned after 6 years).**
+In Fact i should have already completed this in a month at max...
+
