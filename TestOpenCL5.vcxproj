@@ -155,7 +155,7 @@
     <ClCompile Include="Examples.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PunalOpenclFunctionsProgram.cl" />
+    <None Include="ExampleOpenCLKernels.cl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Essenbp.h" />
