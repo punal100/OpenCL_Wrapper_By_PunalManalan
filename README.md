@@ -5,20 +5,20 @@ Solely Written By Punal Manalan.
 Free to Use, Whenever and whereever needed!
 
 # Information About This Wrapper
-1. LightWeight, Easy to use **Header-Only** "OCLW_P.h" Wrapper for OpenCL.
-2. 'OCLW_P::OpenCLWrapper' Is Entire OpenCl Program which as every information of the devices.
-3. Written Using only "CL/cl.h" and has backward compatblity upto OpenCL 1.2!
+1. LightWeight, Easy to use Header-Only "OCLW_P.h" Wrapper for OpenCL.
+2. 'OCLW_P::OpenCLWrapper' Is the Entire OpenCL Program that has every information of the devices.
+3. Written Using only "CL/cl.h" and has backward compatibility up to OpenCL 1.2!
 4. Adding kernel function and argument types Only Once.
-5. Information about each kernel function and it's argument types can be Accesed with **getter**functions().
-6. Works On **Multi-Platforms** and **Multi-GPUs**.
-7. Sharing of Work-Load between **Multi-GPUs** Can be acheived anytime during runtime!
-9. Compiles and Runs on Windows, Linux and Mac.
-10. This Wrapper specializes in Heavy Computation on GPU.
-11. From Constrction to Destruction everything is Done automaticaly!
-12. No need for manual destruction and releasing cl resources!
-13. No need to write Tedious amount of code to counter memory leaks!
-14. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
-15. Details and Errors(If any) are Logged as a Log.txt file Upon Exit (**NOTE**:"OCLW_P.h" is tested bug free!).
+5. Information about each kernel function and its argument types can be Accessed with getter functions().
+6. Works On Multi-Platforms and Multi-GPUs.
+7. Sharing of Work-Load between Multi-GPUs Can be achieved anytime during runtime!
+8. Compiles and Runs on Windows, Linux and Mac.
+9. This Wrapper specializes in Heavy Computation on GPU.
+10. From Construction to Destruction everything is Done automatically!
+11. No need for manual destruction and releasing cl resources!
+12. No need to write Tedious amount of code to counter-memory leaks!
+13. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
+14. Details and Errors(If any) are Logged as a Log.txt file Upon Exit (NOTE: "OCLW_P.h" is tested bug-free!).
 
 # Requirements
 1. OpenCL Minimum Version 1.2 //cl.h & OpenCL.lib
