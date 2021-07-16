@@ -32,7 +32,7 @@ Free to Use, Whenever and whereever needed!
 
 int main()
 {	
-	//Error Checking is omitted
+	//Error Checking is omitted.
 	bool Issuccessful = false;//NOTE: Checking for failures is a good practice!
 	
 	//int N = "Total_Number_Of_Functions";//Example 2 functions namely "KernelOne" & "KernelTwo"//Function Names are Case and Symbol Sensitive
