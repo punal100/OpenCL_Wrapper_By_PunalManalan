@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PunalOpenclFunctionsProgram.cl">
+    <None Include="ExampleOpenCLKernels.cl">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

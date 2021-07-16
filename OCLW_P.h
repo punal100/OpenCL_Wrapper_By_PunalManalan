@@ -3,18 +3,20 @@ OpenCL Wrapper By Punal Manalan
 Use this code wherever and whenever you want to!
 
 Information About This Wrapper:
-1. LightWeight, Easy to use **Header-Only** Wrapper for OpenCL.
-2. 'OCLW_P::OpenCLWrapper' This Single line of code does Everything(Including Adding Functions) Automaticaly.
-3. Written Using only "CL/cl.h" and has backward compatblity upto OpenCL 1.2!
-3. No need to maually Add kernel function or figure out argument types.
-4. The Entire OpenCL Program File is Read and automaticaly Assignes Kernel Functions Ready for use!
-5. Information about each kernel function and it's argument types can be Accesed with **getter**functions().
-6. Compiles and Runs on Windows, Linux and Mac.
-7. This Wrapper specializes in Heavy Computation on GPU.
-8. From Constrction to Destruction everything is Done automaticaly!
-9. No need for manual destruction and releasing cl resources!
-10. No need to write Tedious amount of code to counter memory leaks!
-11. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
+1. LightWeight, Easy to use Header-Only "OCLW_P.h" Wrapper for OpenCL.
+2. 'OCLW_P::OpenCLWrapper' Is the Entire OpenCL Program that has every information of the devices.
+3. Written Using only "CL/cl.h" and has backward compatibility up to OpenCL 1.2!
+4. Adding kernel function and argument types Only Once.
+5. Information about each kernel function and its argument types can be Accessed with getter functions().
+6. Works On Multi-Platforms and Multi-GPUs.
+7. Sharing of Work-Load between Multi-GPUs Can be achieved anytime during runtime!
+8. Compiles and Runs on Windows, Linux and Mac.
+9. This Wrapper specializes in Heavy Computation on GPU.
+10. From Construction to Destruction everything is Done automatically!
+11. No need for manual destruction and releasing cl resources!
+12. No need to write Tedious amount of code to counter-memory leaks!
+13. Upon going out of scope or exiting the program Every resource that is used is safely Released and Deleted.
+14. Details and Errors(If any) are Logged as a Log.txt file Upon Exit (NOTE: "OCLW_P.h" is tested bug-free!).
 *********************************************************************************************************************************/
 
 #ifndef OPENCL_WRAPPER_BY_PUNAL
@@ -334,7 +336,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			DeviceClCommandQueue = clCreateCommandQueue(*TheClContext, SelectedDevice, 0, &ClErrorResult);
 			if (ClErrorResult != CL_SUCCESS)
 			{
-				Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : cl_CommandQueue Creation In: ccl_PerDeviceValuesStruct!\n");
+				Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : cl_CommandQueue Creation In: cl_PerDeviceValuesStruct!\n");
 			}
 			else
 			{
@@ -345,7 +347,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &Temp1, NULL);
 				if (ClErrorResult != CL_SUCCESS)
 				{
-					Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed!\n");
+					Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_MAX_COMPUTE_UNITS Info Failed In: cl_PerDeviceValuesStruct!\n");
 				}
 				else
 				{
@@ -356,7 +358,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &Temp2, NULL);
 					if (ClErrorResult != CL_SUCCESS)
 					{
-						Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed!\n");
+						Essenbp::WriteLogToFile("\n CLError Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_MAX_WORK_GROUP_SIZE Info Failed In: cl_PerDeviceValuesStruct!\n");
 					}
 					else
 					{
@@ -368,7 +370,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 						if (ClErrorResult != CL_SUCCESS)
 						{
-							Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed!\n");
+							Essenbp::WriteLogToFile("\nCLError Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_GLOBAL_MEM_SIZE Info Failed In: cl_PerDeviceValuesStruct!\n");;
 						}
 						else
 						{
@@ -380,7 +382,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 							if (ClErrorResult != CL_SUCCESS)
 							{
-								Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed!\n");
+								Essenbp::WriteLogToFile("\nCLError Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_GLOBAL_MEM_CACHE_SIZE Info Failed In: cl_PerDeviceValuesStruct!\n");
 							}
 							else
 							{
@@ -391,7 +393,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								ClErrorResult = clGetDeviceInfo(SelectedDevice, CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &Temp3, NULL);
 								if (ClErrorResult != CL_SUCCESS)
 								{
-									Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed!\n");	
+									Essenbp::WriteLogToFile("\nCLError Code " + std::to_string(ClErrorResult) + " : Device Get CL_DEVICE_LOCAL_MEM_SIZE Info Failed In: cl_PerDeviceValuesStruct!\n");
 								}
 								else
 								{
@@ -414,7 +416,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					Essenbp::WriteLogToFile("\n CLError " + std::to_string(ClErrorResult) + " : Releasing CommandQueue: " + "in cl_PerDeviceValuesStruct!\n");
 				}
-				Essenbp::WriteLogToFile("\n Error Construction Failed cl_PlatformVendorStruct!");
+				Essenbp::WriteLogToFile("\n Error Construction Failed cl_PerDeviceValuesStruct!");
 				DeviceClCommandQueue = NULL;
 				MaxComputeUnitPerGPU = 0;
 				MaxWorkItemPerGroup = 0;
@@ -493,31 +495,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = true;
 			}
 		}
-
-		// Deprecated NOTE: No Use
-		/*
-		//NOTE: This sets everything to 0 which means enqueuendrangekernel should be passed with null for both global and local work sizes
-		void SetNDRange(cl_uint ArgDimensions)
-		{
-			if (!IsConstructionSuccesful)
-			{
-				Essenbp::WriteLogToFile("\n Error Calling SetNDRange Without Constructing the struct In: cl_NDRangeStruct!\n");
-				return;
-			}
-
-			Dimensions = ArgDimensions;//By default it is 1
-			GlobalWorkSize[0] = 0;
-			GlobalWorkSize[1] = 0;
-			GlobalWorkSize[2] = 0;
-
-			LocalWorkSize[0] = 0;
-			LocalWorkSize[1] = 0;
-			LocalWorkSize[2] = 0;
-
-			WorkSizeOffset[0] = 0;
-			WorkSizeOffset[1] = 0;
-			WorkSizeOffset[2] = 0;
-		}*/
 
 		//NOTE: 1 Dimension
 		void SetNDRange(size_t GlobalSize1D, size_t LocalSize1D, size_t WorkSizeOffset1D)
@@ -875,14 +852,21 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				if (DeviceNumber < NumberOfDevices)
+				if (ReturnNDRange == nullptr)
 				{
-					IsSuccessful = true;
-					*ReturnNDRange = MultiNDRange[DeviceNumber];					
+					Essenbp::WriteLogToFile("\n Error ReturnNDRangeis nullptr in GetNDRangeOfDevice In: cl_MultiDevice_NDRangeStruct!\n");
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(DeviceNumber + 1) + "' Is greater than the NumberOfDevices in GetNDRangeOfDevice In: cl_NDRangeStruct!\n");
+					if (DeviceNumber < NumberOfDevices)
+					{
+						IsSuccessful = true;
+						*ReturnNDRange = MultiNDRange[DeviceNumber];
+					}
+					else
+					{
+						Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(DeviceNumber + 1) + "' Is greater than the NumberOfDevices in GetNDRangeOfDevice In: cl_MultiDevice_NDRangeStruct!\n");
+					}
 				}
 			}
 			if (!IsSuccessful)// For the safe of readability
@@ -903,22 +887,25 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (ArgNDRange == nullptr)
 				{
-					Essenbp::WriteLogToFile("\n Error ArgNDRange is nullptr in SetNDRangeOfDevice In: cl_NDRangeStruct!\n");
-				}
-
-				if (DeviceNumber < NumberOfDevices)
-				{
-					Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(DeviceNumber + 1) + "' Is greater than the NumberOfDevices in SetNDRangeOfDevice In: cl_NDRangeStruct!\n");
+					Essenbp::WriteLogToFile("\n Error ArgNDRange is nullptr in SetNDRangeOfDevice In: cl_MultiDevice_NDRangeStruct!\n");
 				}
 				else
 				{
-					MultiNDRange[DeviceNumber]->CopyNDRange(ArgNDRange, IsSuccessful);
-					if (!IsSuccessful)
+					if (DeviceNumber < NumberOfDevices)
 					{
-						Essenbp::WriteLogToFile("\n Error MultiNDRange[DeviceNumber]->CopyNDRange() failed in SetNDRangeOfDevice In: cl_NDRangeStruct!\n");
+						Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(DeviceNumber + 1) + "' Is greater than the NumberOfDevices in SetNDRangeOfDevice In: cl_MultiDevice_NDRangeStruct!\n");
+					}
+					else
+					{
+						MultiNDRange[DeviceNumber]->CopyNDRange(ArgNDRange, IsSuccessful);
+						if (!IsSuccessful)
+						{
+							Essenbp::WriteLogToFile("\n Error MultiNDRange[DeviceNumber]->CopyNDRange() failed in SetNDRangeOfDevice In: cl_MultiDevice_NDRangeStruct!\n");
+						}
 					}
 				}
 			}
+
 			if (!IsSuccessful)// For the safe of readability
 			{
 				Essenbp::WriteLogToFile("\n Error SetNDRangeOfDevice() Failed in cl_MultiDevice_NDRangeStruct!\n");
@@ -979,7 +966,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccessful);
 			if (!IsSuccessful)
 			{
-				Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(TotalNumberOfArugments * sizeof(cl_Memory_Type*)) + " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n");
+				Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(TotalNumberOfArugments * sizeof(cl_Memory_Type*)) + " Byes Of Memory for KernelArgumentsInOrder In cl_KernelFunctionArgumentOrderListStruct!\n");
 			}
 			else
 			{
@@ -1000,7 +987,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					if (!IsSuccessful)
 					{
-						Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_Memory_Type)) + " Byes Of Memory for KernelArgumentsInOrder[" + std::to_string(i) + "] In KernelFunctionArgumentOrderListStruct!\n");
+						Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_Memory_Type)) + " Byes Of Memory for KernelArgumentsInOrder[" + std::to_string(i) + "] In cl_KernelFunctionArgumentOrderListStruct!\n");
 						for (int j = 0; j < i; ++j)
 						{
 							delete KernelArgumentsInOrder[j];
@@ -1041,20 +1028,20 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!CopyStruct->IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error The OrderedListOfArugments Is Not Constructed, So Is Unusable In: cl_MultiKernelFunction_MultiDeviceStruct!\n");
+				Essenbp::WriteLogToFile("\n Error The OrderedListOfArugments Is Not Constructed, So Is Unusable In: cl_KernelFunctionArgumentOrderListStruct!\n");
 			}
 			else
 			{
 				if (!CopyStruct->IsThisListUsable)
 				{
-					Essenbp::WriteLogToFile("\n Error The OrderedListOfArugments Is Not Properly Set, So Is Unusable In: cl_MultiKernelFunction_MultiDeviceStruct!\n");
+					Essenbp::WriteLogToFile("\n Error The OrderedListOfArugments Is Not Properly Set, So Is Unusable In: cl_KernelFunctionArgumentOrderListStruct!\n");
 				}
 				else
 				{
 					Essenbp::Malloc_PointerToArrayOfPointers((void***)&KernelArgumentsInOrder, TotalNumberOfArugments, sizeof(cl_Memory_Type*), IsSuccessful);
 					if (!IsSuccessful)
 					{
-						Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(TotalNumberOfArugments * sizeof(cl_Memory_Type*)) + " Byes Of Memory for KernelArgumentsInOrder In KernelFunctionArgumentOrderListStruct!\n");
+						Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(TotalNumberOfArugments * sizeof(cl_Memory_Type*)) + " Byes Of Memory for KernelArgumentsInOrder In cl_KernelFunctionArgumentOrderListStruct!\n");
 					}
 					else
 					{
@@ -1063,7 +1050,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 							KernelArgumentsInOrder[i] = new cl_Memory_Type(*((CopyStruct->KernelArgumentsInOrder)[i]));
 							if (KernelArgumentsInOrder[i] == nullptr)
 							{
-								Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_Memory_Type)) + " Byes Of Memory for KernelArgumentsInOrder[" + std::to_string(i) + "] In KernelFunctionArgumentOrderListStruct!\n");
+								Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(sizeof(cl_Memory_Type)) + " Byes Of Memory for KernelArgumentsInOrder[" + std::to_string(i) + "] In cl_KernelFunctionArgumentOrderListStruct!\n");
 								for (int j = 0; j < i; ++j)
 								{
 									delete KernelArgumentsInOrder[j];
@@ -1210,121 +1197,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 
-		//Redundant Getter Functions...
-		/*void GetIsListUsable(bool& IsUsable)
-		{
-			IsUsable = IsThisListUsable && IsConstructionSuccesful;
-		}
-		void GetKernelFunctionName(std::string& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = "";
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = KernelFunctionName;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetKernelFunctionName Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetTotalNumberOfArugments(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = TotalNumberOfArugments;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetTotalNumberOfArugments Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetNumberOfReads(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = NumberOfReads;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetNumberOfReads Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetNumberOfWrites(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = NumberOfWrites;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetNumberOfWrites Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetNumberOfRead_And_Writes(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = NumberOfRead_And_Writes;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetNumberOfRead_And_Writes Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetNumberOfLocals(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = NumberOfLocals;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetNumberOfLocals Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetNumberOfPrivates(int& ReturnVal, bool& IsSuccessful)
-		{
-			ReturnVal = 0;
-			if (IsConstructionSuccesful)
-			{
-				ReturnVal = NumberOfPrivates;
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetNumberOfPrivates Without Constructing the struct In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}
-		void GetMemoryTypeOfArgument(unsigned int ArgumentNumber, cl_Memory_Type& TheMemoryType, bool& IsSuccessful)
-		{
-			IsSuccessful = false;
-			if (!IsConstructionSuccesful)
-			{
-				Essenbp::WriteLogToFile("\n Error Calling GetMemoryTypeOfArgument, The OrderedListOfArugments Is Not Constructed, So Is Unusable In: cl_KernelFunctionArgumentOrderListStruct!\n");
-				return;
-			}
-			else
-			{
-				if (!IsThisListUsable)
-				{
-					Essenbp::WriteLogToFile("\n Error Calling GetMemoryTypeOfArgument,The OrderedListOfArugments Is Not Properly Set, So Is Unusable In: cl_KernelFunctionArgumentOrderListStruct!\n");
-					return;
-				}
-			}
-			if (ArgumentNumber < TotalNumberOfArugments)
-			{
-				TheMemoryType = *((KernelArgumentsInOrder)[ArgumentNumber]);
-			}
-			else
-			{
-				Essenbp::WriteLogToFile("\n Error ArgumentNumber Exceeds the total number of Arguments Present! in GetMemoryTypeOfArgument In: cl_KernelFunctionArgumentOrderListStruct!\n");
-			}
-		}*/
-
 		~cl_KernelFunctionArgumentOrderListStruct()
 		{
 			Essenbp::WriteLogToFile("\n Destructing cl_KernelFunctionArgumentOrderListStruct!");
@@ -1340,6 +1212,12 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 				}
 				free(KernelArgumentsInOrder);
+				NumberOfArgumentsSet = 0;
+				NumberOfReads = 0;
+				NumberOfWrites = 0;
+				NumberOfRead_And_Writes = 0;
+				NumberOfLocals = 0;
+				NumberOfPrivates = 0;
 				IsConstructionSuccesful = false;
 			}
 		}
@@ -1413,12 +1291,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error Trying to Releasing Uninitialized_cl_Memory Memory On device In BufferCreation In: cl_MemoryStruct!\n");
+						Essenbp::WriteLogToFile("\n Error Trying to Releasing Uninitialized_cl_Memory Memory On device In FreeBuffer In: cl_MemoryStruct!\n");
 					}
 				}
 				else
 				{
-					//Essenbp::WriteLogToFile("\n Error Buffer does not exist, unable to free buffer" + ": BufferCreation In: cl_MemoryStruct!\n");
 					IsSuccessful = true;
 				}
 			}
@@ -1430,7 +1307,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				COPY_OF_PrivateMemoryType = nullptr;
 				MemoryInDeviceTotalSizeInBytes = 0;
 				MemoryInDevice_Occupied_SizeInBytes = 0;
-				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In AllocateMemoryAndPassToKernel In: cl_MemoryStruct!\n");
+				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In FreeBuffer In: cl_MemoryStruct!\n");
 			}
 			
 
@@ -1578,7 +1455,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In AllocateMemoryAndPassToKernel In: cl_MemoryStruct!\n");
+				Essenbp::WriteLogToFile("\n Error :Trying to Allocate memory on a Share Receiving Buffer(child)! In BufferCreation In: cl_MemoryStruct!\n");
 			}
 
 			if (!IsSuccessful)// For the safe of readability
@@ -1652,8 +1529,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 			else
 			{
-				//if (!DummyCopy)
-				//{
 				if (AlsoCopyBufferAddressAndSize)
 				{
 					DoesBufferAlreadyExist = CopyStruct->DoesBufferAlreadyExist;
@@ -1669,17 +1544,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					{
 						Essenbp::WriteLogToFile("\n Error Allocating:" + std::to_string(sizeof(cl_mem)) + "GlobalMemoryInDevice In: cl_MemoryStruct!\n");
 					}
-					BufferCreation(1, IsSuccessful);// No Need to use IsSuccessful Here
+					BufferCreation(0, IsSuccessful);// No Need to use IsSuccessful Here
 				}
-				//else
-				//{
-				//	//if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)// Since we are copying the contents, CL_PRIVATE will have fixed size
-				//	//{
-				//	//	MemoryInDeviceTotalSizeInBytes = CopyStruct->MemoryInDeviceTotalSizeInBytes;
-				//	//	MemoryInDevice_Occupied_SizeInBytes = CopyStruct->MemoryInDevice_Occupied_SizeInBytes;
-				//	//}
-				//}
-				//}
 				IsSuccessful = true;
 			}
 
@@ -1720,34 +1586,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						{
 							if (clMemory_Type_Of_Argument != cl_Memory_Type::Uninitialized_cl_Memory)
 							{
-								//if (MemoryTypeOfThisMemoryInDevice != TheMemoryType)
-								//{
-								//	Essenbp::WriteLogToFile("\n Error Supplied MemoryType Does not Match with Type Of MemoryInDevice" + ": OverWriting Buffer In: cl_MemoryStruct!\n");
-								//	return;
-								//}
-								////else// This is unlikely to happen see the above two if stement, MemoryTypeOfThisMemoryInDevice != cl_Memory_Type::Uninitialized_cl_Memory, Then MemoryTypeOfThisMemoryInDevice != TheMemoryType
-								////{
-								////	if (TheMemoryType == cl_Memory_Type::Uninitialized_cl_Memory)
-								////	{
-								////		Essenbp::WriteLogToFile("\n Error " + std::to_string(ClErrorResult) + " : Default 'Uninitialized_cl_Memory' Enum passed! Please pass any of these Enums CL_PRIVATE, CL_LOCALENUM, CL_READ_ONLY, CL_WRITE_ONLY, CL_READ_AND_WRITE\n");
-								////	}
-								////}
 								if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type <= MemoryInDeviceTotalSizeInBytes)
 								{
 									if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
 									{
-										//if (SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type != MemoryInDeviceTotalSizeInBytes)
-										//{
 										Essenbp::WriteLogToFile("\n Error :Trying to OverWrite cl_Memory_Type::CL_PRIVATE, OverWrtie Function is only for Global Memory. Pass Private Normally... in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-										//}
-										//else
-										//{
-										//	for (int i = 0; i < MemoryInDeviceTotalSizeInBytes; ++i)// Memccpy bad
-										//	{
-										//		((char*)COPY_OF_PrivateMemoryType)[i] = ((char*)PointerToMemoryToCopyFrom)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
-										//	}
-										//	IsSuccessful = true;
-										//}
 									}
 									else
 									{
@@ -1788,16 +1631,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										}
 										else
 										{
-											//if (PointerToMemoryToCopyFrom != nullptr)
-											//{
 											Essenbp::WriteLogToFile("\n Error :Trying To OverWrite Local Memory(This type can not be written or overwritten from host...) So Pass nullptr to the parameter 'PointerToMemoryToCopyFrom' in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
-											//}
-											//else
-											//{
-											//	MemoryInDeviceTotalSizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-											//	MemoryInDevice_Occupied_SizeInBytes = SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type;
-											//	IsSuccessful = true;
-											//}
 										}
 									}
 								}
@@ -1869,7 +1703,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											ClErrorResult = clEnqueueWriteBuffer(*cl_CommandQueueForThisArgument, *GlobalMemoryInDevice, CL_TRUE, 0, SizeOfMemoryInBytes_ForPrivatePassSizeofVariable_Type, PointerToMemoryToCopyFrom, 0, NULL, NULL);
 											if (ClErrorResult != CL_SUCCESS)
 											{
-												Essenbp::WriteLogToFile("\n Error Code " + std::to_string(ClErrorResult) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
+												Essenbp::WriteLogToFile("\nCLError Code " + std::to_string(ClErrorResult) + " in MemoryAllocationOnDevice In: cl_MemoryStruct!\n");
 												FreeBuffer(IsSuccessful);
 												if (!IsSuccessful)
 												{
@@ -1915,7 +1749,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (!DoesBufferAlreadyExist)
 				{
-					Essenbp::WriteLogToFile("\n Error Kernel Argument Number of " + std::to_string(KernelArgumentNumber) + " Does not have buffer created. in ReadBuffer In: cl_MemoryStruct!\n");
+					Essenbp::WriteLogToFile("\n Error Kernel Argument Number of " + std::to_string(KernelArgumentNumber) + " Does not have buffer created. in PassBufferToKernel In: cl_MemoryStruct!\n");
 				}
 				else
 				{
@@ -2036,7 +1870,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error PassBufferToKernel() Failed in cl_MemoryStruct!");
+				Essenbp::WriteLogToFile("\n Error AllocateMemoryAndPassToKernel() Failed in cl_MemoryStruct!");
 			}
 		}
 
@@ -2140,25 +1974,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						IsSuccessful = false;
 						Essenbp::WriteLogToFile("\n Error This Buffer Can not be InterChangedWithSame/AnotherDevice since this and PointerToBuffer Are the same in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
 					}
-					/*if (PointerToBuffer->clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
-					{
-						if (clMemory_Type_Of_Argument != cl_Memory_Type::CL_PRIVATE)
-						{
-							IsSuccessful = false;
-							Essenbp::WriteLogToFile("\n Error PointerToBuffer->clMemory_Type_Of_Argument is Private but clMemory_Type_Of_Argument is not private in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-						}
-					}
-					else
-					{
-						if (clMemory_Type_Of_Argument == cl_Memory_Type::CL_PRIVATE)
-						{
-							if (PointerToBuffer->clMemory_Type_Of_Argument != cl_Memory_Type::CL_PRIVATE)
-							{
-								IsSuccessful = false;
-								Essenbp::WriteLogToFile("\n Error clMemory_Type_Of_Argument is not private but PointerToBuffer->clMemory_Type_Of_Argument is private in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-							}
-						}
-					}*/
 					if (PointerToShareGiverBuffer != nullptr)
 					{
 						IsSuccessful = false;
@@ -2182,107 +1997,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						}
 						else
 						{
-							/*if(false) //(clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
-							{
-								cl_MemoryStruct* TEMP_COPY_BufferOne = nullptr;//It Will Hold Buffer Of This				and Context of	(*PointerToBuffer)
-								cl_MemoryStruct* TEMP_COPY_BufferTwo = nullptr;//It Will Hold Buffer Of (*PointerToBuffer)	and Context of	this
-
-								TEMP_COPY_BufferOne = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
-								if (TEMP_COPY_BufferOne == nullptr)
-								{
-									IsSuccessful = false;
-								}
-								else
-								{
-									if (!IsSuccessful)
-									{
-										delete TEMP_COPY_BufferOne;
-									}
-									else
-									{
-										TEMP_COPY_BufferOne->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
-										TEMP_COPY_BufferOne->GlobalMemoryInDevice = GlobalMemoryInDevice;
-										TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
-										TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes = MemoryInDeviceTotalSizeInBytes;
-										TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes = MemoryInDevice_Occupied_SizeInBytes;
-									}
-								}
-
-								if (!IsSuccessful)
-								{
-									Essenbp::WriteLogToFile("\n Error :Construction of TEMP_COPY_BufferOne failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-								}
-								else
-								{
-									TEMP_COPY_BufferTwo = new cl_MemoryStruct(this, true, IsSuccessful);
-									if (TEMP_COPY_BufferTwo == nullptr)
-									{
-										IsSuccessful = false;
-										TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_BufferOne;
-									}
-									else
-									{
-										if (!IsSuccessful)
-										{
-											delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
-											TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-											delete TEMP_COPY_BufferOne;
-										}
-										else
-										{
-											TEMP_COPY_BufferTwo->DoesBufferAlreadyExist = PointerToBuffer->DoesBufferAlreadyExist;
-											TEMP_COPY_BufferTwo->GlobalMemoryInDevice = PointerToBuffer->GlobalMemoryInDevice;
-											TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType = PointerToBuffer->COPY_OF_PrivateMemoryType;
-											TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes = PointerToBuffer->MemoryInDeviceTotalSizeInBytes;
-											TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes = PointerToBuffer->MemoryInDevice_Occupied_SizeInBytes;
-										}
-									}
-
-									if (!IsSuccessful)
-									{
-										Essenbp::WriteLogToFile("\n Error :Construction of TEMP_COPY_BufferTwo failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-									}
-									else
-									{
-										//Context Of One and Buffer of Two
-										DoesBufferAlreadyExist = TEMP_COPY_BufferTwo->DoesBufferAlreadyExist;
-										GlobalMemoryInDevice = TEMP_COPY_BufferTwo->GlobalMemoryInDevice;
-										COPY_OF_PrivateMemoryType = TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType;
-										MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes;
-										MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes;
-
-										//Context Of Two and Buffer of One
-										PointerToBuffer->DoesBufferAlreadyExist = TEMP_COPY_BufferOne->DoesBufferAlreadyExist;
-										PointerToBuffer->GlobalMemoryInDevice = TEMP_COPY_BufferOne->GlobalMemoryInDevice;
-										PointerToBuffer->COPY_OF_PrivateMemoryType = TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType;
-										PointerToBuffer->MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes;
-										PointerToBuffer->MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes;
-										if (DoesBufferAlreadyExist)
-										{	
-											PassBufferToKernel(IsSuccessful);
-											if (!IsSuccessful)
-											{
-												Essenbp::WriteLogToFile("\n Error :PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-											}
-										}
-										if (PointerToBuffer->DoesBufferAlreadyExist)
-										{
-											PointerToBuffer->PassBufferToKernel(IsSuccessful);
-											if (!IsSuccessful)
-											{
-												Essenbp::WriteLogToFile("\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
-											}
-										}									
-
-										//Freeing Memory
-										TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_BufferOne;
-										TEMP_COPY_BufferTwo->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
-									}
-								}
-							}*/
 							if (clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
 							{
 								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
@@ -2374,7 +2088,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				if (PointerToBuffer == this)
 				{
 					IsSuccessful = false;
-					Essenbp::WriteLogToFile("\n Error This Buffer Can not be InterChangedWithSame/AnotherDevice since this and PointerToBuffer Are the same in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
+					Essenbp::WriteLogToFile("\n Error This Buffer Can not be InterChangedWithSame/AnotherDevice since this and PointerToBuffer Are the same in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
 				}
 				if (PointerToShareGiverBuffer != nullptr)
 				{
@@ -2405,135 +2119,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						}
 						else
 						{
-							/*if (clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
-							{
-								cl_MemoryStruct* TEMP_COPY_BufferOne = nullptr;
-								cl_MemoryStruct* TEMP_COPY_BufferTwo = nullptr;
-
-								TEMP_COPY_BufferOne = new cl_MemoryStruct(PointerToBuffer, true, IsSuccessful);
-								if (TEMP_COPY_BufferOne == nullptr)
-								{
-									IsSuccessful = false;
-								}
-								else
-								{
-									if (!IsSuccessful)
-									{
-										delete TEMP_COPY_BufferOne;
-									}
-									else
-									{
-										TEMP_COPY_BufferOne->DoesBufferAlreadyExist = DoesBufferAlreadyExist;
-										TEMP_COPY_BufferOne->GlobalMemoryInDevice = GlobalMemoryInDevice;
-										TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType = COPY_OF_PrivateMemoryType;
-										TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes = MemoryInDeviceTotalSizeInBytes;
-										TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes = MemoryInDevice_Occupied_SizeInBytes;
-									}
-								}
-
-								if (!IsSuccessful)
-								{
-									Essenbp::WriteLogToFile("\n Error :Construction of TEMP_COPY_BufferOne failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-								}
-								else
-								{
-									TEMP_COPY_BufferTwo = new cl_MemoryStruct(this, true, IsSuccessful);
-									if (TEMP_COPY_BufferTwo == nullptr)
-									{
-										IsSuccessful = false;
-										TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-										delete TEMP_COPY_BufferOne;
-									}
-									else
-									{
-										if (!IsSuccessful)
-										{
-											TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-											delete TEMP_COPY_BufferOne;
-											delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
-										}
-										else
-										{
-											TEMP_COPY_BufferTwo->DoesBufferAlreadyExist = PointerToBuffer->DoesBufferAlreadyExist;
-											TEMP_COPY_BufferTwo->GlobalMemoryInDevice = PointerToBuffer->GlobalMemoryInDevice;
-											TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType = PointerToBuffer->COPY_OF_PrivateMemoryType;
-											TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes = PointerToBuffer->MemoryInDeviceTotalSizeInBytes;
-											TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes = PointerToBuffer->MemoryInDevice_Occupied_SizeInBytes;
-										}
-									}
-
-									if (!IsSuccessful)
-									{
-										Essenbp::WriteLogToFile("\n Error :Construction of TEMP_COPY_BufferTwo failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-									}
-									else
-									{
-										if (TEMP_COPY_BufferOne->DoesBufferAlreadyExist)
-										{
-											TEMP_COPY_BufferOne->PassBufferToKernel(IsSuccessful);
-											if (!IsSuccessful)
-											{
-												Essenbp::WriteLogToFile("\n Error :TEMP_COPY_BufferOne->PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-											}
-											else
-											{
-												cl_int ClErrorResult = clEnqueueMigrateMemObjects(*(TEMP_COPY_BufferOne->cl_CommandQueueForThisArgument), 1, &(TEMP_COPY_BufferOne->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
-												if (ClErrorResult != CL_SUCCESS)
-												{
-													Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-													Essenbp::WriteLogToFile("\n Error :clEnqueueMigrateMemObjects on TEMP_COPY_BufferOne failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-													IsSuccessful = false;
-												}
-												else
-												{
-													if (TEMP_COPY_BufferTwo->DoesBufferAlreadyExist)
-													{
-														TEMP_COPY_BufferTwo->PassBufferToKernel(IsSuccessful);
-													}
-													if (!IsSuccessful)
-													{
-														Essenbp::WriteLogToFile("\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-													}
-													else
-													{
-														ClErrorResult = clEnqueueMigrateMemObjects(*(TEMP_COPY_BufferTwo->cl_CommandQueueForThisArgument), 1, &(TEMP_COPY_BufferTwo->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
-														if (ClErrorResult != CL_SUCCESS)
-														{
-															Essenbp::WriteLogToFile("\n CL_Error Code " + std::to_string(ClErrorResult) + "  in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-															Essenbp::WriteLogToFile("\n Error :clEnqueueMigrateMemObjects on TEMP_COPY_BufferTwo failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
-															IsSuccessful = false;
-
-															//Reseting to original Memory location!
-															clEnqueueMigrateMemObjects(*cl_CommandQueueForThisArgument, 1, &(TEMP_COPY_BufferOne->GlobalMemoryInDevice), CL_MIGRATE_MEM_OBJECT_CONTENT_UNDEFINED, 0, NULL, NULL);
-														}
-														else//When Everything is Succesfuly done
-														{
-															//Context Of One and Buffer of Two
-															DoesBufferAlreadyExist = TEMP_COPY_BufferTwo->DoesBufferAlreadyExist;
-															GlobalMemoryInDevice = TEMP_COPY_BufferTwo->GlobalMemoryInDevice;
-															COPY_OF_PrivateMemoryType = TEMP_COPY_BufferTwo->COPY_OF_PrivateMemoryType;
-															MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferTwo->MemoryInDeviceTotalSizeInBytes;
-															MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferTwo->MemoryInDevice_Occupied_SizeInBytes;
-
-															//Context Of Two and Buffer of One
-															PointerToBuffer->DoesBufferAlreadyExist = TEMP_COPY_BufferOne->DoesBufferAlreadyExist;
-															PointerToBuffer->GlobalMemoryInDevice = TEMP_COPY_BufferOne->GlobalMemoryInDevice;
-															PointerToBuffer->COPY_OF_PrivateMemoryType = TEMP_COPY_BufferOne->COPY_OF_PrivateMemoryType;
-															PointerToBuffer->MemoryInDeviceTotalSizeInBytes = TEMP_COPY_BufferOne->MemoryInDeviceTotalSizeInBytes;
-															PointerToBuffer->MemoryInDevice_Occupied_SizeInBytes = TEMP_COPY_BufferOne->MemoryInDevice_Occupied_SizeInBytes;
-														}
-													}
-												}
-											}
-											//Freeing Memory
-											TEMP_COPY_BufferOne->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-											delete TEMP_COPY_BufferOne;
-											TEMP_COPY_BufferTwo->IsConstructionSuccesful = false;//If This is not set to false then The original Struct will also be deleted...
-											delete TEMP_COPY_BufferTwo;// No need for this since the construction is unsuccesful...
-										}
-									}
-								}
-							}*/
 							if (clMemory_Type_Of_Argument == PointerToBuffer->clMemory_Type_Of_Argument)
 							{
 								cl_MemoryStruct* COPY_Buffer = new cl_MemoryStruct(PointerToBuffer, IsSuccessful, true);
@@ -2589,7 +2174,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										PassBufferToKernel(IsSuccessful);
 										if (!IsSuccessful)
 										{
-											Essenbp::WriteLogToFile("\n Error :PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
+											Essenbp::WriteLogToFile("\n Error :PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
 										}
 									}
 									if (IsSuccessful)
@@ -2599,7 +2184,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 											PointerToBuffer->PassBufferToKernel(IsSuccessful);
 											if (!IsSuccessful)
 											{
-												Essenbp::WriteLogToFile("\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithinSameDevice In: cl_MemoryStruct!\n");
+												Essenbp::WriteLogToFile("\n Error :TEMP_COPY_BufferTwo->PassBufferToKernel failed in InterchangeBufferWithAnotherDevice In: cl_MemoryStruct!\n");
 											}
 										}
 									}
@@ -2735,7 +2320,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 				if (!IsSuccessful)// For the safe of readability
 				{
-					Essenbp::WriteLogToFile("\n Error ShareBufferWithchild() Failed in cl_KernelSingleArgumentStruct!");
+					Essenbp::WriteLogToFile("\n Error ShareBufferWithchild() Failed in cl_MemoryStruct!");
 				}
 			}
 
@@ -3036,50 +2621,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 								TEMP_COPY_MultiBufferOnDevice[i] = MultiBufferOnDevice[i];
 								TEMP_COPY_IsBufferReady[i] = IsBufferReady[i];
 							}
-						}
-						/*else
-						{
-							for (int i = 0; i < TotalNumberOfBuffers; ++i)
-							{
-								TEMP_COPY_IsBufferReady[i] = new bool(IsBufferReady[i]);
-								if (TEMP_COPY_IsBufferReady[i] == nullptr)
-								{
-									IsSuccessful = false;
-								}
-								else
-								{
-									TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[i], IsSuccessful, true);
-									if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
-									{
-										delete TEMP_COPY_IsBufferReady[i];
-										IsSuccessful = false;
-									}
-									else
-									{
-										if (!IsSuccessful)
-										{
-											delete TEMP_COPY_IsBufferReady[i];
-											delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
-										}
-									}
-								}
-
-								if (!IsSuccessful)
-								{
-									for (int j = 0; j < i; ++j)
-									{
-										TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;
-										delete TEMP_COPY_MultiBufferOnDevice[j];
-										delete TEMP_COPY_IsBufferReady[j];
-									}
-									delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
-									delete TEMP_COPY_IsBufferReady[TotalNumberOfBuffers];
-									free(TEMP_COPY_MultiBufferOnDevice);
-									free(TEMP_COPY_IsBufferReady);
-									break;
-								}
-							}
-						}*/
+						}						
 					}			
 
 					if (IsSuccessful)
@@ -3174,54 +2716,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 										TEMP_COPY_IsBufferReady[i] = IsBufferReady[j];
 									}
 								}
-								/*else
-								{
-									for (int i = 0, int j = 0; i < (TotalNumberOfBuffers - 1); ++i, ++j)
-									{
-										if (i == BufferNumber)
-										{
-											j = j + 1;
-										}
-
-										TEMP_COPY_IsBufferReady[i] = new bool(IsBufferReady[j]);
-										if (TEMP_COPY_IsBufferReady[i] == nullptr)
-										{
-											IsSuccessful = false;
-										}
-										else
-										{
-											TEMP_COPY_MultiBufferOnDevice[i] = new cl_MemoryStruct(MultiBufferOnDevice[j], IsSuccessful, true);
-											if (TEMP_COPY_MultiBufferOnDevice[i] == nullptr)
-											{
-												delete TEMP_COPY_IsBufferReady[i];
-												IsSuccessful = false;
-											}
-											else
-											{
-												if (!IsSuccessful)
-												{
-													delete TEMP_COPY_IsBufferReady[i];
-													delete TEMP_COPY_MultiBufferOnDevice[i];// Since the construction is not succesful this is safe to delete
-												}
-											}
-										}
-
-										if (!IsSuccessful)
-										{
-											for (int j = 0; j < i; ++j)
-											{
-												TEMP_COPY_MultiBufferOnDevice[j]->IsConstructionSuccesful = false;
-												delete TEMP_COPY_MultiBufferOnDevice[j];
-												delete TEMP_COPY_IsBufferReady[j];
-											}
-											delete TEMP_COPY_MultiBufferOnDevice[TotalNumberOfBuffers];
-											delete TEMP_COPY_IsBufferReady[TotalNumberOfBuffers];
-											free(TEMP_COPY_MultiBufferOnDevice);
-											free(TEMP_COPY_IsBufferReady);
-											break;
-										}
-									}
-								}*/
 							}
 
 							if (IsSuccessful)
@@ -3267,8 +2761,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					else
 					{
-						BufferToUse = BufferNumber;
-						*(IsBufferReady[BufferNumber]) = true;//SetBufferToUse(BufferNumber,IsSuccessful);Both are same
+						BufferToUse = BufferNumber;//SetBufferToUse(BufferNumber,IsSuccessful);Both are same
+						*(IsBufferReady[BufferNumber]) = true;
 					}
 				}
 				else
@@ -3550,8 +3044,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				{
 					delete IsBufferReady[i];
 					delete MultiBufferOnDevice[i];
-					//IsBufferReady[i] = nullptr;
-					//MultiBufferOnDevice[i] = nullptr;
+					IsBufferReady[i] = nullptr;
+					MultiBufferOnDevice[i] = nullptr;
 				}
 				free(IsBufferReady);
 				free(MultiBufferOnDevice);
@@ -4015,8 +3509,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling GetBufferNumberBeingUsed Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n");
-				Essenbp::WriteLogToFile("\n Error GetBufferNumberBeingUsed() Failed in cl_KernelSingleArgumentStruct!");
+				Essenbp::WriteLogToFile("\n Error :Calling GetBufferNumberBeingUsed Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n");
+				Essenbp::WriteLogToFile("\n Error GetBufferNumberBeingUsed() Failed in cl_KernelMultipleArgumentStruct!");
 			}
 			else
 			{
@@ -4030,7 +3524,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in GetBufferNumberBeingUsed In: cl_KernelSingleArgumentStruct!\n");
+					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in GetBufferNumberBeingUsed In: cl_KernelMultipleArgumentStruct!\n");
 				}
 			}
 
@@ -4046,8 +3540,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling GetPointerToBufferPointer Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n");
-				Essenbp::WriteLogToFile("\n Error GetPointerToBufferPointer() Failed in cl_KernelSingleArgumentStruct!");
+				Essenbp::WriteLogToFile("\n Error :Calling GetPointerToBufferPointer Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n");
+				Essenbp::WriteLogToFile("\n Error GetPointerToBufferPointer() Failed in cl_KernelMultipleArgumentStruct!");
 			}
 			else
 			{
@@ -4061,7 +3555,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in GetPointerToBufferPointer In: cl_KernelSingleArgumentStruct!\n");
+					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in GetPointerToBufferPointer In: cl_KernelMultipleArgumentStruct!\n");
 				}
 			}
 
@@ -4078,8 +3572,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 
 			if (!IsConstructionSuccesful)
 			{
-				Essenbp::WriteLogToFile("\n Error :Calling SetBufferToUse Without Constructing the struct In: cl_KernelSingleArgumentStruct!\n");
-				Essenbp::WriteLogToFile("\n Error SetBufferToUse() Failed in cl_KernelSingleArgumentStruct!");
+				Essenbp::WriteLogToFile("\n Error :Calling SetBufferToUse Without Constructing the struct In: cl_KernelMultipleArgumentStruct!\n");
+				Essenbp::WriteLogToFile("\n Error SetBufferToUse() Failed in cl_KernelMultipleArgumentStruct!");
 			}
 			else
 			{
@@ -4093,7 +3587,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in SetBufferToUse In: cl_KernelSingleArgumentStruct!\n");
+					Essenbp::WriteLogToFile("\n Error :ArgumentNumber + 1 exceeds the total number of arguments for this kernel.. in SetBufferToUse In: cl_KernelMultipleArgumentStruct!\n");
 				}
 			}
 
@@ -4120,6 +3614,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						delete SingleKernelFunctionMultiArgumentsArray[i];
 					}
 					free(SingleKernelFunctionMultiArgumentsArray);
+					SingleKernelFunctionMultiArgumentsArray = nullptr;
+					ThisKernel = NULL;
+					CurrentEvent = NULL;
 				}
 				IsConstructionSuccesful = false;
 			}
@@ -4274,6 +3771,8 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						delete MultiDeviceKernelArgumentsArray[i];
 					}
 					free(MultiDeviceKernelArgumentsArray);
+					DeviceValuesForMultiDevice = nullptr;
+					MultiDeviceKernelArgumentsArray = nullptr;
 				}
 				IsConstructionSuccesful = false;
 			}
@@ -4287,17 +3786,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		cl_KernelFunctionArgumentOrderListStruct** OpenCL_KernelFunctions = nullptr;
 		const unsigned int TotalNumberOfFuctions;
 		unsigned int FunctionsAdded = 0;
-		//bool IsAllFunctionsNameAndTotalArgumentSet = false;
-		//bool IsAllFunctionsUsable = false;
-		//unsigned int TotalNumberOfFunctionsNameAndTotalArgumentSet = 0;bad
-		//unsigned int TotalNumberOfFunctionsUsable = 0;//bad
-
-		//GOOOD
-		//Essenbp::Malloc_PointerToArrayOfPointers((void***)&IsBufferReady, 1, sizeof(bool*), IsSuccessful);
-		//if (!IsSuccessful)
-		//{
-		//	Essenbp::WriteLogToFile("\n Error Allocating :" + std::to_string(sizeof(bool*)) + " Byes Of Memory for IsBufferReady In cl_KernelSingleArgumentStruct!\n");
-		//}
 
 	public:
 		bool IsConstructionSuccesful = false;
@@ -4422,7 +3910,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(ArgumentNumber + 1) + "' Is greater than the TotalNumberOfArguments, ");
+						Essenbp::WriteLogToFile("\n Error Argument Number + 1' " + std::to_string(ArgumentNumber + 1) + "' Is greater than the TotalNumberOfArguments in SetMemoryTypeOfArugment In: cl_KernelFunctionsStruct!\n");
 					}
 				}
 				else
@@ -4465,6 +3953,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					if (OpenCL_KernelFunctions[i] != nullptr)
 					{
 						delete(OpenCL_KernelFunctions[i]);
+						OpenCL_KernelFunctions[i] = nullptr;
 					}					
 				}
 				free(OpenCL_KernelFunctions);
@@ -4668,11 +4157,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					//This Bad
-					//if (BufferTouse != *(ArrayOfBufferToUse[ArgumentNumber]))
-					//{
-					//	*(ArrayOfIsArgumentAlreadySetBoolean[ArgumentNumber]) = false;// Since we are changing buffer number
-					//}
 
 					if (*(ArugmentList->KernelArgumentsInOrder[ArgumentNumber]) == cl_Memory_Type::CL_LOCALENUM)
 					{
@@ -4940,9 +4424,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (DataPassedToKernel)
 				{
-					//Essenbp::WriteLogToFile("\n Error Same Data already passed to kernel in PassAllDataToKernel In: cl_KernelArgumentSendStruct!\n");
-					//Essenbp::WriteLogToFile("NOTE: Change any or all of argument data(or pass the same data) by using StoreDataForKernelArgument()\n");
-					IsSuccessful = true;// Since the Data is already passed and it was already succesful... this entire thing is succesful
+					IsSuccessful = true;// Since the Data is already passed and it was already succesful... this entire Data is succesful
 				}
 				else
 				{
@@ -5059,7 +4541,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			{
 				if (ArgumentNumber >= ArugmentList->TotalNumberOfArugments)
 				{
-					Essenbp::WriteLogToFile("\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in FreeDataInSendStruct In: PassDataStructToKernel!\n");
+					Essenbp::WriteLogToFile("\n Error ArgumentNumber + 1 Exceeds the Total Number Of Arugments Present! in FreeDataInSendStruct In: cl_KernelArgumentSendStruct!\n");
 				}
 				else
 				{
@@ -5082,6 +4564,10 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 					delete ArrayOfOverWriteDataSetBoolean[i];
 					delete ArrayOfIsArgumentAlreadySetBoolean[i];
 					delete ArrayOfUsePreviouslyAllocatedMemoryBoolean[i];
+					ArrayOfArgumentData[i] = nullptr;
+					ArrayOfOverWriteDataSetBoolean[i] = nullptr;
+					ArrayOfIsArgumentAlreadySetBoolean[i] = nullptr;
+					ArrayOfUsePreviouslyAllocatedMemoryBoolean[i] = nullptr;
 				}
 				free(ArrayOfArgumentData);
 				free(ArrayOfOverWriteDataSetBoolean);
@@ -5696,6 +5182,11 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				ChosenDevices = nullptr;
 			}
 
+			ChosenPlatformNumber = 0;
+			ChosenPlatform = NULL;
+			NumberOfDevices = 0;
+			TotalNumberOfKernelFunctions = 0;
+
 			if (!IsSuccessful)// For the safe of readability
 			{
 				Essenbp::WriteLogToFile("\n Error ReleaseAndFreeClData() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
@@ -5706,18 +5197,9 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		{
 			IsSuccessful = false;
 
-			//cl_uint NumOfPlatforms;						//the NO. of platforms
-			//ChosenPlatform = nullptr;					////the chosen platform Will only be choosing one platform which will be the first one
 			cl_uint	NumberOfGPUs = 0;					//cl_uint	NumberOfGPUorCPU = 0;// We will Only be using GPU here
 
 			bool ReturnResult = true;
-			//cl_int ClErrorResult = clGetPlatformIDs(0, NULL, &NumOfPlatforms);//clGetPlatformIDs(1, &platform, NULL);// One line code with no checks chooses first platform GPU/CPU(APU if available) in this
-			//if (ClErrorResult != CL_SUCCESS)
-			//{
-			//	Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Getting platforms in InitializeOpenCLProgram In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-			//	Essenbp::WriteLogToFile("\n Error InitializeOpenCLProgram() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-			//	return;
-			//}
 
 			cl_int ClErrorResult = clGetPlatformIDs(PlatformToUse, &ChosenPlatform, NULL);// for the first platform //Single Line code
 			if (ClErrorResult != CL_SUCCESS)
@@ -5863,321 +5345,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 			}
 		}
 		
-		/*void FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(std::string ProgramKernelCode, cl_KernelFunctionArgumentOrderListStruct*** ArgOrderedKernelArgumentList, unsigned int& ArgTotalNumberOfKernelFunctions, bool& IsSuccessful)
-		{
-			std::string ModifiedKernelCode;
-			ArgTotalNumberOfKernelFunctions = 0;
-
-			IsSuccessful = false;			
-			if (*ArgOrderedKernelArgumentList != nullptr)
-			{
-				Essenbp::WriteLogToFile("\n Error: *ArgOrderedKernelArgumentList is NOT nullptr, In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-			}
-			else
-			{
-				//First We Delete unwanted Comments
-				ModifiedKernelCode = "";
-				Essenbp::RemoveCommentsFromCppSource(ProgramKernelCode, ModifiedKernelCode);//First, Comments are removed	
-				Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\n", " ");// new line replaced with back space
-				Essenbp::ReplaceEveryOccuranceWithGivenString(ModifiedKernelCode, "\t", " ");// tab replaced with back space
-				Essenbp::RemoveConsecutiveDulplicateChar(ModifiedKernelCode, ' ');// Consecutive Duplicates removed
-				
-				size_t Position = 0;
-				size_t TempPosition = 0;
-
-				//Then attributes are removed in the while loop below
-				while (true)
-				{
-					Position = ModifiedKernelCode.find("__attribute__", Position);
-					if (Position != std::string::npos)
-					{
-						TempPosition = ModifiedKernelCode.find(")", Position);
-						if (TempPosition != std::string::npos)
-						{
-							TempPosition = ModifiedKernelCode.find(")", (TempPosition + 1));
-							if (TempPosition != std::string::npos)
-							{
-								if (ModifiedKernelCode[(TempPosition + 1)] == ' ')
-								{
-									TempPosition = TempPosition + 1;
-								}
-								if (ModifiedKernelCode[(TempPosition + 1)] == ')')
-								{
-									TempPosition + 1;
-								}
-								ModifiedKernelCode.erase(Position, TempPosition);
-								//else
-								//{
-								//	IsSuccessful = false;// Wrong systax results in this...
-								//}
-							}
-							//else
-							//{
-							//	IsSuccessful = false;
-							//}
-						}
-						//else
-						//{
-						//	IsSuccessful = false;
-						//}
-					}
-					else
-					{
-						cl_int ClErrorResult = 0;
-						cl_platform_id CheckingPlatform = NULL;
-						cl_device_id CheckingDevice = NULL;
-						cl_context CheckingContext = NULL;
-						cl_program CheckingProgram = NULL;						
-
-						ClErrorResult = clGetPlatformIDs(ChosenPlatformNumber, &CheckingPlatform, NULL);// Checking using platform 1
-						if (ClErrorResult != CL_SUCCESS)
-						{
-							Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Platform Not set In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-						}
-						else
-						{
-							ClErrorResult = clGetDeviceIDs(CheckingPlatform, CL_DEVICE_TYPE_GPU, 1, &CheckingDevice, NULL);// Same line for code for Multi-GPU
-							if (ClErrorResult != CL_SUCCESS)
-							{
-								Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : GPUs Not set In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-							}
-							else
-							{
-								CheckingContext = clCreateContext(NULL, 1, &CheckingDevice, NULL, NULL, &ClErrorResult);
-								if (ClErrorResult != CL_SUCCESS)
-								{
-									Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Context Not Created In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-								}
-								else
-								{
-									const char* ClSourceFileInChar = ProgramKernelCode.c_str();//Not Using Modified
-									size_t ClSourceFileInCharSize[] = { strlen(ClSourceFileInChar) };
-									CheckingProgram = clCreateProgramWithSource(CheckingContext, 1, &ClSourceFileInChar, ClSourceFileInCharSize, &ClErrorResult);
-									if (ClErrorResult != CL_SUCCESS)
-									{
-										Essenbp::WriteLogToFile("\n ClError Code " + std::to_string(ClErrorResult) + " : Cl Program Not Created with Source! In FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-										IsSuccessful = false;
-									}
-									else
-									{
-										clReleaseProgram(CheckingProgram);
-										IsSuccessful = true;
-									}									
-									clReleaseContext(CheckingContext);
-								}
-							}
-						}						
-						break;
-					}
-				}
-
-				if (IsSuccessful)
-				{				
-					//First The Total Number of Kernel FUnctions is found
-					Position = 0;
-					TempPosition = 0;
-					while (true)
-					{
-						IsSuccessful = false;
-						//Essenbp::WriteLogToFile("\n\n\n" + ModifiedKernelCode + "\n\n\n");
-						Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
-						if (Position != std::string::npos)
-						{
-							// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
-							if (Position == 0)
-							{
-								IsSuccessful = true;
-							}
-							else
-							{
-								if (ModifiedKernelCode[(Position - 1)] == '_')
-								{
-									if (ModifiedKernelCode[(Position - 2)] == '_')
-									{
-										if (ModifiedKernelCode[(Position - 3)] == ' ')
-										{
-											IsSuccessful = true;
-										}
-									}
-								}
-								else
-								{
-									if (ModifiedKernelCode[(Position - 1)] == ' ')
-									{
-										IsSuccessful = true;
-									}
-								}
-								if (!IsSuccessful)
-								{
-									// Not a keyword but a function name,
-									Position = Position + 1;
-								}
-							}
-
-							if (IsSuccessful)
-							{
-								Position = Position + 6;
-								Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
-								if (Position == std::string::npos)
-								{
-									IsSuccessful = false;
-									Essenbp::WriteLogToFile("\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-									break;
-								}
-								else
-								{
-									Position = Position + 6;//First Character Of Function Name
-
-									TempPosition = 0;
-									TempPosition = ModifiedKernelCode.find("(", Position);
-
-									if (TempPosition == Position)
-									{
-										IsSuccessful = false;
-										Essenbp::WriteLogToFile("\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-									}
-									else
-									{
-										ArgTotalNumberOfKernelFunctions = ArgTotalNumberOfKernelFunctions + 1;
-									}
-								}
-							}
-						}
-						else
-						{
-							if (TempPosition == 0)
-							{
-								Essenbp::WriteLogToFile("\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-								IsSuccessful = false;
-							}
-							else
-							{
-								Essenbp::Malloc_PointerToArrayOfPointers((void***)ArgOrderedKernelArgumentList, ArgTotalNumberOfKernelFunctions, sizeof(cl_KernelFunctionArgumentOrderListStruct*), IsSuccessful);
-								if (!IsSuccessful)
-								{
-									Essenbp::WriteLogToFile("\n Error Allocating " + std::to_string(ArgTotalNumberOfKernelFunctions * sizeof(cl_KernelFunctionArgumentOrderListStruct*)) + " Byes Of Memory for ArgTotalNumberOfKernelFunctions in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-								}
-							}
-							break;
-						}
-					}
-
-					if (IsSuccessful)
-					{
-						Position = 0;
-						TempPosition = 0;
-						unsigned int CurrentKernelNumber = 0;
-						while (true)
-						{
-							IsSuccessful = false;
-							//Essenbp::WriteLogToFile("\n\n\n" + ModifiedKernelCode + "\n\n\n");
-							Position = ModifiedKernelCode.find("kernel ", Position);// look for kernel keyword
-							if (Position != std::string::npos)
-							{
-								// Checking to see If the "Kernel" word is a part of a name like this for example "AsdfKernel "//This is a example of a function name,
-								if (Position == 0)
-								{
-									IsSuccessful = true;
-								}
-								else
-								{
-									if (ModifiedKernelCode[(Position - 1)] == '_')
-									{
-										if (ModifiedKernelCode[(Position - 2)] == '_')
-										{
-											if (ModifiedKernelCode[(Position - 3)] == ' ')
-											{
-												IsSuccessful = true;
-											}
-										}
-									}
-									else
-									{
-										if (ModifiedKernelCode[(Position - 1)] == ' ')
-										{
-											IsSuccessful = true;
-										}
-									}
-									if (!IsSuccessful)
-									{
-										// Not a keyword but a function name,
-										Position = Position + 1;
-									}
-								}
-
-								if (IsSuccessful)
-								{
-									Position = Position + 6;
-									Position = ModifiedKernelCode.find(" void ", Position);// look for void keyword
-									if (Position == std::string::npos)
-									{
-										IsSuccessful = false;
-										Essenbp::WriteLogToFile("\n Error: unable to find \" void \" keyword. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-										break;
-									}
-									else
-									{
-										Position = Position + 6;//First Character Of Function Name
-
-										TempPosition = 0;
-										TempPosition = ModifiedKernelCode.find("(", Position);
-
-										if (TempPosition == Position)
-										{
-											IsSuccessful = false;
-											Essenbp::WriteLogToFile("\n Error: The name of the function is Missing. The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-										}
-										else
-										{
-											FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode(ModifiedKernelCode, ModifiedKernelCode.substr(Position, ((TempPosition + 1) - Position)), ((*ArgOrderedKernelArgumentList) + CurrentKernelNumber), IsSuccessful);
-											if (!IsSuccessful)
-											{
-												Essenbp::WriteLogToFile("\n Error: FindTheTotalNumberAndTypesOfDataTypeInKernelFunctionCode Failed in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-												for (int i = 0; i < ArgTotalNumberOfKernelFunctions; ++i)
-												{
-													delete (*ArgOrderedKernelArgumentList)[i];
-												}
-											}
-											else
-											{
-												CurrentKernelNumber = CurrentKernelNumber + 1;
-											}
-										}
-									}
-								}
-							}
-							else
-							{
-								if (TempPosition == 0)
-								{
-									Essenbp::WriteLogToFile("\n Error: The Input Program Kernel Code does not havey any Kernels...in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-									IsSuccessful = false;
-								}
-								else
-								{
-									IsSuccessful = true;
-								}
-								break;
-							}
-						}
-					}
-					else
-					{
-						Essenbp::WriteLogToFile("\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-					}
-				}
-				else
-				{
-					Essenbp::WriteLogToFile("\n Error: The syntax of the Program Kernel Code is Incorrect... in FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-				}
-			}
-
-			if (!IsSuccessful)// For the safe of readability
-			{
-				Essenbp::WriteLogToFile("\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-			}
-		}*/
-		
 		void cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(std::string ClSourceFilePath, cl_KernelFunctionArgumentOrderListStruct** ArgOrderedKernelArgumentList, unsigned int ArgTotalNumberOfKernelFunctions, bool& IsSuccessful)
 		{
 			IsSuccessful = false;
@@ -6227,7 +5394,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 		// Manual
 		cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(std::string ClSourceFilePath, cl_KernelFunctionsStruct* KernelFunctionsStruct, cl_PlatformVendorStruct* PlatformToUse, bool& IsSuccessful) : ClSourceFilePath(ClSourceFilePath)
 		{
-			Essenbp::WriteLogToFile("\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Manual Constructor");
+			Essenbp::WriteLogToFile("\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 
 			ChosenPlatform = nullptr;
 			SingleProgram = nullptr;
@@ -6326,203 +5493,6 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				IsConstructionSuccesful = true;
 			}
 		}
-
-		/*// Automatic
-		cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, cl_PlatformVendorStruct* PlatformToUse, bool& IsSuccessful) : ClSourceFilePath(ClSourceFilePath)
-		{
-			Essenbp::WriteLogToFile("\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Automatic Constructor");
-
-			ChosenPlatform = nullptr;
-			SingleProgram = nullptr;
-			SingleContext = nullptr;
-			NumberOfDevices = 0;
-			ChosenDevices = nullptr;
-			PerDeviceValueStruct = nullptr;
-			TotalNumberOfKernelFunctions = 0;
-			OrderedKernelArgumentList = nullptr;
-			MultiDeviceMultiKernel = nullptr;
-
-			IsConstructionSuccesful = false;
-			IsSuccessful = false;
-
-			if (PlatformToUse == nullptr)
-			{
-				Essenbp::WriteLogToFile("\n Error nullptr Passed as value for const variables In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-			}
-			else
-			{
-				cl_uint PlatformNumberToUse = 0;
-				PlatformToUse->GetChosenPlatform(PlatformNumberToUse, IsSuccessful);
-				if (!IsSuccessful)
-				{
-					Essenbp::WriteLogToFile("\n Error PlatformToUse->GetChosenPlatform() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-				}
-				else
-				{
-					// Single Program Is First Initialized	
-					InitializeOpenCLProgram(IsSuccessful, PlatformNumberToUse);
-
-					if (IsSuccessful)
-					{
-						std::string ClSourceFileInString;
-						Essenbp::GetTextFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccessful);
-						if (IsSuccessful)
-						{
-							IsSuccessful = false;
-							FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(ClSourceFileInString, &OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccessful);
-							if (!IsSuccessful)
-							{
-								Essenbp::WriteLogToFile("\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-							}
-							else
-							{
-								cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccessful);
-								if (!IsSuccessful)
-								{
-									Essenbp::WriteLogToFile("\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-								}
-							}
-						}
-						else
-						{
-							Essenbp::WriteLogToFile("\n Error OpenCL Program File Was not opened,\n" + ClSourceFilePath + "\n In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");							
-						}						
-					}
-					else
-					{
-						Essenbp::WriteLogToFile("\n Error Initilization Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");						
-					}
-				}
-			}			
-			
-			if (!IsSuccessful)
-			{
-				Essenbp::WriteLogToFile("\n Error Construction Failed cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct Automatic!");
-				if (OrderedKernelArgumentList != nullptr)
-				{
-					for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
-					{
-						delete OrderedKernelArgumentList[i];
-					}
-				}
-				ReleaseAndFreeClData(IsSuccessful);
-				IsSuccessful = false;// Do nothing if Failed
-			}
-			else
-			{
-				IsConstructionSuccesful = true;
-			}
-		}
-
-		// Single Line Automatic, First Platform Is chosen by default
-		cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct(const std::string ClSourceFilePath, bool& IsSuccessful) : ClSourceFilePath(ClSourceFilePath)
-		{
-			Essenbp::WriteLogToFile("\n Constructing cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct! Using Single Line Automatic Automatic Constructor(NOTE: First Platform Is chosen by default)");
-
-			ChosenPlatform = nullptr;
-			SingleProgram = nullptr;
-			SingleContext = nullptr;
-			NumberOfDevices = 0;
-			ChosenDevices = nullptr;
-			PerDeviceValueStruct = nullptr;
-			TotalNumberOfKernelFunctions = 0;
-			OrderedKernelArgumentList = nullptr;
-			MultiDeviceMultiKernel = nullptr;
-
-			IsConstructionSuccesful = false;
-			IsSuccessful = false;
-
-			OCLW_P::cl_PlatformVendorStruct PlatformToUse(IsSuccessful);
-			if (!IsSuccessful)
-			{
-				Essenbp::WriteLogToFile("\n Error Construction of 'PlatformToUse' Variable of type 'OCLW_P::cl_PlatformVendorStruct' Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");				
-			}
-
-			int TotalNumberOfPlatforms;
-			PlatformToUse.GetTotalNumberOfPlatformVendors(TotalNumberOfPlatforms, IsSuccessful);
-			if (!IsSuccessful)
-			{
-				Essenbp::WriteLogToFile("\n Error GetTotalNumberOfPlatformVendors() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-			}
-			else
-			{
-				PlatformToUse.PrintAllAvailablePlatformVendorNames(IsSuccessful);
-				if (!IsSuccessful)
-				{
-					Essenbp::WriteLogToFile("\n Error PrintAllAvailablePlatformVendorNames() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-				}
-				else
-				{
-					PlatformToUse.SetChosenPlatform(1, IsSuccessful);
-					if (!IsSuccessful)
-					{
-						Essenbp::WriteLogToFile("\n Error SetChosenPlatform() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-					}					
-				}				
-			}
-			if (IsSuccessful)
-			{
-				cl_uint PlatformNumberToUse = 0;
-				PlatformToUse.GetChosenPlatform(PlatformNumberToUse, IsSuccessful);
-				if (!IsSuccessful)
-				{
-					Essenbp::WriteLogToFile("\n Error PlatformToUse->GetChosenPlatform() Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
-				}
-				else
-				{
-					// Single Program Is First Initialized	
-					InitializeOpenCLProgram(IsSuccessful, PlatformNumberToUse);
-					if (IsSuccessful)
-					{
-						std::string ClSourceFileInString;
-						Essenbp::GetTextFileContent(ClSourceFilePath, ClSourceFileInString, IsSuccessful);
-						if (IsSuccessful)
-						{
-							IsSuccessful = false;
-							FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode(ClSourceFileInString, &OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccessful);
-							if (!IsSuccessful)
-							{
-								Essenbp::WriteLogToFile("\n Error FindTotalNumberOfKernelsAndNameOfKernelsInTheCLProgramCode Failed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-							}
-							else
-							{
-								cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct_ConstructionHelper(ClSourceFilePath, OrderedKernelArgumentList, TotalNumberOfKernelFunctions, IsSuccessful);
-								if (!IsSuccessful)
-								{
-									Essenbp::WriteLogToFile("\n Error Construction Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-								}
-							}
-						}
-						else
-						{
-							Essenbp::WriteLogToFile("\n Error OpenCL Program File Was not opened,\n" + ClSourceFilePath + "\n In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-						}
-					}
-					else
-					{
-						Essenbp::WriteLogToFile("\n Error Initilization Of cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
-					}
-				}
-			}
-
-			if (!IsSuccessful)
-			{
-				Essenbp::WriteLogToFile("\n Error Construction Failed cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct Automatic Single Line!");
-				if (OrderedKernelArgumentList != nullptr)
-				{
-					for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
-					{
-						delete OrderedKernelArgumentList[i];
-					}
-				}
-				ReleaseAndFreeClData(IsSuccessful);
-				IsSuccessful = false;// Do nothing if Failed
-			}
-			else
-			{
-				IsConstructionSuccesful = true;
-			}
-		}*/
 
 		void PassDataStructToKernel(unsigned int KernelToRunNumber, unsigned int DevicesToSendData_From, unsigned int DevicesToSendData_To, cl_MultiDevice_KernelArgumentSendStruct* MultiDeviceSendStructList, bool& IsSuccessful)
 		{
@@ -7186,7 +6156,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in InterchangeBufferWithinSameDevice In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in InterchangeBufferWithAnotherDevice In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 				}
 			}
 			if (!IsSuccessful)// For the safe of readability
@@ -7230,7 +6200,7 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in RetreiveDataFromKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in ShareBufferWithAnotherKernel In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 				}
 			}
 			if (!IsSuccessful)// For the safe of readability
@@ -7294,23 +6264,23 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 						MultiDeviceMultiKernel[KernelNumber]->MultiDeviceKernelArgumentsArray[DeviceNumber]->GetBufferNumberBeingUsed(ArgumentNumber, ArgBufferNumber, IsSuccessful);
 						if (!IsSuccessful)
 						{
-							Essenbp::WriteLogToFile("\n Error cl_KernelSingleArgumentStruct::GetBufferNumberBeingUsed() Failed in SetBufferToUse In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+							Essenbp::WriteLogToFile("\n Error cl_KernelSingleArgumentStruct::GetBufferNumberBeingUsed() Failed in GetBufferNumberBeingUsed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 						}
 					}
 					else
 					{
-						Essenbp::WriteLogToFile("\n Error DeviceNumber + 1 '" + std::to_string(DeviceNumber + 1) + "' is greater than NumberOfDevices in SetBufferToUse In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+						Essenbp::WriteLogToFile("\n Error DeviceNumber + 1 '" + std::to_string(DeviceNumber + 1) + "' is greater than NumberOfDevices in GetBufferNumberBeingUsed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 					}
 				}
 				else
 				{
-					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in SetBufferToUse In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
+					Essenbp::WriteLogToFile("\n Error KernelNumber Exceeds the Total Number Of Kernel Functions Present! in GetBufferNumberBeingUsed In: cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!\n");
 				}
 			}
 
 			if (!IsSuccessful)// For the safe of readability
 			{
-				Essenbp::WriteLogToFile("\n Error InterchangeBufferWithAnotherDevice() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
+				Essenbp::WriteLogToFile("\n Error GetBufferNumberBeingUsed() Failed in cl_Program_With_MultiDevice_With_MultiKernelFunctionsStruct!");
 			}
 		}
 
@@ -7322,12 +6292,15 @@ namespace OCLW_P//OpenCL Wrapper By Punal Manalan
 				ReleaseAndFreeClData(IsConstructionSuccesful);// NOTE:Temporarly used IsCostructionSuccesful Here, Do nothing if Failed
 				IsConstructionSuccesful = false;
 				for (int i = 0; i < TotalNumberOfKernelFunctions; ++i)
-				{
+				{					
 					delete MultiDeviceMultiKernel[i];
 					delete OrderedKernelArgumentList[i];//Should always be deleted last
+					MultiDeviceMultiKernel[i] = nullptr;
+					OrderedKernelArgumentList[i] = nullptr;
 				}
+
 				free(MultiDeviceMultiKernel);
-				free(OrderedKernelArgumentList);
+				free(OrderedKernelArgumentList);				
 			}
 			IsConstructionSuccesful = false;
 		}

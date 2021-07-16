@@ -187,11 +187,6 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			AppendToTextFile(CurrentDirectory, WhatToWrite, TempBool);
 		}
-		//std::cout << WhatToWrite;
-		/*if(!TempBool)
-		{
-			WriteLogToFile("\nError '" + std::string(File_ErrorBuffer) + "'\n: Unable to Open/Create File in WriteToTextFile In: Essenbp,\n File Path: " + Path + "\n");
-		}*/
 	}
 
 	//NOTE:This is Used to Copy Data(Not Address)

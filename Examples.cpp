@@ -6,7 +6,7 @@ int Example1()
 	bool Issuccessful = false;
 
 	// Single Line Code, First platform is chosen by default 
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", Issuccessful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", Issuccessful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
 
 	// Choosing which Function To Use
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
@@ -55,7 +55,7 @@ int Example2()
 	PlatformToUse.PrintAllAvailablePlatformVendorNames(Issuccessful);//Logged in File
 	PlatformToUse.SetChosenPlatform(1, Issuccessful);//Choosing The First Platform
 
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &PlatformToUse, Issuccessful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &PlatformToUse, Issuccessful);//NOTE: OCLW_P::cl_PlatformVendorStruct can be used to choose platform of your choice
 
 	// Choosing which Function To Use
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
@@ -115,8 +115,8 @@ int Example1()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
@@ -197,8 +197,8 @@ int Example2()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
@@ -324,8 +324,8 @@ int Example3()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	OCLW_P::cl_KernelFunctionArgumentOrderListStruct* OrderedStruct = nullptr;
@@ -517,8 +517,8 @@ int Example4()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);//Logged in File
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);//Choosing The First Platform
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	// Choosing which Function To Use
@@ -579,7 +579,7 @@ int Example4()
 		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
 
-	//InterChange the Buffer with same Device
+	//Share the Buffer with same Device
 	EntireOpenCLProgram.ShareBufferWithAnotherKernel(0, 0, 0, 0, 1, 0, 0, Issuccessful);//Sharing Arugment0Buffer0 of Kernel0(Add) with Arugment0Buffer0 of Kernel1(Sub)
 	EntireOpenCLProgram.ShareBufferWithAnotherKernel(0, 0, 1, 0, 1, 1, 0, Issuccessful);//Sharing Arugment1Buffer0 of Kernel0(Add) with Arugment1Buffer0 of Kernel1(Sub)	
 
@@ -625,6 +625,9 @@ int Example4()
 	{
 		Essenbp::WriteLogToFile("\n Data[" + std::to_string(i) + "] == " + std::to_string(((int*)RetreivedData.GetData())[i]));
 	}
+
+	//EntireOpenCLProgram.StopSharingBufferWithAnotherKernel(0, 0, 0, 0, 1, 0, 0, Issuccessful);
+	//EntireOpenCLProgram.StopSharingBufferWithAnotherKernel(0, 0, 1, 0, 1, 1, 0, Issuccessful);
 	return 0;
 }
 
@@ -652,8 +655,8 @@ int Example5()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);//Logged in File
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);//Choosing The First Platform
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	// Choosing which Function To Use
@@ -787,8 +790,8 @@ int Example6()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);//Logged in File
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);//Choosing The First Platform
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	// Choosing which Function To Use
@@ -823,10 +826,14 @@ int Example6()
 
 	//Setting our Range
 	OCLW_P::cl_MultiDevice_NDRangeStruct MultiNDRange(EntireOpenCLProgram.GetTotalNumberOfDevices(), Issuccessful);
-	OCLW_P::cl_NDRangeStruct* NDRangeStructPtr = nullptr;
-	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtr, Issuccessful);//Chose Device Number
-	//NDRangeStructPtr->SetNDRange(10, 1, 0);// 10 Work Items, 1 Per WorkGroup, 0 Offset
-	NDRangeStructPtr->SetNDRangeWithoutLocal(10, 0);// 10 Work Items, Automatic Per WorkGroup, 0 Offset
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtrDeviceOne = nullptr;
+	OCLW_P::cl_NDRangeStruct* NDRangeStructPtrDeviceTwo = nullptr;
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtrDeviceOne, Issuccessful);//Chose Device Number
+	//NDRangeStructPtrDeviceOne->SetNDRange(10, 1, 0);// 10 Work Items, 1 Per WorkGroup, 0 Offset
+	NDRangeStructPtrDeviceOne->SetNDRangeWithoutLocal(10, 0);// 10 Work Items, Automatic Per WorkGroup, 0 Offset
+	MultiNDRange.GetNDRangeOfDevice(0, &NDRangeStructPtrDeviceTwo, Issuccessful);//Chose Device Number
+	//NDRangeStructPtrDeviceTwo->SetNDRange(10, 1, 0);// 10 Work Items, 1 Per WorkGroup, 0 Offset
+	NDRangeStructPtrDeviceTwo->SetNDRangeWithoutLocal(10, 0);// 10 Work Items, Automatic Per WorkGroup, 0 Offset
 
 	//Running the Kernel
 	EntireOpenCLProgram.RunKernelFunction("Add_Integers", 0, 0, &MultiNDRange, Issuccessful, &MultiDeviceDataAdd);
@@ -919,8 +926,8 @@ int Example7()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	Essenbp::ArrayOfUnknownDataAndSize ArrayOfRetreivedData;
@@ -966,8 +973,8 @@ int StressExample1()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	OCLW_P::cl_PerDeviceValuesStruct* DeviceInfo = nullptr;
@@ -1049,8 +1056,8 @@ int StressExample2()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 
 	OCLW_P::cl_PerDeviceValuesStruct* DeviceInfo = nullptr;
@@ -1075,7 +1082,7 @@ int StressExample2()
 	FillIntArray(IntB, 2048, 2048, 2);
 	FillIntArray(IntC, 2048, 0, 0);
 	//IntD = nullptr;//This is Local
-	IntPrivate = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup/sizeof(cl_int))/ 2048) + 0;// (32768/4) - 1 for RX 570
+	IntPrivate = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup/sizeof(cl_int))/ 2048) - 0;
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
 	MultiDeviceData.StoreDataForKernelArgument(0, 0, 0, IntA,					2048 * sizeof(cl_int), Issuccessful);
@@ -1146,8 +1153,8 @@ int StressExample3()
 	AvailablePlatformVendors.PrintAllAvailablePlatformVendorNames(Issuccessful);//Logged in File
 	AvailablePlatformVendors.SetChosenPlatform(1, Issuccessful);//Choosing The First Platform
 
-	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\PunalOpenclFunctionsProgram.cl";
-	OCLW_P::OpenCLWrapper EntireOpenCLProgram("PunalOpenclFunctionsProgram.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
+	//std::string FilePath = "D:\\C++ Projects\\Opencl Punal Wrapper\\OpenCL Wrapper by Punal\\ExampleOpenCLKernels.cl";
+	OCLW_P::OpenCLWrapper EntireOpenCLProgram("ExampleOpenCLKernels.cl", &Functions_List, &AvailablePlatformVendors, Issuccessful);
 	//Initialization End
 	OCLW_P::cl_PerDeviceValuesStruct* DeviceInfo = nullptr;
 	EntireOpenCLProgram.GetDeviceInfoStruct(0, &DeviceInfo, Issuccessful);
@@ -1292,16 +1299,16 @@ int StressExample3()
 int main()
 {
 	//Basic Quick Test
-	//Example1();
-	//Example2();
-	//Example3();
-	//Example4();
-	//Example5();
+	Example1();
+	Example2();
+	Example3();
+	Example4();
+	Example5();
 	////Example6();//NOTE: ONLY FOR MULTI-GPU
-	//Example7();
+	Example7();
 	
 	//Heavy Stress Test
-	//StressExample1();
-	//StressExample2();
-	//StressExample3();
+	StressExample1();
+	StressExample2();
+	StressExample3();
 }
