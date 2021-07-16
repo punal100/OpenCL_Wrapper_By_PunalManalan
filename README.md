@@ -156,6 +156,7 @@ int main()
 	return 0;
 }
 ```
+
 ## Add/Remove/Reuse/Overwrite/Share/UnShare/Interchange Buffer
 ```c++
 int main()
@@ -183,5 +184,33 @@ int main()
 	
 	//InterchangeBufferWithAnotherDevice(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int BufferNumber, unsigned int TargetDeviceNumber, unsigned int TargetKernelNumber, unsigned int TargetArgumentNumber, unsigned int TargetBufferNumber, bool& IsSuccessful)
 	EntireOpenCLProgram.InterchangeBufferWithAnotherDevice(0, 0, 0, 0, 1 ,1, 0, 0, Issuccessful);//Inter Changing Arugment0Buffer0 of Kernel0(KernelOne) with Arugment0Buffer0 of Kernel1(KernelTwo)
+}
+```
+
+## Additonal Functions
+```c++
+int main()
+{
+	unsigned int GetTotalNumberOfDevices()
+	unsigned int GetTotalNumberOfKernelFunctions()
+	void GetBinaryInformationOfProgram(Essenbp::ArrayOfUnknownDataAndSize& Binary_Program_OfEachDevice, bool& IsSuccessful)
+	void GetKernelNumberByKernelName(unsigned int& KernelNumber, std::string NameOfTheKernel, bool& IsSuccessful)
+	void GetKernelInformation(unsigned int KernelNumber, cl_KernelFunctionArgumentOrderListStruct** OrderedStruct, bool& IsSuccessful)
+	void GetBufferNumberBeingUsed(unsigned int DeviceNumber, unsigned int KernelNumber, unsigned int ArgumentNumber, unsigned int& ArgBufferNumber, bool& IsSuccessful)
+
+
+	void GetDeviceInfoStruct(unsigned int DeviceNumber, cl_PerDeviceValuesStruct** DeviceInfo, bool& IsSuccessful)
+	//Device Info Contains
+		const cl_device_id SelectedDevice;
+		cl_command_queue DeviceClCommandQueue = NULL;
+		size_t MaxComputeUnitPerGPU = 0;
+		size_t MaxWorkItemPerGroup = 0;
+		size_t MaxGlobalMemoryOfDevice = 0;
+		size_t MaxPrivateMemoryBytesPerWorkGroup = 0;
+		size_t MaxLocalMemoryBytesPerWorkGroup = 0;
+
+
+	//Gets Binary Information About Program 
+	void GetBinaryInformationOfProgram(Essenbp::ArrayOfUnknownDataAndSize& Binary_Program_OfEachDevice, bool& IsSuccessful)
 }
 ```
