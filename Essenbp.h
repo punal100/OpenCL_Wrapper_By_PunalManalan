@@ -317,18 +317,18 @@ namespace Essenbp//Essential Functions By Punal
 			Issuccessful = false;
 			FreeData();
 
-			SizeOfData = ArgSizeOfData;
-			if (SizeOfData == 0)
+			if (ArgSizeOfData == 0)
 			{
 				WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
-			Data = malloc(SizeOfData);
+			Data = malloc(ArgSizeOfData);
 			if (Data == nullptr)
 			{
 				WriteLogToFile("\n Error Allocating : " + std::to_string(SizeOfData) + " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
+			SizeOfData = ArgSizeOfData;
 			Issuccessful = true;
 		}
 		
