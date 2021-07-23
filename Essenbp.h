@@ -2,6 +2,7 @@
 
 #ifndef ESSENTIAL_FUNCTIONS_BY_PUNAL
 #define ESSENTIAL_FUNCTIONS_BY_PUNAL
+#define ESSENTIAL_FUNCTIONS_BY_PUNAL_VERSION_1
 
 #include <string>
 #include <fstream>// For file reading
