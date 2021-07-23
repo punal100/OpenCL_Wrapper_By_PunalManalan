@@ -316,13 +316,12 @@ namespace Essenbp//Essential Functions By Punal
 		void FreeAndResizeData(size_t ArgSizeOfData, bool& Issuccessful)
 		{
 			Issuccessful = false;
-			FreeData();
-
 			if (ArgSizeOfData == 0)
 			{
 				WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
+			FreeData();
 			Data = malloc(ArgSizeOfData);
 			if (Data == nullptr)
 			{
