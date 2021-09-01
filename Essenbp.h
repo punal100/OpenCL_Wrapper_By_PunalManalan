@@ -560,6 +560,12 @@ namespace Essenbp//Essential Functions By Punal
 
 						TotalNumberOfUnknownData = TotalNumberOfUnknownData - 1;
 						ArrayOfUnknownData[TotalNumberOfUnknownData] = nullptr;
+
+						for (i = 0; i < TotalNumberOfUnknownData; ++i)
+						{
+							TempUnknownData[i] = ArrayOfUnknownData[i];
+						}
+						ArrayOfUnknownData = TempUnknownData;
 					}
 				}
 			}
