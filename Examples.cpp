@@ -1185,7 +1185,7 @@ int StressExample3()
 	FillIntArray(IntB, 2048, 2048, 2);
 	FillIntArray(IntC, 2048, 0, 0);
 	//IntD = nullptr;//This is Local
-	IntPrivate = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup / sizeof(cl_int)) / 2048) + -3;// (32768/4) - 1 for RX 570
+	IntPrivate = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup / sizeof(cl_int)) / 2048) + -0;// (32768/4) - 1 for RX 570
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
 	MultiDeviceDataAdd.StoreDataForKernelArgument(0, 0, 0, IntA, 2048 * sizeof(cl_int), Issuccessful);
@@ -1209,7 +1209,7 @@ int StressExample3()
 	FillIntArray(IntB1, 2048, 8192, 2);
 	FillIntArray(IntC1, 2048, 0, 0);
 	//IntD = nullptr;//This is Local
-	IntPrivate1 = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup / sizeof(cl_int)) / 2048) + -2;// (32768/4) - 1 for RX 570
+	IntPrivate1 = ((DeviceInfo->MaxLocalMemoryBytesPerWorkGroup / sizeof(cl_int)) / 2048) + -0;// (32768/4) - 1 for RX 570
 
 	//Device Number 0 for first Device, Argument Number 0 for first Argument
 	MultiDeviceDataSub.StoreDataForKernelArgument(0, 0, 0, IntA1, 2048 * sizeof(cl_int), Issuccessful);
@@ -1299,16 +1299,16 @@ int StressExample3()
 int main()
 {
 	//Basic Quick Test
-	Example1();
-	Example2();
-	Example3();
-	Example4();
-	Example5();
+	//Example1();
+	//Example2();
+	//Example3();
+	//Example4();
+	//Example5();
 	////Example6();//NOTE: ONLY FOR MULTI-GPU
-	Example7();
+	//Example7();
 	
 	//Heavy Stress Test
-	StressExample1();
-	StressExample2();
+	//StressExample1();
+	//StressExample2();
 	StressExample3();
 }
