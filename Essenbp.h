@@ -2,8 +2,9 @@
 
 #ifndef ESSENTIAL_FUNCTIONS_BY_PUNAL
 #define ESSENTIAL_FUNCTIONS_BY_PUNAL
+#define ESSENTIAL_FUNCTIONS_BY_PUNAL_VERSION_2
 
-#include <iostream>
+#include <string>
 #include <fstream>// For file reading
 #include <chrono>// Mainly For FRAMERATE(FPS) LOCK
 
@@ -14,7 +15,6 @@
 #include <unistd.h>
 #define GetCurrentDir getcwd
 #endif
-
 
 namespace Essenbp//Essential Functions By Punal
 {
@@ -84,7 +84,7 @@ namespace Essenbp//Essential Functions By Punal
 		FILE* TheFile;
 		Path = Path + ".txt";
 		errno_t FileError = fopen_s(&TheFile, Path.c_str(), "a");
-    
+
 		if (FileError != 0)
 		{
 			char File_ErrorBuffer[256];//[strerrorlen_s(err) + 1]; strerrorlen_s() is undefined... //So using buffer size of 256...
@@ -149,7 +149,7 @@ namespace Essenbp//Essential Functions By Punal
 			Issuccessful = true;
 		}
 	}
-  
+
 	void AppendToTextFile(std::string Path, std::string& DataStorage, bool& Issuccessful)
 	{
 		Issuccessful = false;
@@ -189,6 +189,39 @@ namespace Essenbp//Essential Functions By Punal
 		}
 	}
 
+	//NOTE: Data Starts from 0
+	//NOTE: Max Size is From = 0, To = SizeOfData - 1
+	void ReverseDataOrder(void* Data, size_t From, size_t To, bool& IsSuccessful)
+	{
+		IsSuccessful = false;
+		if (Data == nullptr)
+		{
+			Essenbp::WriteLogToFile("\n Error Data is nullptr in ReverseDataOrder In: Essenbp!\n");
+		}
+		else
+		{
+			if (From > To)
+			{
+				Essenbp::WriteLogToFile("\n Error From Is greater than To in ReverseDataOrder In: Essenbp!\n");
+			}
+			else
+			{
+				size_t Max = (To - From) + 1;
+				Max = Max / 2 + (Max % 2);
+				char Swap = 'a';
+				for (size_t i = 0; i < Max; ++i)
+				{
+					Swap = ((char*)Data)[From];
+					((char*)Data)[From] = ((char*)Data)[To];
+					((char*)Data)[To] = Swap;
+					From = From + 1;
+					To = To - 1;
+				}
+				IsSuccessful = true;
+			}
+		}
+	}
+
 	//NOTE:This is Used to Copy Data(Not Address)
 	struct UnknownDataAndSizeStruct
 	{
@@ -209,7 +242,7 @@ namespace Essenbp//Essential Functions By Punal
 				free(Data);//Free Previous Data
 				Data = nullptr;
 				SizeOfData = 0;
-			}			
+			}
 		}
 
 		//NOTE DoADummyCopy stores only the Size but not the data
@@ -233,7 +266,7 @@ namespace Essenbp//Essential Functions By Punal
 							WriteLogToFile("\n Error Size Of ArgSizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
 							return;
 						}
-						
+
 						void* AppendDataHelper = malloc((SizeOfData + ArgSizeOfData));// Setting Current
 						if (AppendDataHelper == nullptr)
 						{
@@ -264,7 +297,7 @@ namespace Essenbp//Essential Functions By Punal
 						}
 					}
 					else
-					{						
+					{
 						if (ArgSizeOfData == 0)
 						{
 							WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in CopyAndStoreData In: UnknownDataAndSizeStruct!\n");
@@ -288,7 +321,7 @@ namespace Essenbp//Essential Functions By Punal
 							Issuccessful = true;
 						}
 					}
-				}				
+				}
 			}
 			else
 			{
@@ -315,30 +348,29 @@ namespace Essenbp//Essential Functions By Punal
 		void FreeAndResizeData(size_t ArgSizeOfData, bool& Issuccessful)
 		{
 			Issuccessful = false;
-			FreeData();
-
-			SizeOfData = ArgSizeOfData;
-			if (SizeOfData == 0)
+			if (ArgSizeOfData == 0)
 			{
 				WriteLogToFile("\n Error Size Of SizeOfData is Equal to Zero in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
-			Data = malloc(SizeOfData);
+			FreeData();
+			Data = malloc(ArgSizeOfData);
 			if (Data == nullptr)
 			{
 				WriteLogToFile("\n Error Allocating : " + std::to_string(SizeOfData) + " Byes Of Memory for Data in FreeAndResizeDataAndReturnPointerToDataPointer in UnknownDataAndSizeStruct In: Essenbp!\n");
 				return;
 			}
+			SizeOfData = ArgSizeOfData;
 			Issuccessful = true;
 		}
-		
+
 		//NOTE: The Data Is Returned But, not released, SO USE THIS WITH CAUTION, if being careless then there is a HUGE chance of memory leak
 		void GetDataAndSizeAndSetDataToNull(void** ReturnData, size_t& ReturnDataSize)
 		{
 			if (ReturnData != nullptr)
 			{
 				*ReturnData = Data;
-				ReturnDataSize= SizeOfData;
+				ReturnDataSize = SizeOfData;
 				Data = nullptr;
 				SizeOfData = 0;
 			}
@@ -352,7 +384,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			FreeData();
 		}
-	};	
+	};
 
 	//NOTE: By PointerToArrayOfPointers it means Example : int** Array, Array[n] == int*, Basicaly an Array of Array of size [1][n]
 	//NOTE: Pass first parameter using (void***)&
@@ -395,78 +427,87 @@ namespace Essenbp//Essential Functions By Punal
 
 	struct ArrayOfUnknownDataAndSize
 	{
-	private:
 		unsigned int TotalNumberOfUnknownData = 0;
 		UnknownDataAndSizeStruct** ArrayOfUnknownData = nullptr;
+
+	public:
 
 		void ResizeArray(unsigned int TotalNumber, bool& Issuccessful)
 		{
 			Issuccessful = false;
 
-			UnknownDataAndSizeStruct** TempUnknownData = nullptr;
-			Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, TotalNumber, sizeof(UnknownDataAndSizeStruct*), Issuccessful);
-			if (!Issuccessful)
+			if (TotalNumber <= TotalNumberOfUnknownData)
 			{
-				WriteLogToFile("\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
+				WriteLogToFile("\n Error TotalNumber Should be Greater than TotalNumberOfUnknownData ResizeArray In: ArrayOfUnknownDataAndSize!\n");
 			}
 			else
 			{
-				Issuccessful = true;
-				int MaxLimit = (TotalNumber < TotalNumberOfUnknownData) ? TotalNumber : TotalNumberOfUnknownData;
-
-				for (int i = 0; i < MaxLimit; ++i)
-				{
-					TempUnknownData[i] = ArrayOfUnknownData[i];
-				}
-				if (TotalNumber > TotalNumberOfUnknownData)
-				{
-					for (int i = TotalNumberOfUnknownData; i < TotalNumber; ++i)
-					{
-						TempUnknownData[i] = new UnknownDataAndSizeStruct();
-						if (TempUnknownData[i] == nullptr)
-						{
-							WriteLogToFile("\n Error Allocating Bytes of Data for UnknownDataAndSizeStruct[" + std::to_string(i) + "] in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
-							for (int j = 0; j < i; ++j)
-							{
-								delete TempUnknownData[j];
-							}
-							free(TempUnknownData);
-							Issuccessful = false;
-							break;
-						}
-					}
-				}
-				else
-				{
-					for (int j = TotalNumber; j < TotalNumberOfUnknownData; ++j)
-					{
-						delete ArrayOfUnknownData[j];
-					}
-				}
-
+				UnknownDataAndSizeStruct** TempUnknownData = nullptr;
+				Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, TotalNumber, sizeof(UnknownDataAndSizeStruct*), Issuccessful);
 				if (!Issuccessful)
 				{
-					WriteLogToFile("\n Error ResizeArray failed In: ArrayOfUnknownDataAndSize!\n");
+					WriteLogToFile("\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
 				}
 				else
 				{
-					ArrayOfUnknownData = TempUnknownData;
-					TotalNumberOfUnknownData = TotalNumber;
+					Issuccessful = true;
+					int MaxLimit = (TotalNumber < TotalNumberOfUnknownData) ? TotalNumber : TotalNumberOfUnknownData;
+
+					for (int i = 0; i < MaxLimit; ++i)
+					{
+						TempUnknownData[i] = ArrayOfUnknownData[i];
+					}
+					if (TotalNumber > TotalNumberOfUnknownData)
+					{
+						for (int i = TotalNumberOfUnknownData; i < TotalNumber; ++i)
+						{
+							TempUnknownData[i] = new UnknownDataAndSizeStruct();
+							if (TempUnknownData[i] == nullptr)
+							{
+								WriteLogToFile("\n Error Allocating Bytes of Data for UnknownDataAndSizeStruct[" + std::to_string(i) + "] in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
+								for (int j = 0; j < i; ++j)
+								{
+									delete TempUnknownData[j];
+								}
+								free(TempUnknownData);
+								Issuccessful = false;
+								break;
+							}
+						}
+					}
+					else
+					{
+						for (int j = TotalNumber; j < TotalNumberOfUnknownData; ++j)
+						{
+							delete ArrayOfUnknownData[j];
+						}
+					}
+
+					if (!Issuccessful)
+					{
+						WriteLogToFile("\n Error ResizeArray failed In: ArrayOfUnknownDataAndSize!\n");
+					}
+					else
+					{
+						ArrayOfUnknownData = TempUnknownData;
+						TotalNumberOfUnknownData = TotalNumber;
+					}
 				}
 			}
 		}
 
-	public:
 		ArrayOfUnknownDataAndSize()
 		{
 			WriteLogToFile("\n Constructing ArrayOfUnknownDataAndSize!");
+			TotalNumberOfUnknownData = 0;
+			ArrayOfUnknownData = nullptr;
 		}
 
 		void AddElement(bool& Issuccessful)
 		{
 			Issuccessful = false;
 			ResizeArray(TotalNumberOfUnknownData + 1, Issuccessful);
-			if(!Issuccessful)
+			if (!Issuccessful)
 			{
 				WriteLogToFile("\n Error ResizeArray failed in AddElement In: ArrayOfUnknownDataAndSize!\n");
 			}
@@ -484,33 +525,42 @@ namespace Essenbp//Essential Functions By Punal
 				if (TotalNumberOfUnknownData == 1)
 				{
 					delete ArrayOfUnknownData[0];
+					TotalNumberOfUnknownData = 0;
+
+					free(ArrayOfUnknownData);
+					ArrayOfUnknownData = nullptr;
 				}
 				else
 				{
-					//The Gap is filled by next element, and the next element's gap is filled by the element next to it, and so on until last element
-					//Example 1,2,3,4,5
-					//Remove 3
-					//1,2, gap ,4,5
-					//4 fills 3rd gap
-					//1,2,4, gap ,5
-					//5 fills 4rd gap
-					//1,2,4,5, gap
-					//1,2,4,5 (gap is deleted)
-					UnknownDataAndSizeStruct* TempChangeptr = ArrayOfUnknownData[ElementNumber];
-
-					for (int i = TotalNumberOfUnknownData - 1; i > ElementNumber; --i)
-					{
-						ArrayOfUnknownData[(i - 1)] = ArrayOfUnknownData[i];
-					}
-					ArrayOfUnknownData[TotalNumberOfUnknownData - 1] = TempChangeptr;
-
-					ResizeArray(TotalNumberOfUnknownData - 1, Issuccessful);
+					UnknownDataAndSizeStruct** TempUnknownData = nullptr;
+					Malloc_PointerToArrayOfPointers((void***)&TempUnknownData, (TotalNumberOfUnknownData - 1), sizeof(UnknownDataAndSizeStruct*), Issuccessful);
 					if (!Issuccessful)
 					{
-						WriteLogToFile("\n Error ResizeArray failed in RemoveElement In: ArrayOfUnknownDataAndSize!\n");
+						WriteLogToFile("\n Error Malloc_PointerToArrayOfPointers failed in ResizeArray In: ArrayOfUnknownDataAndSize!\n");
+					}
+					else
+					{
+						//The Gap is filled by next element, and the next element's gap is filled by the element next to it, and so on until last element
+						//Example 1,2,3,4,5
+						//Remove 3
+						//1,2, gap ,4,5
+						//4 fills 3rd gap
+						//1,2,4, 4 ,5
+						//5 fills 4th
+						//1,2,4,5,5
+						//1,2,4,5 (redundant second 5 ptr at the last is removed)
+						delete ArrayOfUnknownData[ElementNumber];
+
+						uint64_t i = ElementNumber;
+						for (i = ElementNumber; i < (TotalNumberOfUnknownData - 1); ++i)
+						{
+							ArrayOfUnknownData[i] = ArrayOfUnknownData[i + 1];
+						}
+
+						TotalNumberOfUnknownData = TotalNumberOfUnknownData - 1;
+						ArrayOfUnknownData[TotalNumberOfUnknownData] = nullptr;
 					}
 				}
-				
 			}
 		}
 
@@ -523,7 +573,7 @@ namespace Essenbp//Essential Functions By Punal
 		{
 			if (ElementNumber < TotalNumberOfUnknownData)
 			{
-				*ReturnUnknownDataAndSize = ArrayOfUnknownData[ElementNumber];				
+				*ReturnUnknownDataAndSize = ArrayOfUnknownData[ElementNumber];
 			}
 			else
 			{
@@ -598,7 +648,7 @@ namespace Essenbp//Essential Functions By Punal
 			return Min;
 		}
 		return Number;
-	}	
+	}
 
 	void RemoveCommentsFromCppSource(std::string ProgramSource, std::string& OutPutString)
 	{
@@ -616,7 +666,7 @@ namespace Essenbp//Essential Functions By Punal
 			if (IsSingeLineStarted == true && ProgramSource[i] == '\n')
 			{
 				IsSingeLineStarted = false;
-			}						
+			}
 			else
 			{
 				if (IsMultiLineStarted == true && ProgramSource[i] == '*' && ProgramSource[i + 1] == '/')
@@ -651,7 +701,7 @@ namespace Essenbp//Essential Functions By Punal
 								//Meaning This Non-Comment character is added to the output
 								OutPutString = OutPutString + ProgramSource[i];
 							}
-						}	
+						}
 					}
 				}
 			}
