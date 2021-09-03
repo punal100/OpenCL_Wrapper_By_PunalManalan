@@ -275,9 +275,7 @@ namespace Essenbp//Essential Functions By Punal
 						}
 						else
 						{
-							//PENDING CHECK FOR ERROR
 							size_t PreviousSize = SizeOfData;
-							SizeOfData = SizeOfData + ArgSizeOfData;// Current Size
 
 							for (size_t i = 0; i < PreviousSize; ++i)// Memccpy bad
 							{
@@ -291,8 +289,9 @@ namespace Essenbp//Essential Functions By Punal
 								((char*)AppendDataHelper)[(i + PreviousSize)] = ((char*)ArgData)[i];// I could simply convert void* to char*... but i left it as void* for the purpose of 'readability'
 							}
 
-							FreeData();
+							FreeData();//SizeOfData Is Reset, but no worries since SizeOfData Is Stored in PreviousSize...
 							Data = AppendDataHelper;
+							SizeOfData = PreviousSize + ArgSizeOfData;// Current Size
 							Issuccessful = true;
 						}
 					}
